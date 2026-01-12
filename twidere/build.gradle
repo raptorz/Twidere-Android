@@ -9,13 +9,15 @@ buildscript {
         enableGoogleVariant = project.file('google-services.json').exists()
     }
     repositories {
-        maven { url "https://jitpack.io" }
-        jcenter()
+        mavenLocal()
+        mavenCentral()
+//        jcenter()
         if (enableGoogleVariant) {
             // START Non-FOSS component
             google()
             // END Non-FOSS component
         }
+        maven { url "https://jitpack.io" }
     }
 
     dependencies {
@@ -175,7 +177,7 @@ ext {
     libVersions = [
             Kovenant          : '3.3.0',
             Mime4J            : '0.7.2',
-            Dagger            : '2.32',
+            Dagger            : '2.40.5',
             Exoplayer         : '2.13.2',
             Glide             : '4.11.0',
             MediaViewerLibrary: '0.9.23',
@@ -235,7 +237,7 @@ dependencies {
     kapt "com.hannesdorfmann.parcelableplease:processor:${sharedVersions['ParcelablePlease']}"
     implementation 'com.squareup.okhttp3:okhttp:3.12.12'
     implementation 'com.squareup.okio:okio:2.9.0'
-    implementation 'com.lnikkila:extendedtouchview:0.1.1'
+//    implementation 'com.lnikkila:extendedtouchview:0.1.1'
     implementation "com.google.dagger:dagger:${libVersions['Dagger']}"
     kapt "com.google.dagger:dagger-compiler:${libVersions['Dagger']}"
     implementation 'org.attoparser:attoparser:2.0.5.RELEASE'

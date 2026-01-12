@@ -20,8 +20,9 @@
  */
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.github.dcendents.android-maven'
+//apply plugin: 'com.jfrog.bintray'
+//apply plugin: 'com.github.dcendents.android-maven'
+//apply plugin: 'maven-publish'
 
 group = projectGroupId
 version = projectVersionName
@@ -35,17 +36,19 @@ ext {
 
 buildscript {
     repositories {
-        jcenter()
+        mavenLocal()
+        mavenCentral()
+//        jcenter()
     }
     dependencies {
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
+//        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+//        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
     }
 }
 
 repositories {
     mavenLocal()
-    jcenter()
+    mavenCentral()
 }
 
 android {
@@ -97,68 +100,69 @@ dependencies {
     implementation "com.github.mariotaku.RestFu:oauth:${sharedVersions['RestFu']}"
 }
 
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            name archivesBaseName
-            description projectDescription
-            url projectUrl
-            inceptionYear '2012'
+//publishing {
+//    publications {
+//        aar(MavenPublication) {
+//            groupId projectGroupId
+//            artifactId archivesBaseName
+//            version projectVersionName
+//            artifact("$buildDir/outputs/aar/${archivesBaseName}-release.aar")
+//
+//            pom {
+//                name.set archivesBaseName
+//                description.set projectDescription
+//                url.set projectUrl
+//                inceptionYear = '2012'
+//
+//                licenses {
+//                    license {
+//                        name.set 'The Apache Software License, Version 2.0'
+//                        url.set 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                        distribution.set 'repo'
+//                    }
+//                }
+//                scm {
+//                    connection.set projectVcsUrl
+//                    url.set projectUrl
+//                }
+//                developers {
+//                    developer {
+//                        name.set 'Mariotaku Lee'
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
-            packaging 'aar'
-            groupId projectGroupId
-            artifactId archivesBaseName
-            version projectVersionName
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                connection projectVcsUrl
-                url projectUrl
-
-            }
-            developers {
-                developer {
-                    name 'Mariotaku Lee'
-                }
-            }
-        }
-    }
-}
-
-bintray {
-    def propsFile = rootProject.file('private/bintray.properties')
-    if (propsFile.exists()) {
-        def properties = new Properties()
-        properties.load(propsFile.newDataInputStream())
-        user = properties.getProperty('user')
-        key = properties.getProperty('key')
-    }
-
-    pkg {
-        name = archivesBaseName
-        description = projectDescription
-        repo = 'android'
-        userOrg = 'twidere'
-        vcsUrl = projectVcsUrl
-        licenses = ['Apache-2.0']
-        publish = true
-
-        version {
-            name = projectVersionName
-            vcsTag = projectVersionName
-        }
-    }
-
-    configurations = ['archives']
-}
+//bintray {
+//    def propsFile = rootProject.file('private/bintray.properties')
+//    if (propsFile.exists()) {
+//        def properties = new Properties()
+//        properties.load(propsFile.newDataInputStream())
+//        user = properties.getProperty('user')
+//        key = properties.getProperty('key')
+//    }
+//
+//    pkg {
+//        name = archivesBaseName
+//        description = projectDescription
+//        repo = 'android'
+//        userOrg = 'twidere'
+//        vcsUrl = projectVcsUrl
+//        licenses = ['Apache-2.0']
+//        publish = true
+//
+//        version {
+//            name = projectVersionName
+//            vcsTag = projectVersionName
+//        }
+//    }
+//
+//    configurations = ['archives']
+//}
 
 // https://github.com/JFrogDev/build-info/issues/92
-afterEvaluate {
-    bintrayUpload.dependsOn 'install'
-}
+//afterEvaluate {
+//    bintrayUpload.dependsOn 'install'
+//}

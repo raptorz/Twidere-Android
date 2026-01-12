@@ -97,22 +97,21 @@
             tools:text="\@screenname"/>
     </LinearLayout>
 
-    <com.lnikkila.extendedtouchview.ExtendedTouchView
+    <org.mariotaku.twidere.view.ExtendedTouchView
         android:id="@+id/toggle_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:clipChildren="false"
-        app:touchHeight="48dp"
-        app:touchWidth="48dp">
+        android:clipChildren="false">
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@android:id/toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
-    </com.lnikkila.extendedtouchview.ExtendedTouchView>
+
+    </org.mariotaku.twidere.view.ExtendedTouchView>
 
 </org.mariotaku.twidere.view.ColorLabelRelativeLayout>

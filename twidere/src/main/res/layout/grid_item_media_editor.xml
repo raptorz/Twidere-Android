@@ -48,7 +48,7 @@
         android:contentDescription="@string/label_video"
         android:src="@drawable/ic_card_media_play"/>
 
-    <com.lnikkila.extendedtouchview.ExtendedTouchView
+    <org.mariotaku.twidere.view.ExtendedTouchView
         android:id="@+id/remove"
         style="?borderlessButtonStyle"
         android:layout_width="@dimen/element_size_normal"
@@ -58,9 +58,7 @@
         android:layout_marginRight="@dimen/element_spacing_minus_mlarge"
         android:layout_marginTop="@dimen/element_spacing_minus_mlarge"
         android:background="?selectableItemBackgroundBorderless"
-        android:contentDescription="@string/remove"
-        app:touchHeight="@dimen/element_size_normal"
-        app:touchWidth="@dimen/element_size_normal">
+        android:contentDescription="@string/remove">
 
         <ImageView
             android:layout_width="@dimen/element_size_small"
@@ -69,9 +67,9 @@
             android:contentDescription="@string/remove"
             android:scaleType="center"
             android:src="@drawable/ic_btn_grid_item_remove"/>
-    </com.lnikkila.extendedtouchview.ExtendedTouchView>
+    </org.mariotaku.twidere.view.ExtendedTouchView>
 
-    <com.lnikkila.extendedtouchview.ExtendedTouchView
+    <org.mariotaku.twidere.view.ExtendedTouchView
         android:id="@+id/edit"
         style="?borderlessButtonStyle"
         android:layout_width="@dimen/element_size_normal"
@@ -81,9 +79,7 @@
         android:layout_marginEnd="@dimen/element_spacing_minus_mlarge"
         android:layout_marginRight="@dimen/element_spacing_minus_mlarge"
         android:background="?selectableItemBackgroundBorderless"
-        android:contentDescription="@string/action_edit"
-        app:touchHeight="@dimen/element_size_normal"
-        app:touchWidth="@dimen/element_size_normal">
+        android:contentDescription="@string/action_edit">
 
         <ImageView
             android:layout_width="@dimen/element_size_small"
@@ -92,5 +88,5 @@
             android:contentDescription="@string/action_edit"
             android:scaleType="center"
             android:src="@drawable/ic_btn_grid_item_edit"/>
-    </com.lnikkila.extendedtouchview.ExtendedTouchView>
+    </org.mariotaku.twidere.view.ExtendedTouchView>
 </org.mariotaku.twidere.view.SquareFrameLayout>

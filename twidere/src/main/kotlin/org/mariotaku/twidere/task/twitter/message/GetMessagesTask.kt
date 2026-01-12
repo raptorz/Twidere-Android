@@ -65,6 +65,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.filter
 import kotlin.collections.set
+import java.util.Comparator
 
 /**
  * Created by mariotaku on 2017/2/8.
@@ -404,7 +405,7 @@ class GetMessagesTask(
             conversations.addLocalConversations(context, accountKey, messagesMap.keys)
 
             for ((k, v) in respConversations) {
-                val recentMessage = messagesMap[k]?.maxBy(ParcelableMessage::message_timestamp)
+                val recentMessage = messagesMap[k]?.maxWithOrNull(Comparator.comparing(ParcelableMessage::message_timestamp))
                 val participants = respUsers.filterKeys { userId ->
                     v.participants.any { it.userId == userId }
                 }.values.map {
@@ -552,7 +553,7 @@ class GetMessagesTask(
                 if (message.id == lastReadEventId) return@filter true
                 if (longEventId > 0 && longEventId >= message.id.toLongOr(-1L)) return@filter true
                 return@filter false
-            }?.maxBy(ParcelableMessage::message_timestamp)?.message_timestamp ?: -1
+            }?.maxWithOrNull(Comparator.comparing(ParcelableMessage::message_timestamp))?.message_timestamp ?: -1
         }
 
         /**
