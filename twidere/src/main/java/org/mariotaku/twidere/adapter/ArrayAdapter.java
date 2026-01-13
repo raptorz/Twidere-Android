@@ -349,12 +349,17 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
     }
 
     protected View createViewFromResource(int position, View convertView, ViewGroup parent,
-                                        int resource) {
+                                         int resource) {
         View view;
         TextView text;
-
+ 
         if (convertView == null) {
             view = mInflater.inflate(resource, parent, false);
+            // Ensure the inflated view is a ViewGroup or return it as-is
+            if (parent != null && !(view instanceof ViewGroup)) {
+                // Not a ViewGroup, return as-is (might be a custom View that extends View)
+                return view;
+            }
         } else {
             view = convertView;
         }

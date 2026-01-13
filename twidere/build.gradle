@@ -173,6 +173,15 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+    useBuildCache = true
+    arguments {
+        arg("kapt.processing.incremental", "true")
+        arg("kapt.kotlin.generated", "build/generated/source/kapt")
+    }
+}
+
 ext {
     libVersions = [
             Kovenant          : '3.3.0',

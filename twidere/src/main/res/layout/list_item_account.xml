@@ -97,7 +97,7 @@
             tools:text="\@screenname"/>
     </LinearLayout>
 
-    <org.mariotaku.twidere.view.ExtendedTouchView
+    <LinearLayout
         android:id="@+id/toggle_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -112,6 +112,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
 
-    </org.mariotaku.twidere.view.ExtendedTouchView>
+    </LinearLayout>
 
 </org.mariotaku.twidere.view.ColorLabelRelativeLayout>

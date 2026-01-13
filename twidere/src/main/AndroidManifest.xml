@@ -291,8 +291,30 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="org.mariotaku.twidere.TWITTER_BROWSER_LOGIN"/>
-
+                
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                
+                <data
+                    android:scheme="https"
+                    android:host="org.mariotaku.twidere"
+                    android:pathPrefix="/auth/callback/mastodon"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                
+                <data
+                    android:scheme="https"
+                    android:host="org.mariotaku.twidere"
+                    android:pathPrefix="/auth/callback/github"/>
             </intent-filter>
         </activity>
         <activity

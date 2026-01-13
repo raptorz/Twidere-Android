@@ -896,6 +896,9 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         homeMenu.setDrawerShadow(R.drawable.drawer_shadow_start, GravityCompat.START)
         homeMenu.addDrawerListener(drawerToggle)
         homeMenu.addDrawerListener(this)
+        // Lock drawer gesture to prevent conflict with Android back gesture
+        // Drawer can still be opened/closed via the hamburger button
+        homeMenu.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
         homeMenu.setShouldDisableDecider(HomeDrawerLayout.ShouldDisableDecider { e ->
             val fragment = leftDrawerFragment
             if (fragment is AccountsDashboardFragment) {
