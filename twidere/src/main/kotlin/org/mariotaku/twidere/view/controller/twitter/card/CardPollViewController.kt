@@ -29,7 +29,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RadioButton
 import android.widget.TextView
-import kotlinx.android.synthetic.main.layout_twitter_card_poll.view.*
+import org.mariotaku.twidere.databinding.LayoutTwitterCardPollBinding
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.successUi
 import org.mariotaku.abstask.library.AbstractTask
@@ -62,6 +62,8 @@ class CardPollViewController : ContainerView.ViewController() {
     private var fetchedCard: ParcelableCardEntity? = null
     private val card: ParcelableCardEntity
         get() = fetchedCard ?: status.card!!
+    
+    private lateinit var binding: LayoutTwitterCardPollBinding
 
     override fun onCreate() {
         super.onCreate()
@@ -70,7 +72,8 @@ class CardPollViewController : ContainerView.ViewController() {
     }
 
     override fun onCreateView(parent: ContainerView): View {
-        return LayoutInflater.from(context).inflate(R.layout.layout_twitter_card_poll, parent, false)
+        binding = LayoutTwitterCardPollBinding.inflate(LayoutInflater.from(context), parent, false)
+        return binding.root
     }
 
     private fun initChoiceView() {
@@ -78,7 +81,7 @@ class CardPollViewController : ContainerView.ViewController() {
         val inflater = LayoutInflater.from(context)
 
         for (i in 0 until choicesCount) {
-            inflater.inflate(R.layout.layout_poll_item, view.pollContainer, true)
+            inflater.inflate(R.layout.layout_poll_item, binding.pollContainer, true)
         }
 
         displayPoll(card, status)
@@ -132,8 +135,8 @@ class CardPollViewController : ContainerView.ViewController() {
 
             override fun onClick(v: View) {
                 if (hasChoice || clickedChoice) return
-                for (i in 0 until view.pollContainer.childCount) {
-                    val pollItem = view.pollContainer.getChildAt(i)
+                for (i in 0 until binding.pollContainer.childCount) {
+                    val pollItem = binding.pollContainer.getChildAt(i)
                     pollItem.isClickable = false
                     clickedChoice = true
                     val choiceRadioButton: RadioButton = pollItem.findViewById(R.id.choice_button)
@@ -180,7 +183,7 @@ class CardPollViewController : ContainerView.ViewController() {
         val color = ContextCompat.getColor(context, R.color.material_light_blue_a200)
         val radius = context.resources.getDimension(R.dimen.element_spacing_small)
         for (i in 0 until choicesCount) {
-            val pollItem = view.pollContainer.getChildAt(i)
+            val pollItem = binding.pollContainer.getChildAt(i)
 
             val choicePercentView: TextView = pollItem.findViewById(R.id.choice_percent)
             val choiceLabelView: TextView = pollItem.findViewById(R.id.choice_label)
@@ -218,7 +221,7 @@ class CardPollViewController : ContainerView.ViewController() {
         val nVotes = context.resources.getQuantityString(R.plurals.N_votes, votesSum, votesSum)
 
         val timeLeft = DateUtils.getRelativeTimeSpanString(context, endDatetimeUtc.time, true)
-        view.pollSummary.spannable = context.getString(R.string.poll_summary_format, nVotes, timeLeft)
+        binding.pollSummary.spannable = context.getString(R.string.poll_summary_format, nVotes, timeLeft)
     }
 
     private class PercentDrawable internal constructor(

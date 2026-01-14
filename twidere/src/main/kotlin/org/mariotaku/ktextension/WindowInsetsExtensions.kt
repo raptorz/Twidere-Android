@@ -26,15 +26,19 @@ import androidx.core.view.WindowInsetsCompat
 import android.view.WindowInsets
 
 inline val WindowInsetsCompat.systemWindowInsets: Rect
-    get() = Rect(systemWindowInsetLeft, systemWindowInsetTop, systemWindowInsetRight,
-            systemWindowInsetBottom)
+    get() {
+        val insets = getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        return Rect(insets.left, insets.top, insets.right, insets.bottom)
+    }
 
 fun WindowInsetsCompat.getSystemWindowInsets(rect: Rect) {
-    rect.set(systemWindowInsetLeft, systemWindowInsetTop, systemWindowInsetRight,
-            systemWindowInsetBottom)
+    val insets = getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+    rect.set(insets.left, insets.top, insets.right, insets.bottom)
 }
 
 inline val WindowInsets.systemWindowInsets: Rect
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    get() = Rect(systemWindowInsetLeft, systemWindowInsetTop, systemWindowInsetRight,
-            systemWindowInsetBottom)
+    get() {
+        val insets = getInsets(android.view.WindowInsets.Type.systemBars())
+        return Rect(insets.left, insets.top, insets.right, insets.bottom)
+    }

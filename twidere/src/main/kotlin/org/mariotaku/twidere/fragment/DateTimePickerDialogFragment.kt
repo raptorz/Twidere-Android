@@ -23,7 +23,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.dialog_date_time_picker.*
+import org.mariotaku.twidere.databinding.DialogDateTimePickerBinding
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.extension.applyTheme
 import org.mariotaku.twidere.extension.displayedChildId
@@ -36,6 +36,8 @@ import java.util.*
 
 class DateTimePickerDialogFragment : BaseDialogFragment() {
 
+    private var binding: DialogDateTimePickerBinding? = null
+
     private val listener: OnDateTimeSelectedListener? get() {
         return targetFragment as? OnDateTimeSelectedListener ?:
                 parentFragment as? OnDateTimeSelectedListener ?:
@@ -45,7 +47,11 @@ class DateTimePickerDialogFragment : BaseDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
         val builder = AlertDialog.Builder(requireContext())
-        builder.setView(R.layout.dialog_date_time_picker)
+        
+        val binding = DialogDateTimePickerBinding.inflate(layoutInflater)
+        this.binding = binding
+        
+        builder.setView(binding.root)
         builder.setNegativeButton(android.R.string.cancel, null)
         builder.setPositiveButton(android.R.string.ok, null)
         builder.setNeutralButton(R.string.action_clear) { _, _ ->
@@ -57,9 +63,9 @@ class DateTimePickerDialogFragment : BaseDialogFragment() {
 
             val positiveButton = it.getButton(DialogInterface.BUTTON_POSITIVE)
 
-            val viewAnimator = it.viewAnimator
-            val datePicker = it.datePicker
-            val timePicker = it.timePicker
+            val viewAnimator = binding.viewAnimator
+            val datePicker = binding.datePicker
+            val timePicker = binding.timePicker
             val calendar = Calendar.getInstance()
 
             fun showTimePicker() {
@@ -97,5 +103,10 @@ class DateTimePickerDialogFragment : BaseDialogFragment() {
     interface OnDateTimeSelectedListener {
         fun onDateSelected(date: Date)
         fun onDateCleared()
+    }
+    
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 }

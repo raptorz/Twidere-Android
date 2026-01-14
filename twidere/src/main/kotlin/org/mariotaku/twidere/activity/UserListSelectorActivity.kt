@@ -28,7 +28,6 @@ import android.view.View
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.TextView
 import androidx.loader.app.hasRunningLoadersSafe
-import kotlinx.android.synthetic.main.layout_list_with_empty_view.*
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.contains
 import org.mariotaku.ktextension.set
@@ -52,6 +51,11 @@ class UserListSelectorActivity : BaseActivity(),
         LoaderManager.LoaderCallbacks<List<ParcelableUserList>> {
 
     override lateinit var adapter: SimpleParcelableUserListsAdapter
+
+    private lateinit var progressContainer: View
+    private lateinit var listContainer: View
+    private lateinit var listView: android.widget.ListView
+    private lateinit var emptyView: View
 
     override var refreshing: Boolean
         get() {
@@ -83,6 +87,12 @@ class UserListSelectorActivity : BaseActivity(),
             return
         }
         setContentView(R.layout.activity_user_list_selector)
+
+        // Initialize views from included layout
+        progressContainer = findViewById(R.id.progressContainer)
+        listContainer = findViewById(R.id.listContainer)
+        listView = findViewById(R.id.listView)
+        emptyView = findViewById(R.id.emptyView)
 
         adapter = SimpleParcelableUserListsAdapter(this, requestManager)
         adapter.loadMoreSupportedPosition = ILoadMoreSupportAdapter.END

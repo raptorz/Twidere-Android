@@ -23,7 +23,6 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.dialog_compose_edit_alt_text.*
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
 import org.mariotaku.ktextension.string
@@ -33,27 +32,36 @@ import org.mariotaku.twidere.constant.IntentConstants.EXTRA_POSITION
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_TEXT
 import org.mariotaku.twidere.extension.applyOnShow
 import org.mariotaku.twidere.extension.applyTheme
+import org.mariotaku.twidere.databinding.DialogComposeEditAltTextBinding
 
 class EditAltTextDialogFragment : BaseDialogFragment() {
+    private var binding: DialogComposeEditAltTextBinding? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.edit_description)
-        builder.setView(R.layout.dialog_compose_edit_alt_text)
-        builder.setNegativeButton(android.R.string.cancel, null)
         val position = requireArguments().getInt(EXTRA_POSITION)
         builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
-            val altText = (dialog as Dialog).editText.string
+            val altText = binding?.editText?.string
             callback?.onSetAltText(position, altText)
         }
+        builder.setNegativeButton(android.R.string.cancel, null)
         builder.setNeutralButton(R.string.action_clear) { _, _ ->
             callback?.onSetAltText(position, null)
         }
+        binding = DialogComposeEditAltTextBinding.inflate(layoutInflater)
+        builder.setView(binding?.root)
         val dialog = builder.create()
         dialog.applyOnShow {
             applyTheme()
-            editText.setText(requireArguments().getString(EXTRA_TEXT))
+            binding?.editText?.setText(requireArguments().getString(EXTRA_TEXT))
         }
         return dialog
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     private val callback: EditAltTextCallback?

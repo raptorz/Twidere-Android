@@ -22,23 +22,27 @@ package org.mariotaku.twidere.view.holder.compose
 import android.graphics.drawable.Drawable
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import android.view.ViewGroup
+import android.view.LayoutInflater
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import kotlinx.android.synthetic.main.grid_item_media_editor.view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.MediaPreviewAdapter
+import org.mariotaku.twidere.databinding.GridItemMediaEditorBinding
 import org.mariotaku.twidere.model.ParcelableMedia
 import org.mariotaku.twidere.model.ParcelableMediaUpdate
 
-class MediaPreviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnLongClickListener, View.OnClickListener {
+class MediaPreviewViewHolder private constructor(
+    private val binding: GridItemMediaEditorBinding
+) : RecyclerView.ViewHolder(binding.root), View.OnLongClickListener, View.OnClickListener {
 
-    private val imageView = itemView.image
-    private val videoIndicatorView = itemView.videoIndicator
-    private val loadProgress = itemView.loadProgress
-    private val removeView = itemView.remove
-    private val editView = itemView.edit
+    private val imageView = binding.image
+    private val videoIndicatorView = binding.videoIndicator
+    private val loadProgress = binding.loadProgress
+    private val removeView = binding.remove
+    private val editView = binding.edit
 
     private val requestListener = object : RequestListener<Drawable> {
 
@@ -63,6 +67,19 @@ class MediaPreviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
         itemView.setOnClickListener(this)
         removeView.setOnClickListener(this)
         editView.setOnClickListener(this)
+    }
+
+    constructor(itemView: View) : this(GridItemMediaEditorBinding.bind(itemView))
+
+    companion object {
+        const val layoutResource = R.layout.grid_item_media_editor
+
+        fun create(parent: ViewGroup): MediaPreviewViewHolder {
+            val binding = GridItemMediaEditorBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return MediaPreviewViewHolder(binding)
+        }
     }
 
     fun displayMedia(adapter: MediaPreviewAdapter, media: ParcelableMediaUpdate) {

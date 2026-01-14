@@ -28,15 +28,16 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.widget.Toast
-import kotlinx.android.synthetic.main.layout_surface_view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.KEY_LIVE_WALLPAPER_SCALE
+import org.mariotaku.twidere.databinding.LayoutSurfaceViewBinding
 import org.mariotaku.twidere.nyan.NyanDaydreamService
 import org.mariotaku.twidere.nyan.NyanSurfaceHelper
 import org.mariotaku.twidere.nyan.NyanWallpaperService
 
 class NyanActivity : BaseActivity(), OnLongClickListener, OnSharedPreferenceChangeListener {
 
+    private lateinit var binding: LayoutSurfaceViewBinding
     private lateinit var helper: NyanSurfaceHelper
 
     override fun onLongClick(v: View): Boolean {
@@ -52,9 +53,10 @@ class NyanActivity : BaseActivity(), OnLongClickListener, OnSharedPreferenceChan
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.layout_surface_view)
-        surfaceView.setOnLongClickListener(this)
-        val holder = surfaceView.holder
+        binding = LayoutSurfaceViewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.surfaceView.setOnLongClickListener(this)
+        val holder = binding.surfaceView.holder
         helper = NyanSurfaceHelper(this)
         holder.addCallback(helper)
         updateSurface()

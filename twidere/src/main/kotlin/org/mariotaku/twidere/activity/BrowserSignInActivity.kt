@@ -31,11 +31,11 @@ import android.util.Log
 import android.view.*
 import android.webkit.*
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_browser_sign_in.*
 import org.attoparser.ParseException
 import org.mariotaku.ktextension.dismissDialogFragment
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.*
+import org.mariotaku.twidere.databinding.ActivityBrowserSignInBinding
 import org.mariotaku.twidere.extension.applyDefault
 import org.mariotaku.twidere.extension.onShow
 import org.mariotaku.twidere.fragment.BaseDialogFragment
@@ -46,6 +46,8 @@ import java.io.StringReader
 import java.lang.ref.WeakReference
 
 class BrowserSignInActivity : BaseActivity() {
+
+    private lateinit var binding: ActivityBrowserSignInBinding
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -60,31 +62,32 @@ class BrowserSignInActivity : BaseActivity() {
     @SuppressLint("AddJavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_browser_sign_in)
-        webView.webChromeClient = AuthorizationWebChromeClient(this)
-        webView.webViewClient = AuthorizationWebViewClient(this)
-        webView.isVerticalScrollBarEnabled = false
-        webView.addJavascriptInterface(InjectorJavaScriptInterface(this), "injector")
-        webView.settings.apply {
+        binding = ActivityBrowserSignInBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.webView.webChromeClient = AuthorizationWebChromeClient(this)
+        binding.webView.webViewClient = AuthorizationWebViewClient(this)
+        binding.webView.isVerticalScrollBarEnabled = false
+        binding.webView.addJavascriptInterface(InjectorJavaScriptInterface(this), "injector")
+        binding.webView.settings.apply {
             applyDefault()
             setSupportMultipleWindows(true)
         }
 
-        intent.dataString?.let { webView.loadUrl(it) }
+        intent.dataString?.let { binding.webView.loadUrl(it) }
     }
 
     override fun onDestroy() {
-        webView?.destroy()
+        binding.webView?.destroy()
         super.onDestroy()
     }
 
     override fun onResume() {
         super.onResume()
-        webView.onResume()
+        binding.webView.onResume()
     }
 
     override fun onPause() {
-        webView.onPause()
+        binding.webView.onPause()
         super.onPause()
     }
 
@@ -103,11 +106,11 @@ class BrowserSignInActivity : BaseActivity() {
     }
 
     private fun setLoadProgressShown(shown: Boolean) {
-        progressContainer.visibility = if (shown) View.VISIBLE else View.GONE
+        binding.progressContainer.visibility = if (shown) View.VISIBLE else View.GONE
     }
 
     private fun setLoadProgress(progress: Int) {
-        loadProgress.progress = progress
+        binding.loadProgress.progress = progress
     }
 
     internal class AuthorizationWebChromeClient(val activity: BrowserSignInActivity) : WebChromeClient() {

@@ -96,7 +96,7 @@ class ParcelableUserListsAdapter(
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent, false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
         }
         throw IllegalStateException("Unknown view type $viewType")
@@ -128,7 +128,7 @@ class ParcelableUserListsAdapter(
                 inflater: LayoutInflater,
                 parent: ViewGroup): UserListViewHolder {
             val view = inflater.inflate(R.layout.list_item_user_list, parent, false)
-            val holder = UserListViewHolder(view, adapter)
+            val holder = UserListViewHolder.create(view, adapter)
             holder.setOnClickListeners()
             holder.setupViewOptions()
             return holder

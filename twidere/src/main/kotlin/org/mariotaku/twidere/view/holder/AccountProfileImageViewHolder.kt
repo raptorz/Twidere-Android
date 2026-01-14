@@ -20,7 +20,7 @@
 package org.mariotaku.twidere.view.holder
 
 import android.view.View
-import kotlinx.android.synthetic.main.adapter_item_dashboard_account.view.*
+import org.mariotaku.twidere.databinding.AdapterItemDashboardAccountBinding
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.AccountSelectorAdapter
 import org.mariotaku.twidere.adapter.RecyclerPagerAdapter
@@ -30,13 +30,13 @@ import org.mariotaku.twidere.view.ShapedImageView
 
 class AccountProfileImageViewHolder(
         val adapter: AccountSelectorAdapter,
-        itemView: View
-) : RecyclerPagerAdapter.ViewHolder(itemView), View.OnClickListener {
+        private val binding: AdapterItemDashboardAccountBinding
+    ) : RecyclerPagerAdapter.ViewHolder(binding.root), View.OnClickListener {
 
-    val iconView: ShapedImageView = itemView.icon
+    val iconView: ShapedImageView = binding.icon
 
     init {
-        itemView.setOnClickListener(this)
+        binding.root.setOnClickListener(this)
         iconView.style = adapter.profileImageStyle
     }
 
@@ -46,7 +46,7 @@ class AccountProfileImageViewHolder(
 
     fun display(account: AccountDetails) {
         iconView.setBorderColor(account.color)
-        adapter.requestManager.loadProfileImage(itemView.context, account,
+        adapter.requestManager.loadProfileImage(binding.root.context, account,
                 adapter.profileImageStyle, iconView.cornerRadius,
                 iconView.cornerRadiusRatio).into(iconView)
     }

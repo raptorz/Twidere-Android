@@ -25,7 +25,7 @@ import android.content.DialogInterface.OnClickListener
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.dialog_edit_user_nickname.*
+import org.mariotaku.twidere.databinding.DialogEditUserNicknameBinding
 import org.mariotaku.ktextension.empty
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_NAME
@@ -36,12 +36,14 @@ import org.mariotaku.twidere.model.UserKey
 
 class SetUserNicknameDialogFragment : BaseDialogFragment(), OnClickListener {
 
+    private var binding: DialogEditUserNicknameBinding? = null
+
     override fun onClick(dialog: DialogInterface, which: Int) {
-        val editName = (dialog as AlertDialog).editName
+        val editName = binding?.editName
         val userKey = arguments?.getParcelable<UserKey>(EXTRA_USER_KEY)!!
         when (which) {
             DialogInterface.BUTTON_POSITIVE -> {
-                if (editName.empty) {
+                if (editName?.text?.isEmpty() != false) {
                     userColorNameManager.clearUserNickname(userKey)
                 } else {
                     userColorNameManager.setUserNickname(userKey, editName.text.toString())
@@ -64,7 +66,14 @@ class SetUserNicknameDialogFragment : BaseDialogFragment(), OnClickListener {
             builder.setNeutralButton(R.string.action_clear, this)
         }
         builder.setNegativeButton(android.R.string.cancel, null)
-        builder.setView(R.layout.dialog_edit_user_nickname)
+        
+        val binding = DialogEditUserNicknameBinding.inflate(layoutInflater)
+        this.binding = binding
+        if (!nick.isNullOrEmpty()) {
+            binding.editName.setText(nick)
+        }
+        
+        builder.setView(binding.root)
         val dialog = builder.create()
         dialog.onShow { it.applyTheme() }
         return dialog
@@ -88,6 +97,11 @@ class SetUserNicknameDialogFragment : BaseDialogFragment(), OnClickListener {
             f.show(fm, FRAGMENT_TAG)
             return f
         }
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
 }

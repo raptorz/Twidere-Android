@@ -23,7 +23,7 @@ import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.list_item_draft.view.*
+import org.mariotaku.twidere.databinding.ListItemDraftBinding
 import org.mariotaku.ktextension.mapToArray
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
@@ -35,12 +35,14 @@ import org.mariotaku.twidere.model.draft.UpdateStatusActionExtras
 import org.mariotaku.twidere.util.DataStoreUtils
 import org.mariotaku.twidere.util.Utils
 
-class DraftViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class DraftViewHolder private constructor(
+    private val binding: ListItemDraftBinding
+) : RecyclerView.ViewHolder(binding.root) {
 
-    internal val contentView = itemView.content
-    internal val textView = itemView.text
-    internal val timeView = itemView.time
-    internal val mediaPreviewContainer = itemView.mediaPreviewContainer
+    internal val contentView = binding.content
+    internal val textView = binding.text
+    internal val timeView = binding.time
+    internal val mediaPreviewContainer = binding.mediaPreviewContainer
 
     fun display(context: Context, requestManager: RequestManager, draft: Draft) {
         val accountKeys = draft.account_keys
@@ -101,10 +103,17 @@ class DraftViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         timeView.textSize = textSize * 0.75f
     }
 
+    @Deprecated("Use create() factory method instead", ReplaceWith("DraftViewHolder.create(view)"))
+    constructor(view: View) : this(ListItemDraftBinding.bind(view))
+
     companion object {
 
         const val layoutResource = R.layout.list_item_draft
         const val layoutResourceClickable = R.layout.list_item_draft_clickable
+        
+        fun create(view: View): DraftViewHolder {
+            return DraftViewHolder(ListItemDraftBinding.bind(view))
+        }
 
     }
 

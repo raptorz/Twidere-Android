@@ -32,25 +32,25 @@ import android.text.style.StyleSpan
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.Window
-import kotlinx.android.synthetic.main.activity_request_permissions.*
-import kotlinx.android.synthetic.main.activity_request_permissions.view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.*
+import org.mariotaku.twidere.databinding.ActivityRequestPermissionsBinding
 import org.mariotaku.twidere.util.HtmlEscapeHelper
 import org.mariotaku.twidere.util.PermissionsManager
 
 class RequestPermissionsActivity : BaseActivity(), OnClickListener {
 
+    private lateinit var binding: ActivityRequestPermissionsBinding
     private var permissions: Array<String>? = null
 
     override fun onClick(view: View) {
-        when (view) {
-            buttonsContainer.accept -> {
+        when (view.id) {
+            R.id.accept -> {
                 permissionsManager.accept(callingPackage, permissions)
                 setResult(Activity.RESULT_OK)
                 finish()
             }
-            buttonsContainer.deny -> {
+            R.id.deny -> {
                 setResult(Activity.RESULT_CANCELED)
                 finish()
             }
@@ -60,9 +60,10 @@ class RequestPermissionsActivity : BaseActivity(), OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_request_permissions)
-        buttonsContainer.accept.setOnClickListener(this)
-        buttonsContainer.deny.setOnClickListener(this)
+        binding = ActivityRequestPermissionsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.accept.setOnClickListener(this)
+        binding.deny.setOnClickListener(this)
         val caller = callingPackage
         if (caller == null) {
             setResult(Activity.RESULT_CANCELED)
@@ -99,11 +100,11 @@ class RequestPermissionsActivity : BaseActivity(), OnClickListener {
                 finish()
                 return
             }
-            iconView.setImageDrawable(info.loadIcon(pm))
-            nameView.text = info.loadLabel(pm)
+            binding.iconView.setImageDrawable(info.loadIcon(pm))
+            binding.nameView.text = info.loadLabel(pm)
             val desc = info.loadDescription(pm)
-            descriptionView.text = desc
-            descriptionView.visibility = if (isEmpty(desc)) View.GONE else View.VISIBLE
+            binding.descriptionView.text = desc
+            binding.descriptionView.visibility = if (isEmpty(desc)) View.GONE else View.VISIBLE
             val permissions = PermissionsManager.parsePermissions(meta.getString(METADATA_KEY_EXTENSION_PERMISSIONS))
             this.permissions = permissions
             val builder = SpannableStringBuilder()
@@ -128,7 +129,7 @@ class RequestPermissionsActivity : BaseActivity(), OnClickListener {
             } else {
                 appendPermission(builder, getString(R.string.permission_description_none), false)
             }
-            messageView.text = builder
+            binding.messageView.text = builder
         } catch (e: NameNotFoundException) {
             setResult(Activity.RESULT_CANCELED)
             finish()

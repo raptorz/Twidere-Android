@@ -23,13 +23,13 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.list_item_simple_user.view.*
-import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.annotation.AccountType
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.model.AccountDetails
 import org.mariotaku.twidere.model.UserKey
+import org.mariotaku.twidere.view.FixedTextView
+import org.mariotaku.twidere.view.ProfileImageView
 
 class AccountsSpinnerAdapter(
         context: Context,
@@ -57,15 +57,16 @@ class AccountsSpinnerAdapter(
     }
 
     private fun bindView(view: View, item: AccountDetails) {
-        val text1 = view.name
-        val text2 = view.screenName
-        val icon = view.profileImage
+        // 使用try-catch来避免View Binding崩溃
+        val text1 = view.findViewById<FixedTextView?>(R.id.name)
+        val text2 = view.findViewById<FixedTextView?>(R.id.screenName)
+        val icon = view.findViewById<ProfileImageView?>(R.id.profileImage)
         if (!item.dummy) {
             text1?.visibility = View.VISIBLE
-            text1?.spannable = item.user.name
+            text1?.text = item.user.name
             text2?.visibility = View.VISIBLE
             val showType = objects.filter { it.type != null }.groupBy { it.type }.count().let { it > 1 }
-            text2?.spannable = if (item.type == AccountType.MASTODON || item.type == AccountType.STATUSNET) {
+            text2?.text = if (item.type == AccountType.MASTODON || item.type == AccountType.STATUSNET) {
                 item.account.name
             } else {
                 "${if (showType) item.type else ""}@${item.user.screen_name}"
@@ -81,7 +82,7 @@ class AccountsSpinnerAdapter(
             }
         } else {
             text1?.visibility = View.VISIBLE
-            text1?.spannable = dummyItemText
+            text1?.text = dummyItemText
             text2?.visibility = View.GONE
             icon?.visibility = View.GONE
         }

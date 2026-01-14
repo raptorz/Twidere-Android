@@ -238,19 +238,15 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         mainTabs.setTabDisplayOption(tabDisplayOptionInt)
         mainTabs.setTabExpandEnabled(TabPagerIndicator.DisplayOption.LABEL !in tabDisplayOptionInt)
         mainTabs.setDisplayBadge(preferences[unreadCountKey])
-        mainTabs.updateAppearance()
+         mainTabs.updateAppearance()
 
-        if (preferences[drawerToggleKey]) {
-            drawerToggleButton.visibility = View.VISIBLE
-        } else {
-            drawerToggleButton.visibility = View.GONE
-        }
+         drawerToggleButton.visibility = View.VISIBLE
 
-        if (preferences[fabVisibleKey]) {
-            actionsButton.visibility = View.VISIBLE
-        } else {
-            actionsButton.visibility = View.GONE
-        }
+         if (preferences[fabVisibleKey]) {
+             actionsButton.visibility = View.VISIBLE
+         } else {
+             actionsButton.visibility = View.GONE
+         }
         actionsButtonBottomMargin = (actionsButton.layoutParams as MarginLayoutParams).bottomMargin
 
         homeContent.addOnLayoutChangeListener { _, _, top, _, _, _, oldTop, _, _ ->

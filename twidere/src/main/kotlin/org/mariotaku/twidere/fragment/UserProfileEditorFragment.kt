@@ -35,7 +35,6 @@ import android.view.View.OnClickListener
 import android.widget.Toast
 import androidx.loader.app.LoaderManager
 import com.twitter.twittertext.Validator
-import kotlinx.android.synthetic.main.fragment_user_profile_editor.*
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.ui.promiseOnUi
 import org.mariotaku.abstask.library.AbstractTask
@@ -48,6 +47,7 @@ import org.mariotaku.microblog.library.mastodon.model.AccountUpdate
 import org.mariotaku.microblog.library.twitter.model.ProfileUpdate
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.*
+import org.mariotaku.twidere.databinding.FragmentUserProfileEditorBinding
 import org.mariotaku.twidere.activity.ColorPickerDialogActivity
 import org.mariotaku.twidere.activity.ThemedMediaPickerActivity
 import org.mariotaku.twidere.annotation.AccountType
@@ -70,6 +70,7 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
         OnClickListener, LoaderCallbacks<SingleResponse<ParcelableUser>>,
         KeyboardShortcutsHandler.TakeAllKeyboardShortcut {
 
+    private var binding: FragmentUserProfileEditorBinding? = null
     private var currentTask: AbstractTask<*, *, UserProfileEditorFragment>? = null
     private val accountKey: UserKey
         get() = arguments?.getParcelable(EXTRA_ACCOUNT_KEY)!!
@@ -130,8 +131,8 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<SingleResponse<ParcelableUser>> {
-        progressContainer.visibility = View.VISIBLE
-        editProfileContent.visibility = View.GONE
+        binding?.progressContainer?.visibility = View.VISIBLE
+        binding?.editProfileContent?.visibility = View.GONE
         return ParcelableUserLoader(requireActivity(), accountKey, accountKey, null, arguments,
             omitIntentExtra = false,
             loadFromCache = false
@@ -158,12 +159,12 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.save -> {
-                val name = ParseUtils.parseString(editName.text)
-                val url = ParseUtils.parseString(editUrl.text)
-                val location = ParseUtils.parseString(editLocation.text)
-                val description = ParseUtils.parseString(editDescription.text)
-                val linkColor = linkColor.color
-                val backgroundColor = backgroundColor.color
+                val name = ParseUtils.parseString(binding?.editName?.text)
+                val url = ParseUtils.parseString(binding?.editUrl?.text)
+                val location = ParseUtils.parseString(binding?.editLocation?.text)
+                val description = ParseUtils.parseString(binding?.editDescription?.text)
+                val linkColor = binding?.linkColor?.color ?: 0
+                val backgroundColor = binding?.backgroundColor?.color ?: 0
                 val task = UpdateProfileTaskInternal(this, accountKey, user, name, url, location,
                         description, linkColor, backgroundColor)
                 TaskStarter.execute(task)
@@ -185,28 +186,28 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
 
         val lengthChecker = TwitterValidatorMETLengthChecker(Validator())
 
-        editDescription.setLengthChecker(lengthChecker)
+        binding?.editDescription?.setLengthChecker(lengthChecker)
 
-        profileImage.setOnClickListener(this)
-        profileBanner.setOnClickListener(this)
-        profileBackground.setOnClickListener(this)
+        binding?.profileImage?.setOnClickListener(this)
+        binding?.profileBanner?.setOnClickListener(this)
+        binding?.profileBackground?.setOnClickListener(this)
 
-        editProfileImage.setOnClickListener(this)
-        editProfileBanner.setOnClickListener(this)
-        editProfileBackground.setOnClickListener(this)
+        binding?.editProfileImage?.setOnClickListener(this)
+        binding?.editProfileBanner?.setOnClickListener(this)
+        binding?.editProfileBackground?.setOnClickListener(this)
 
-        setLinkColor.setOnClickListener(this)
-        setBackgroundColor.setOnClickListener(this)
+        binding?.setLinkColor?.setOnClickListener(this)
+        binding?.setBackgroundColor?.setOnClickListener(this)
 
         val savedUser = savedInstanceState?.getParcelable<ParcelableUser?>(EXTRA_USER)
         val savedAccount = savedInstanceState?.getParcelable<AccountDetails?>(EXTRA_ACCOUNT)
         if (savedInstanceState != null && savedUser != null && savedAccount != null) {
             displayUser(savedUser, savedAccount)
-            editName.setText(savedInstanceState.getString(EXTRA_NAME, savedUser.name))
-            editLocation.setText(savedInstanceState.getString(EXTRA_LOCATION, savedUser.location))
-            editDescription.setText(savedInstanceState.getString(EXTRA_DESCRIPTION,
+            binding?.editName?.setText(savedInstanceState.getString(EXTRA_NAME, savedUser.name))
+            binding?.editLocation?.setText(savedInstanceState.getString(EXTRA_LOCATION, savedUser.location))
+            binding?.editDescription?.setText(savedInstanceState.getString(EXTRA_DESCRIPTION,
                     ParcelableUserUtils.getExpandedDescription(savedUser)))
-            editUrl.setText(savedInstanceState.getString(EXTRA_URL, savedUser.url_expanded))
+            binding?.editUrl?.setText(savedInstanceState.getString(EXTRA_URL, savedUser.url_expanded))
         } else {
             getUserInfo()
         }
@@ -216,17 +217,19 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
         super.onSaveInstanceState(outState)
         outState.putParcelable(EXTRA_USER, user)
         outState.putParcelable(EXTRA_ACCOUNT, account)
-        outState.putString(EXTRA_NAME, ParseUtils.parseString(editName.text))
-        outState.putString(EXTRA_DESCRIPTION, ParseUtils.parseString(editDescription.text))
-        outState.putString(EXTRA_LOCATION, ParseUtils.parseString(editLocation.text))
-        outState.putString(EXTRA_URL, ParseUtils.parseString(editUrl.text))
+        outState.putString(EXTRA_NAME, ParseUtils.parseString(binding?.editName?.text))
+        outState.putString(EXTRA_DESCRIPTION, ParseUtils.parseString(binding?.editDescription?.text))
+        outState.putString(EXTRA_LOCATION, ParseUtils.parseString(binding?.editLocation?.text))
+        outState.putString(EXTRA_URL, ParseUtils.parseString(binding?.editUrl?.text))
     }
 
     override fun onSizeChanged(view: View, w: Int, h: Int, oldw: Int, oldh: Int) {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_user_profile_editor, container, false)
+        val binding = FragmentUserProfileEditorBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -257,12 +260,12 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
             }
             REQUEST_PICK_LINK_COLOR -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    linkColor.color = data.getIntExtra(EXTRA_COLOR, 0)
+                    binding?.linkColor?.color = data.getIntExtra(EXTRA_COLOR, 0)
                 }
             }
             REQUEST_PICK_BACKGROUND_COLOR -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    backgroundColor.color = data.getIntExtra(EXTRA_COLOR, 0)
+                    binding?.backgroundColor?.color = data.getIntExtra(EXTRA_COLOR, 0)
                 }
             }
         }
@@ -282,20 +285,19 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
         this.user = user
         this.account = account
         if (user != null && account != null) {
-            progressContainer.visibility = View.GONE
-            editProfileContent.visibility = View.VISIBLE
-            editName.setText(user.name)
-            editDescription.setText(ParcelableUserUtils.getExpandedDescription(user))
-            editLocation.setText(user.location)
-            editUrl.setText(if (isEmpty(user.url_expanded)) user.url else user.url_expanded)
+            binding?.progressContainer?.visibility = View.GONE
+            binding?.editProfileContent?.visibility = View.VISIBLE
+            binding?.editName?.setText(user.name)
+            binding?.editDescription?.setText(ParcelableUserUtils.getExpandedDescription(user))
+            binding?.editLocation?.setText(user.location)
+            binding?.editUrl?.setText(if (isEmpty(user.url_expanded)) user.url else user.url_expanded)
 
-            requestManager.loadProfileImage(context, user, 0).into(profileImage)
-            requestManager.loadProfileBanner(context, user, resources.displayMetrics.widthPixels)
-                    .into(profileBanner)
-            requestManager.load(user.profile_background_url).into(profileBackground)
+            binding?.profileImage?.let { requestManager.loadProfileImage(context, user, 0).into(it) }
+            binding?.profileBanner?.let { requestManager.loadProfileBanner(context, user, resources.displayMetrics.widthPixels).into(it) }
+            binding?.profileBackground?.let { requestManager.load(user.profile_background_url).into(it) }
 
-            linkColor.color = user.link_color
-            backgroundColor.color = user.background_color
+            binding?.linkColor?.color = user.link_color
+            binding?.backgroundColor?.color = user.background_color
 
             var canEditUrl = false
             var canEditLocation = false
@@ -324,15 +326,15 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
                     canEditBackgroundColor = true
                 }
             }
-            editProfileBanner.visibility = if (canEditBanner) View.VISIBLE else View.GONE
-            editProfileBackground.visibility = if (canEditBackground) View.VISIBLE else View.GONE
-            editUrl.visibility = if (canEditUrl) View.VISIBLE else View.GONE
-            editLocation.visibility = if (canEditLocation) View.VISIBLE else View.GONE
-            setLinkColor.visibility = if (canEditLinkColor) View.VISIBLE else View.GONE
-            setBackgroundColor.visibility = if (canEditBackgroundColor) View.VISIBLE else View.GONE
+            binding?.editProfileBanner?.visibility = if (canEditBanner) View.VISIBLE else View.GONE
+            binding?.editProfileBackground?.visibility = if (canEditBackground) View.VISIBLE else View.GONE
+            binding?.editUrl?.visibility = if (canEditUrl) View.VISIBLE else View.GONE
+            binding?.editLocation?.visibility = if (canEditLocation) View.VISIBLE else View.GONE
+            binding?.setLinkColor?.visibility = if (canEditLinkColor) View.VISIBLE else View.GONE
+            binding?.setBackgroundColor?.visibility = if (canEditBackgroundColor) View.VISIBLE else View.GONE
         } else {
-            progressContainer.visibility = View.GONE
-            editProfileContent.visibility = View.GONE
+            binding?.progressContainer?.visibility = View.GONE
+            binding?.editProfileContent?.visibility = View.GONE
         }
     }
 
@@ -412,9 +414,9 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
             } and callback.executeAfterFragmentResumed { fragment ->
                 fragment.childFragmentManager.dismissDialogFragment(DIALOG_FRAGMENT_TAG)
                 fragment.activity?.finish()
-            }
+    }
 
-        }
+}
 
         override fun beforeExecute() {
             super.beforeExecute()
@@ -559,6 +561,11 @@ class UserProfileEditorFragment : BaseFragment(), OnSizeChangedListener,
             callback?.setUpdateState(true)
         }
 
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {

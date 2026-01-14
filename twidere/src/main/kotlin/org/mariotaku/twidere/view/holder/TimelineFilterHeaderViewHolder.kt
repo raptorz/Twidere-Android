@@ -21,31 +21,40 @@ package org.mariotaku.twidere.view.holder
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
-import kotlinx.android.synthetic.main.header_user_timeline_filter.view.*
+import android.view.ViewGroup
+import android.view.LayoutInflater
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.iface.IStatusesAdapter
+import org.mariotaku.twidere.databinding.HeaderUserTimelineFilterBinding
 import org.mariotaku.twidere.model.timeline.TimelineFilter
 
 /**
  * Created by mariotaku on 2017/3/31.
  */
 
-class TimelineFilterHeaderViewHolder(val adapter: IStatusesAdapter<*>, itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-    private val filterLabel = itemView.filterLabel
-    private val filterButton = itemView.filterButton
+class TimelineFilterHeaderViewHolder private constructor(
+    private val binding: HeaderUserTimelineFilterBinding,
+    val adapter: IStatusesAdapter<*>
+) : RecyclerView.ViewHolder(binding.root) {
 
     init {
-        filterButton.setOnClickListener {
+        binding.filterButton.setOnClickListener {
             adapter.statusClickListener?.onFilterClick(this)
         }
     }
 
     companion object {
         const val layoutResource = R.layout.header_user_timeline_filter
+
+        fun create(parent: ViewGroup, adapter: IStatusesAdapter<*>): TimelineFilterHeaderViewHolder {
+            val binding = HeaderUserTimelineFilterBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return TimelineFilterHeaderViewHolder(binding, adapter)
+        }
     }
 
     fun display(filter: TimelineFilter) {
-        filterLabel.text = filter.getSummary(itemView.context)
+        binding.filterLabel.text = filter.getSummary(itemView.context)
     }
 }

@@ -29,11 +29,11 @@ import android.view.View
 import android.widget.AdapterView
 import com.bumptech.glide.RequestManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import org.mariotaku.microblog.library.twitter.model.ResponseList
 import org.mariotaku.microblog.library.twitter.model.SavedSearch
 import org.mariotaku.twidere.adapter.SavedSearchesAdapter
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_ACCOUNT_KEY
+import org.mariotaku.twidere.databinding.FragmentContentListviewBinding
 import org.mariotaku.twidere.loader.SavedSearchesLoader
 import org.mariotaku.twidere.model.UserKey
 import org.mariotaku.twidere.model.event.SavedSearchDestroyedEvent
@@ -43,6 +43,8 @@ import java.util.*
 class SavedSearchesListFragment : AbsContentListViewFragment<SavedSearchesAdapter>(),
         LoaderCallbacks<ResponseList<SavedSearch>?>, AdapterView.OnItemClickListener,
         AdapterView.OnItemLongClickListener {
+
+    private var binding: FragmentContentListviewBinding? = null
 
     override var refreshing: Boolean
         get() = LoaderManager.getInstance(this).hasRunningLoadersSafe()
@@ -55,8 +57,8 @@ class SavedSearchesListFragment : AbsContentListViewFragment<SavedSearchesAdapte
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        listView.onItemClickListener = this
-        listView.onItemLongClickListener = this
+        binding?.listView?.onItemClickListener = this
+        binding?.listView?.onItemLongClickListener = this
         LoaderManager.getInstance(this).initLoader(0, null, this)
         showProgress()
     }

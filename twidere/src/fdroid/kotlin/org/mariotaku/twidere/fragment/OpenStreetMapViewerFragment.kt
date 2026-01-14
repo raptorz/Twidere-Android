@@ -25,12 +25,12 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.core.content.res.ResourcesCompat
 import android.view.*
-import kotlinx.android.synthetic.fdroid.activity_osm_viewer.*
 import org.mariotaku.ktextension.preferExternalCacheDir
 import org.mariotaku.twidere.Constants
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_LATITUDE
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_LONGITUDE
+import org.mariotaku.twidere.databinding.ActivityOsmViewerBinding
 import org.mariotaku.twidere.util.DebugLog
 import org.osmdroid.api.IMapView
 import org.osmdroid.config.Configuration
@@ -43,8 +43,20 @@ import java.util.*
 
 class OpenStreetMapViewerFragment : BaseFragment(), Constants {
 
+    private var binding: ActivityOsmViewerBinding? = null
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val binding = ActivityOsmViewerBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -58,24 +70,22 @@ class OpenStreetMapViewerFragment : BaseFragment(), Constants {
         }
         this.latitude = latitude
         this.longitude = longitude
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-        mapView.setBuiltInZoomControls(true)
-        mapView.isTilesScaledToDpi = true
+        binding?.mapView?.setTileSource(TileSourceFactory.MAPNIK)
+        binding?.mapView?.setMultiTouchControls(true)
+        binding?.mapView?.setBuiltInZoomControls(true)
+        binding?.mapView?.isTilesScaledToDpi = true
         val gp = GeoPoint(latitude, longitude)
         val d = ResourcesCompat.getDrawable(resources, R.drawable.ic_map_marker, null)!!
         val markers = Itemization(d)
         val overlayItem = OverlayItem("", "", gp)
         markers.addOverlay(overlayItem)
-        mapView.overlays.add(markers)
-        val mc = mapView.controller
-        mc.setZoom(12)
-        mc.setCenter(gp)
+        binding?.mapView?.overlays?.add(markers)
+        val mc = binding?.mapView?.controller
+        mc?.setZoom(12)
+        mc?.setCenter(gp)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.activity_osm_viewer, container, false)
-    }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -107,8 +117,8 @@ class OpenStreetMapViewerFragment : BaseFragment(), Constants {
 
     private fun moveToCenter(lat: Double, lng: Double) {
         val gp = GeoPoint(lat, lng)
-        val mc = mapView.controller
-        mc.animateTo(gp)
+        val mc = binding?.mapView?.controller
+        mc?.animateTo(gp)
     }
 
     internal class Itemization(defaultMarker: Drawable) : ItemizedOverlay<OverlayItem>(defaultMarker.apply {

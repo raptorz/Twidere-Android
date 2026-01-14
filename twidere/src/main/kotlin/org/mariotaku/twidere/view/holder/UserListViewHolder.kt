@@ -22,7 +22,7 @@ package org.mariotaku.twidere.view.holder
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import android.view.View
 import android.widget.TextView
-import kotlinx.android.synthetic.main.list_item_user_list.view.*
+import org.mariotaku.twidere.databinding.ListItemUserListBinding
 import org.mariotaku.ktextension.hideIfEmpty
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
@@ -37,27 +37,36 @@ import java.util.*
 /**
  * Created by mariotaku on 15/4/29.
  */
-class UserListViewHolder(
-        itemView: View,
-        private val adapter: IUserListsAdapter<*>
-) : ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
+class UserListViewHolder private constructor(
+    private val binding: ListItemUserListBinding,
+    private val adapter: IUserListsAdapter<*>
+) : ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
 
-    private val itemContent: ColorLabelRelativeLayout = itemView.itemContent
-    private val profileImageView: ProfileImageView = itemView.profileImage
-    private val nameView: TextView = itemView.name
-    private val createdByView: TextView = itemView.createdBy
-    private val descriptionView: TextView = itemView.description
-    private val membersCountView: TextView = itemView.membersCount
-    private val subscribersCountView: TextView = itemView.subscribersCount
+    private val itemContent: ColorLabelRelativeLayout = binding.itemContent
+    private val profileImageView: ProfileImageView = binding.profileImage
+    private val nameView: TextView = binding.name
+    private val createdByView: TextView = binding.createdBy
+    private val descriptionView: TextView = binding.description
+    private val membersCountView: TextView = binding.membersCount
+    private val subscribersCountView: TextView = binding.subscribersCount
 
     private var userListClickListener: IUserListsAdapter.UserListClickListener? = null
+
+    @Deprecated("Use create() factory method instead", ReplaceWith("UserListViewHolder.create(itemView, adapter)"))
+    constructor(itemView: View, adapter: IUserListsAdapter<*>) : this(ListItemUserListBinding.bind(itemView), adapter)
+
+    companion object {
+        fun create(itemView: View, adapter: IUserListsAdapter<*>): UserListViewHolder {
+            return UserListViewHolder(ListItemUserListBinding.bind(itemView), adapter)
+        }
+    }
 
     init {
         profileImageView.style = adapter.profileImageStyle
     }
 
     fun display(userList: ParcelableUserList) {
-        val context = itemView.context
+        val context = binding.root.context
         val manager = adapter.userColorNameManager
 
         itemContent.drawStart(manager.getUserColor(userList.user_key))

@@ -60,6 +60,7 @@ object StatusCodeMessageUtils {
 
         TWITTER_ERROR_CODE_ICONS.put(136, R.drawable.ic_info_error_blocked)
 
+        HTTP_STATUS_CODE_MESSAGES.put(400, R.string.error_http_400)
         HTTP_STATUS_CODE_MESSAGES.put(407, R.string.error_http_407)
     }
 

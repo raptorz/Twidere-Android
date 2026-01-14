@@ -24,8 +24,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_stub.*
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.FragmentStubBinding
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_TAB_POSITION
 
 /**
@@ -33,12 +33,21 @@ import org.mariotaku.twidere.constant.IntentConstants.EXTRA_TAB_POSITION
  */
 class StubFragment : Fragment() {
 
+    private var binding: FragmentStubBinding? = null
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        text.text = arguments?.get(EXTRA_TAB_POSITION).toString()
+        binding?.text?.text = arguments?.get(EXTRA_TAB_POSITION).toString()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_stub, container, false)
+        val binding = FragmentStubBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 }

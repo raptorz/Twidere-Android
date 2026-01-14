@@ -24,12 +24,12 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnLongClickListener
 import android.widget.RelativeLayout
-import kotlinx.android.synthetic.main.list_item_user.view.*
 import org.mariotaku.ktextension.hideIfEmpty
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.iface.IUsersAdapter
 import org.mariotaku.twidere.adapter.iface.IUsersAdapter.*
+import org.mariotaku.twidere.databinding.ListItemUserBinding
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.hasSameHost
 import org.mariotaku.twidere.model.ParcelableUser
@@ -37,39 +37,57 @@ import org.mariotaku.twidere.util.Utils
 import org.mariotaku.twidere.util.Utils.getUserTypeIconRes
 import java.util.*
 
-class UserViewHolder(
-        itemView: View,
+class UserViewHolder private constructor(
+        private val binding: ListItemUserBinding,
         private val adapter: IUsersAdapter<*>,
         private val simple: Boolean = false,
         private val showFollow: Boolean = false
-) : ViewHolder(itemView), OnClickListener, OnLongClickListener {
+) : ViewHolder(binding.root), OnClickListener, OnLongClickListener {
 
-    private val itemContent = itemView.itemContent
-    private val profileImageView = itemView.profileImage
-    private val profileTypeView = itemView.profileType
-    private val nameView = itemView.name
-    private val externalIndicator = itemView.externalIndicator
-    private val descriptionView = itemView.description
-    private val locationView = itemView.location
-    private val urlView = itemView.url
-    private val statusesCountView = itemView.statusesCount
-    private val followersCountView = itemView.followersCount
-    private val friendsCountView = itemView.friendsCount
+    private val itemContent = binding.itemContent
+    private val profileImageView = binding.profileImage
+    private val profileTypeView = binding.profileType
+    private val nameView = binding.name
+    private val externalIndicator = binding.externalIndicator
+    private val descriptionView = binding.description
+    private val locationView = binding.location
+    private val urlView = binding.url
+    private val statusesCountView = binding.statusesCount
+    private val followersCountView = binding.followersCount
+    private val friendsCountView = binding.friendsCount
 
-    private val acceptRequestButton = itemView.acceptRequest
-    private val denyRequestButton = itemView.denyRequest
-    private val unblockButton = itemView.unblock
-    private val unmuteButton = itemView.unmute
-    private val followButton = itemView.follow
-    private val actionsProgressContainer = itemView.actionsProgressContainer
-    private val actionsContainer = itemView.actionsContainer
-    private val processingRequestProgress = itemView.processingRequest
-    private val countsContainer = itemView.countsContainer
+    private val acceptRequestButton = binding.acceptRequest
+    private val denyRequestButton = binding.denyRequest
+    private val unblockButton = binding.unblock
+    private val unmuteButton = binding.unmute
+    private val followButton = binding.follow
+    private val actionsProgressContainer = binding.actionsProgressContainer
+    private val actionsContainer = binding.actionsContainer
+    private val processingRequestProgress = binding.processingRequest
+    private val countsContainer = binding.countsContainer
 
     private var userClickListener: UserClickListener? = null
     private var requestClickListener: RequestClickListener? = null
 
     private var friendshipClickListener: FriendshipClickListener? = null
+
+    constructor(
+            itemView: View,
+            adapter: IUsersAdapter<*>,
+            simple: Boolean = false,
+            showFollow: Boolean = false
+    ) : this(ListItemUserBinding.bind(itemView), adapter, simple, showFollow)
+
+    companion object {
+        fun create(
+                binding: ListItemUserBinding,
+                adapter: IUsersAdapter<*>,
+                simple: Boolean = false,
+                showFollow: Boolean = false
+        ): UserViewHolder {
+            return UserViewHolder(binding, adapter, simple, showFollow)
+        }
+    }
 
     init {
         if (simple) {
@@ -79,7 +97,7 @@ class UserViewHolder(
             urlView.visibility = View.GONE
             countsContainer.visibility = View.GONE
 
-            itemView.profileImageContainer.layoutParams.apply {
+            binding.profileImageContainer.layoutParams.apply {
                 (this as RelativeLayout.LayoutParams).clearVerticalRules()
                 this.addRule(RelativeLayout.CENTER_VERTICAL)
             }
@@ -95,7 +113,7 @@ class UserViewHolder(
     }
 
     fun display(user: ParcelableUser) {
-        val context = itemView.context
+        val context = binding.root.context
         val manager = adapter.userColorNameManager
         val twitter = adapter.twitterWrapper
 
@@ -250,7 +268,7 @@ class UserViewHolder(
 
     fun setUserClickListener(listener: UserClickListener?) {
         userClickListener = listener
-        (itemContent as View).setOnClickListener(this)
+        itemContent.setOnClickListener(this)
         itemContent.setOnLongClickListener(this)
     }
 

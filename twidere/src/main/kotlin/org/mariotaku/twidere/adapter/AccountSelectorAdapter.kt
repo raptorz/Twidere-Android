@@ -26,6 +26,7 @@ import com.bumptech.glide.RequestManager
 import org.mariotaku.kpreferences.get
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.profileImageStyleKey
+import org.mariotaku.twidere.databinding.AdapterItemDashboardAccountBinding
 import org.mariotaku.twidere.fragment.AccountsDashboardFragment
 import org.mariotaku.twidere.model.AccountDetails
 import org.mariotaku.twidere.view.holder.AccountProfileImageViewHolder
@@ -93,7 +94,8 @@ class AccountSelectorAdapter(
             }
             ITEM_VIEW_TYPE_ICON -> {
                 val view = inflater.inflate(AccountProfileImageViewHolder.layoutResource, container, false)
-                return AccountProfileImageViewHolder(this, view)
+                val binding = AdapterItemDashboardAccountBinding.bind(view)
+                return AccountProfileImageViewHolder(this, binding)
             }
         }
         throw UnsupportedOperationException()

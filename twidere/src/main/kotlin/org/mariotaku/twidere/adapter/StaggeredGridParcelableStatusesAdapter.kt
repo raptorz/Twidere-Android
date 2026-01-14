@@ -35,8 +35,7 @@ class StaggeredGridParcelableStatusesAdapter(
 ) : ParcelableStatusesAdapter(context, requestManager) {
 
     override fun onCreateStatusViewHolder(parent: ViewGroup): IStatusViewHolder {
-        val view = inflater.inflate(R.layout.adapter_item_media_status, parent, false)
-        val holder = MediaStatusViewHolder(this, view)
+        val holder = MediaStatusViewHolder.create(parent, this)
         holder.setOnClickListeners()
         holder.setupViewOptions()
         return holder

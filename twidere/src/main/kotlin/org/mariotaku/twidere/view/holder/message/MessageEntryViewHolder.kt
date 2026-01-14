@@ -20,11 +20,13 @@
 package org.mariotaku.twidere.view.holder.message
 
 import androidx.recyclerview.widget.RecyclerView
+import android.view.LayoutInflater
 import android.view.View
-import kotlinx.android.synthetic.main.list_item_message_entry.view.*
+import android.view.ViewGroup
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.MessagesEntriesAdapter
+import org.mariotaku.twidere.databinding.ListItemMessageEntryBinding
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.getSummaryText
 import org.mariotaku.twidere.extension.model.getTitle
@@ -37,82 +39,86 @@ import org.mariotaku.twidere.model.ParcelableMessageConversation.ConversationTyp
  * Created by mariotaku on 2017/2/9.
  */
 
-class MessageEntryViewHolder(itemView: View, val adapter: MessagesEntriesAdapter) : RecyclerView.ViewHolder(itemView) {
+class MessageEntryViewHolder private constructor(
+    private val binding: ListItemMessageEntryBinding,
+    val adapter: MessagesEntriesAdapter
+) : RecyclerView.ViewHolder(binding.root) {
 
-    private val content by lazy { itemView.content }
-    private val time by lazy { itemView.time }
-    private val name by lazy { itemView.name }
-    private val text by lazy { itemView.text }
-    private val profileImage by lazy { itemView.profileImage }
-    private val typeIndicator by lazy { itemView.typeIndicator }
-    private val stateIndicator by lazy { itemView.stateIndicator }
-    private val readIndicator by lazy { itemView.readIndicator }
-    private val unreadCount by lazy { itemView.unreadCount }
+    constructor(adapter: MessagesEntriesAdapter, itemView: View) : this(
+        ListItemMessageEntryBinding.bind(itemView), adapter
+    )
 
     init {
         val textSize = adapter.textSize
-        name.setPrimaryTextSize(textSize * 1.05f)
-        name.setSecondaryTextSize(textSize * 0.95f)
-        text.textSize = textSize
-        time.textSize = textSize * 0.85f
+        binding.name.setPrimaryTextSize(textSize * 1.05f)
+        binding.name.setSecondaryTextSize(textSize * 0.95f)
+        binding.text.textSize = textSize
+        binding.time.textSize = textSize * 0.85f
 
-        profileImage.style = adapter.profileImageStyle
+        binding.profileImage.style = adapter.profileImageStyle
 
-        itemView.setOnClickListener {
+        binding.root.setOnClickListener {
             adapter.listener?.onConversationClick(layoutPosition)
         }
-        itemView.setOnLongClickListener {
+        binding.root.setOnLongClickListener {
             adapter.listener?.onConversationLongClick(layoutPosition) ?: false
         }
-        profileImage.setOnClickListener {
+        binding.profileImage.setOnClickListener {
             adapter.listener?.onProfileImageClick(layoutPosition)
         }
     }
 
     fun display(conversation: ParcelableMessageConversation) {
         if (adapter.drawAccountColors) {
-            content.drawEnd(conversation.account_color)
+            binding.content.drawEnd(conversation.account_color)
         } else {
-            content.drawEnd()
+            binding.content.drawEnd()
         }
-        val (name, secondaryName) = conversation.getTitle(itemView.context,
+        val (name, secondaryName) = conversation.getTitle(binding.root.context,
                 adapter.userColorNameManager, adapter.nameFirst)
-        this.time.time = conversation.timestamp
-        this.name.name = name
-        this.name.screenName = secondaryName
-        this.name.updateText(adapter.bidiFormatter)
-        this.text.spannable = conversation.getSummaryText(itemView.context,
+        binding.time.time = conversation.timestamp
+        binding.name.name = name
+        binding.name.screenName = secondaryName
+        binding.name.updateText(adapter.bidiFormatter)
+        binding.text.spannable = conversation.getSummaryText(binding.root.context,
                 adapter.userColorNameManager, adapter.nameFirst)
         if (conversation.is_outgoing) {
-            readIndicator.visibility = View.VISIBLE
-            readIndicator.setImageResource(R.drawable.ic_message_type_outgoing)
+            binding.readIndicator.visibility = View.VISIBLE
+            binding.readIndicator.setImageResource(R.drawable.ic_message_type_outgoing)
         } else {
-            readIndicator.visibility = View.GONE
+            binding.readIndicator.visibility = View.GONE
         }
         if (conversation.conversation_type == ConversationType.ONE_TO_ONE) {
-            typeIndicator.visibility = View.GONE
+            binding.typeIndicator.visibility = View.GONE
         } else {
-            typeIndicator.visibility = View.VISIBLE
+            binding.typeIndicator.visibility = View.VISIBLE
         }
         if (conversation.notificationDisabled) {
-            stateIndicator.visibility = View.VISIBLE
-            stateIndicator.setImageResource(R.drawable.ic_message_type_speaker_muted)
+            binding.stateIndicator.visibility = View.VISIBLE
+            binding.stateIndicator.setImageResource(R.drawable.ic_message_type_speaker_muted)
         } else {
-            stateIndicator.visibility = View.GONE
+            binding.stateIndicator.visibility = View.GONE
         }
         adapter.requestManager.loadProfileImage(adapter.context, conversation,
-                adapter.profileImageStyle, profileImage.cornerRadius,
-                profileImage.cornerRadiusRatio).into(profileImage)
+                adapter.profileImageStyle, binding.profileImage.cornerRadius,
+                binding.profileImage.cornerRadiusRatio).into(binding.profileImage)
         if (conversation.unread_count > 0) {
-            unreadCount.visibility = View.VISIBLE
-            unreadCount.text = conversation.unread_count.toString()
+            binding.unreadCount.visibility = View.VISIBLE
+            binding.unreadCount.text = conversation.unread_count.toString()
         } else {
-            unreadCount.visibility = View.GONE
+            binding.unreadCount.visibility = View.GONE
         }
     }
 
     companion object {
         const val layoutResource = R.layout.list_item_message_entry
+
+        fun create(parent: ViewGroup, adapter: MessagesEntriesAdapter): MessageEntryViewHolder {
+            val binding = ListItemMessageEntryBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return MessageEntryViewHolder(binding, adapter)
+        }
     }
 
 }

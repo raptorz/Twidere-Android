@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- HTTP 400 - Bad Request -->
+    <string name="error_http_400">Bad Request</string>
+
     <!-- HTTP 407 - Proxy authentication required -->
     <string name="error_http_407">Proxy authentication required</string>
 

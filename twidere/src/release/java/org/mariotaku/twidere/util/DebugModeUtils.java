@@ -35,42 +35,7 @@ public class DebugModeUtils {
 
 
     public static void initForApplication(final Application application) {
-        if (isMainProcess(application)) {
-            Stetho.initialize(Stetho.newInitializerBuilder(application)
-                    .enableDumpapp(() -> new Stetho.DefaultDumperPluginsBuilder(application)
-                            .provide(new AccountsDumperPlugin(application))
-                            .finish())
-                    .enableWebKitInspector(() -> new Stetho.DefaultInspectorModulesBuilder(application)
-                            .runtimeRepl(new BshRuntimeReplFactoryBuilder(application).build())
-                            .finish())
-                    .build());
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                android.webkit.WebView.setWebContentsDebuggingEnabled(true);
-            }
-        }
-    }
-
-    private static boolean isMainProcess(final Application application) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            return application.getApplicationInfo().uid == android.os.Process.myUid();
-        }
-        return application.getPackageName().equals(getProcessName(application));
-    }
-
-    private static String getProcessName(final Application application) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            return android.app.Application.getProcessName();
-        }
-        int pid = android.os.Process.myPid();
-        android.app.ActivityManager am = (android.app.ActivityManager) application.getSystemService(android.content.Context.ACTIVITY_SERVICE);
-        if (am != null) {
-            for (android.app.ActivityManager.RunningAppProcessInfo processInfo : am.getRunningAppProcesses()) {
-                if (processInfo.pid == pid) {
-                    return processInfo.processName;
-                }
-            }
-        }
-        return null;
+        // No-op for release
     }
 
     public static void watchReferenceLeak(final Object object) {

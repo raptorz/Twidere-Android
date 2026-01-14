@@ -64,8 +64,7 @@ class MessagesEntriesAdapter(
         val inflater = LayoutInflater.from(parent.context)
         when (viewType) {
             ITEM_TYPE_MESSAGE_ENTRY -> {
-                val itemView = inflater.inflate(MessageEntryViewHolder.layoutResource, parent, false)
-                return MessageEntryViewHolder(itemView, this)
+                return MessageEntryViewHolder.create(parent, this)
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val itemView = inflater.inflate(LoadIndicatorViewHolder.layoutResource, parent, false)

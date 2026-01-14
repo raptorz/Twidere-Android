@@ -101,20 +101,17 @@ class MessagesConversationAdapter(
         val inflater = LayoutInflater.from(parent.context)
         when (viewType) {
             ITEM_TYPE_TEXT_MESSAGE -> {
-                val view = inflater.inflate(MessageViewHolder.layoutResource, parent, false)
-                val holder = MessageViewHolder(view, this)
+                val holder = MessageViewHolder.create(parent, this)
                 holder.setup()
                 return holder
             }
             ITEM_TYPE_STICKER_MESSAGE -> {
-                val view = inflater.inflate(StickerMessageViewHolder.layoutResource, parent, false)
-                val holder = StickerMessageViewHolder(view, this)
+                val holder = StickerMessageViewHolder.create(parent, this)
                 holder.setup()
                 return holder
             }
             ITEM_TYPE_NOTICE_MESSAGE -> {
-                val view = inflater.inflate(NoticeSummaryEventViewHolder.layoutResource, parent, false)
-                val holder = NoticeSummaryEventViewHolder(view, this)
+                val holder = NoticeSummaryEventViewHolder.create(parent, this)
                 holder.setup()
                 return holder
             }

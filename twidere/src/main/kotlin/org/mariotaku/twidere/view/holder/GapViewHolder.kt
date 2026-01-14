@@ -22,23 +22,20 @@ package org.mariotaku.twidere.view.holder
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.View.OnClickListener
-import kotlinx.android.synthetic.main.card_item_gap.view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.iface.IGapSupportedAdapter
+import org.mariotaku.twidere.databinding.CardItemGapBinding
 
 /**
  * Created by mariotaku on 14/12/3.
  */
 class GapViewHolder(
         private val adapter: IGapSupportedAdapter,
-        itemView: View
-) : RecyclerView.ViewHolder(itemView), OnClickListener {
-
-    private val gapText = itemView.gapText
-    private val gapProgress = itemView.gapProgress
+        private val binding: CardItemGapBinding
+) : RecyclerView.ViewHolder(binding.root), OnClickListener {
 
     init {
-        itemView.setOnClickListener(this)
+        binding.root.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
@@ -48,16 +45,34 @@ class GapViewHolder(
 
     fun display(showProgress: Boolean) {
         if (showProgress) {
-            gapText.visibility = View.INVISIBLE
-            gapProgress.visibility = View.VISIBLE
-            gapProgress.spin()
+            binding.gapText.visibility = View.INVISIBLE
+            binding.gapProgress.visibility = View.VISIBLE
+            binding.gapProgress.spin()
         } else {
-            gapText.visibility = View.VISIBLE
-            gapProgress.visibility = View.INVISIBLE
+            binding.gapText.visibility = View.VISIBLE
+            binding.gapProgress.visibility = View.INVISIBLE
         }
     }
 
     companion object {
         const val layoutResource = R.layout.card_item_gap
+        
+        fun create(adapter: IGapSupportedAdapter, parent: android.view.ViewGroup): GapViewHolder {
+            val binding = CardItemGapBinding.inflate(
+                android.view.LayoutInflater.from(parent.context), parent, false
+            )
+            return GapViewHolder(adapter, binding)
+        }
+        
+        fun create(adapter: IGapSupportedAdapter, view: View): GapViewHolder {
+            val binding = CardItemGapBinding.bind(view)
+            return GapViewHolder(adapter, binding)
+        }
+        
+        @Deprecated("Use create() method with View Binding", ReplaceWith("create(adapter, view)"))
+        fun fromView(itemView: View, adapter: IGapSupportedAdapter): GapViewHolder {
+            val binding = CardItemGapBinding.bind(itemView)
+            return GapViewHolder(adapter, binding)
+        }
     }
 }

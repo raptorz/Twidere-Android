@@ -193,19 +193,18 @@ class ParcelableActivitiesAdapter(
                 return holder
             }
             ITEM_VIEW_TYPE_TITLE_SUMMARY -> {
-                val view = inflater.inflate(R.layout.list_item_activity_summary_compact, parent, false)
-                val holder = ActivityTitleSummaryViewHolder(view, this)
+                val holder = ActivityTitleSummaryViewHolder.create(parent, this)
                 holder.setOnClickListeners()
                 holder.setupViewOptions()
                 return holder
             }
             ITEM_VIEW_TYPE_GAP -> {
                 val view = inflater.inflate(GapViewHolder.layoutResource, parent, false)
-                return GapViewHolder(this, view)
+                return GapViewHolder.create(this, view)
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent, false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
             ITEM_VIEW_TYPE_STUB -> {
                 val view = inflater.inflate(R.layout.list_item_two_line, parent, false)

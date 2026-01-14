@@ -17,7 +17,6 @@ import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_network_diagnostics.*
 import okhttp3.Dns
 import org.mariotaku.microblog.library.MicroBlog
 import org.mariotaku.microblog.library.mastodon.Mastodon
@@ -31,6 +30,7 @@ import org.mariotaku.twidere.Constants.DEFAULT_TWITTER_API_URL_FORMAT
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.annotation.AccountType
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.*
+import org.mariotaku.twidere.databinding.FragmentNetworkDiagnosticsBinding
 import org.mariotaku.twidere.extension.model.getEndpoint
 import org.mariotaku.twidere.extension.model.newMicroBlogInstance
 import org.mariotaku.twidere.extension.restfu.headers
@@ -54,21 +54,33 @@ import java.util.*
  */
 class NetworkDiagnosticsFragment : BaseFragment() {
 
+    private var binding: FragmentNetworkDiagnosticsBinding? = null
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        startDiagnostics.setOnClickListener {
-            logText.text = null
-            DiagnosticsTask(this@NetworkDiagnosticsFragment).execute()
+        binding?.let { binding ->
+            binding.startDiagnostics.setOnClickListener {
+                binding.logText.text = null
+                DiagnosticsTask(this@NetworkDiagnosticsFragment).execute()
+            }
+            binding.logText.movementMethod = ScrollingMovementMethod.getInstance()
         }
-        logText.movementMethod = ScrollingMovementMethod.getInstance()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_network_diagnostics, container, false)
+        val binding = FragmentNetworkDiagnosticsBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     private fun appendMessage(message: LogText) {
         val activity = activity ?: return
+        val binding = binding ?: return
         val coloredText = SpannableString.valueOf(message.message)
         when (message.state) {
             LogText.State.OK -> {
@@ -89,8 +101,8 @@ class NetworkDiagnosticsFragment : BaseFragment() {
             LogText.State.DEFAULT -> {
             }
         }
-        logText.append(coloredText)
-        Selection.setSelection(logText.editableText, logText.length())
+        binding.logText.append(coloredText)
+        Selection.setSelection(binding.logText.editableText, binding.logText.length())
     }
 
     internal class DiagnosticsTask(fragment: NetworkDiagnosticsFragment) : AsyncTask<Any, LogText, Unit>() {
@@ -309,19 +321,21 @@ class NetworkDiagnosticsFragment : BaseFragment() {
     }
 
     private fun diagStart() {
-        startDiagnostics.setText(R.string.message_please_wait)
-        startDiagnostics.isEnabled = false
+        binding?.startDiagnostics?.setText(R.string.message_please_wait)
+        binding?.startDiagnostics?.isEnabled = false
     }
 
     private fun logReady() {
-        startDiagnostics.setText(R.string.action_send)
-        startDiagnostics.isEnabled = true
-        startDiagnostics.setOnClickListener {
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.type = "text/plain"
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Twidere Network Diagnostics")
-            intent.putExtra(Intent.EXTRA_TEXT, logText.text)
-            startActivity(Intent.createChooser(intent, getString(R.string.action_send)))
+        binding?.let { binding ->
+            binding.startDiagnostics.setText(R.string.action_send)
+            binding.startDiagnostics.isEnabled = true
+            binding.startDiagnostics.setOnClickListener {
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "text/plain"
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Twidere Network Diagnostics")
+                intent.putExtra(Intent.EXTRA_TEXT, binding.logText.text)
+                startActivity(Intent.createChooser(intent, getString(R.string.action_send)))
+            }
         }
     }
 

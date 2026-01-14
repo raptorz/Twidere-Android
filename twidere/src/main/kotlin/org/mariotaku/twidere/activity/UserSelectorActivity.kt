@@ -29,8 +29,8 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
-import kotlinx.android.synthetic.main.activity_user_selector.*
-import kotlinx.android.synthetic.main.layout_list_with_empty_view.*
+import android.widget.TextView
+import org.mariotaku.twidere.view.IconActionView
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.isNotNullOrEmpty
 import org.mariotaku.ktextension.set
@@ -38,6 +38,7 @@ import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.SimpleParcelableUsersAdapter
 import org.mariotaku.twidere.app.TwidereApplication
 import org.mariotaku.twidere.constant.IntentConstants.*
+import org.mariotaku.twidere.databinding.ActivityUserSelectorBinding
 import org.mariotaku.twidere.loader.CacheUserSearchLoader
 import org.mariotaku.twidere.model.ParcelableUser
 import org.mariotaku.twidere.model.UserKey
@@ -47,7 +48,15 @@ import org.mariotaku.twidere.util.view.SimpleTextWatcher
 
 class UserSelectorActivity : BaseActivity(), OnItemClickListener, LoaderManager.LoaderCallbacks<List<ParcelableUser>> {
 
+    private lateinit var binding: ActivityUserSelectorBinding
     private lateinit var adapter: SimpleParcelableUsersAdapter
+    
+    private lateinit var progressContainer: View
+    private lateinit var listContainer: View
+    private lateinit var listView: ListView
+    private lateinit var emptyView: View
+    private lateinit var emptyIcon: View
+    private lateinit var emptyText: View
 
     private val accountKey: UserKey?
         get() = intent.getParcelableExtra<UserKey>(EXTRA_ACCOUNT_KEY)
@@ -60,11 +69,20 @@ class UserSelectorActivity : BaseActivity(), OnItemClickListener, LoaderManager.
             finish()
             return
         }
-        setContentView(R.layout.activity_user_selector)
+        binding = ActivityUserSelectorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        // Initialize views from included layout
+        progressContainer = findViewById(R.id.progressContainer)
+        listContainer = findViewById(R.id.listContainer)
+        listView = findViewById(R.id.listView)
+        emptyView = findViewById(R.id.emptyView)
+        emptyIcon = findViewById(R.id.emptyIcon)
+        emptyText = findViewById(R.id.emptyText)
 
-        val enterHandler = EditTextEnterHandler.attach(editScreenName, object : EditTextEnterHandler.EnterListener {
+        val enterHandler = EditTextEnterHandler.attach(binding.editScreenName, object : EditTextEnterHandler.EnterListener {
             override fun onHitEnter(): Boolean {
-                val screenName = ParseUtils.parseString(editScreenName.text)
+                val screenName = ParseUtils.parseString(binding.editScreenName.text)
                 searchUser(accountKey, screenName, false)
                 return true
             }
@@ -81,13 +99,13 @@ class UserSelectorActivity : BaseActivity(), OnItemClickListener, LoaderManager.
             }
         })
 
-        screenNameConfirm.setOnClickListener {
-            val screenName = ParseUtils.parseString(editScreenName.text)
+        binding.screenNameConfirm.setOnClickListener {
+            val screenName = ParseUtils.parseString(binding.editScreenName.text)
             searchUser(accountKey, screenName, false)
         }
 
         if (savedInstanceState == null) {
-            editScreenName.setText(intent.getStringExtra(EXTRA_SCREEN_NAME))
+            binding.editScreenName.setText(intent.getStringExtra(EXTRA_SCREEN_NAME))
         }
         adapter = SimpleParcelableUsersAdapter(this, requestManager = requestManager)
         listView.adapter = adapter
@@ -170,8 +188,8 @@ class UserSelectorActivity : BaseActivity(), OnItemClickListener, LoaderManager.
         listContainer.visibility = View.VISIBLE
         emptyView.visibility = View.VISIBLE
         listView.visibility = View.GONE
-        emptyIcon.setImageResource(R.drawable.ic_info_search)
-        emptyText.text = getText(R.string.search_hint_users)
+        (emptyIcon as? IconActionView)?.setImageResource(R.drawable.ic_info_search)
+        (emptyText as? TextView)?.text = getText(R.string.search_hint_users)
     }
 
     private fun showNotFound() {
@@ -179,8 +197,8 @@ class UserSelectorActivity : BaseActivity(), OnItemClickListener, LoaderManager.
         listContainer.visibility = View.VISIBLE
         emptyView.visibility = View.VISIBLE
         listView.visibility = View.GONE
-        emptyIcon.setImageResource(R.drawable.ic_info_search)
-        emptyText.text = getText(R.string.search_hint_users)
+        (emptyIcon as? IconActionView)?.setImageResource(R.drawable.ic_info_search)
+        (emptyText as? TextView)?.text = getText(R.string.search_hint_users)
     }
 
     private fun showList() {

@@ -21,6 +21,7 @@ package org.mariotaku.twidere.util;
 
 import android.app.Application;
 import android.os.Build;
+import android.util.Log;
 import android.webkit.WebView;
 
 import com.facebook.stetho.Stetho;
@@ -62,7 +63,12 @@ public class DebugModeUtils {
                             .finish())
                     .build());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                WebView.setWebContentsDebuggingEnabled(true);
+                try {
+                    WebView.setWebContentsDebuggingEnabled(true);
+                } catch (RuntimeException e) {
+                    // Ignore WebView debugging errors in multi-process scenarios
+                    Log.w("DebugModeUtils", "Failed to enable WebView debugging", e);
+                }
             }
         }
     }

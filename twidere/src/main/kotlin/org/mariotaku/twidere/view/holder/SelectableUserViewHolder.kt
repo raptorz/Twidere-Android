@@ -22,22 +22,28 @@ package org.mariotaku.twidere.view.holder
 import android.view.View
 import android.widget.CompoundButton
 import org.mariotaku.twidere.adapter.SelectableUsersAdapter
+import org.mariotaku.twidere.databinding.ListItemSimpleUserBinding
 import org.mariotaku.twidere.model.ParcelableUser
 import org.mariotaku.twidere.util.ThemeUtils
 import org.mariotaku.twidere.util.support.ViewSupport
 
 class SelectableUserViewHolder(
-        itemView: View,
+        binding: ListItemSimpleUserBinding?,
+        itemView: View?,
         adapter: SelectableUsersAdapter
-) : SimpleUserViewHolder<SelectableUsersAdapter>(itemView, adapter) {
+) : SimpleUserViewHolder<SelectableUsersAdapter>(binding, itemView, adapter) {
+    
+    constructor(itemView: View, adapter: SelectableUsersAdapter) : this(null, itemView, adapter)
+    constructor(binding: ListItemSimpleUserBinding, adapter: SelectableUsersAdapter) : this(binding, null, adapter)
     private val checkChangedListener = CompoundButton.OnCheckedChangeListener { _, value ->
         adapter.setItemChecked(layoutPosition, value)
     }
 
     init {
-        ViewSupport.setBackground(itemView, ThemeUtils.getSelectableItemBackgroundDrawable(itemView.context))
+        val view = binding?.root ?: itemView!!
+        ViewSupport.setBackground(view, ThemeUtils.getSelectableItemBackgroundDrawable(view.context))
         checkBox.visibility = View.VISIBLE
-        itemView.setOnClickListener {
+        view.setOnClickListener {
             checkBox.toggle()
         }
     }

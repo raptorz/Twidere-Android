@@ -20,14 +20,16 @@
 package org.mariotaku.twidere.view.holder.message
 
 import android.text.SpannableStringBuilder
+import android.view.LayoutInflater
 import android.view.View
-import kotlinx.android.synthetic.main.list_item_message_conversation_text.view.*
+import android.view.ViewGroup
 import org.mariotaku.ktextension.empty
 import org.mariotaku.ktextension.isNullOrEmpty
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.messagebubbleview.library.MessageBubbleView
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.MessagesConversationAdapter
+import org.mariotaku.twidere.databinding.ListItemMessageConversationTextBinding
 import org.mariotaku.twidere.extension.model.applyTo
 import org.mariotaku.twidere.model.ParcelableMessage
 import org.mariotaku.twidere.model.SpanItem
@@ -39,16 +41,23 @@ import org.mariotaku.twidere.view.ProfileImageView
  * Created by mariotaku on 2017/2/9.
  */
 
-class MessageViewHolder(itemView: View, adapter: MessagesConversationAdapter) : AbsMessageViewHolder(itemView, adapter) {
+class MessageViewHolder private constructor(
+    private val binding: ListItemMessageConversationTextBinding,
+    adapter: MessagesConversationAdapter
+) : AbsMessageViewHolder(binding.root, adapter) {
 
-    override val date: FixedTextView by lazy { itemView.date }
-    override val messageContent: View by lazy { itemView.messageContent }
-    override val profileImage: ProfileImageView by lazy { itemView.profileImage }
-    override val nameTime: FixedTextView by lazy { itemView.nameTime }
+    constructor(adapter: MessagesConversationAdapter, itemView: View) : this(
+        ListItemMessageConversationTextBinding.bind(itemView), adapter
+    )
 
-    private val text by lazy { itemView.text }
-    private val mediaPreview by lazy { itemView.mediaPreview }
-    private val messageBubble by lazy { itemView.messageBubble }
+    override val date: FixedTextView get() = binding.date
+    override val messageContent: View get() = binding.messageContent
+    override val profileImage: ProfileImageView get() = binding.profileImage
+    override val nameTime: FixedTextView get() = binding.nameTime
+
+    private val text get() = binding.text
+    private val mediaPreview get() = binding.mediaPreview
+    private val messageBubble get() = binding.messageBubble
 
     override fun setup() {
         super.setup()
@@ -129,6 +138,13 @@ class MessageViewHolder(itemView: View, adapter: MessagesConversationAdapter) : 
 
     companion object {
         const val layoutResource = R.layout.list_item_message_conversation_text
+
+        fun create(parent: ViewGroup, adapter: MessagesConversationAdapter): MessageViewHolder {
+            val binding = ListItemMessageConversationTextBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return MessageViewHolder(binding, adapter)
+        }
 
         fun MessageBubbleView.setOutgoing(outgoing: Boolean) {
             caretPosition = if (outgoing) {

@@ -1027,7 +1027,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             }
         }
 
-        mentions.distinctBy { it.toLowerCase(Locale.US) }.filterNot {
+        mentions.distinctBy { it.lowercase(Locale.US) }.filterNot {
             return@filterNot it.equals(userAcct, ignoreCase = true)
         }.forEach { editText.append("@$it ") }
 

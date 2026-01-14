@@ -496,12 +496,12 @@
     <string name="notification_direct_message_multiple_messages"><xliff:g id="user">%1$s</xliff:g> us ha enviat <xliff:g id="messages_count">%2$d</xliff:g> missatges directes.</string>
     <string name="notification_direct_message_multiple_users"><xliff:g id="user">%1$s</xliff:g> i <xliff:g id="users_count">%2$d</xliff:g> usuaris més t\'han enviat <xliff:g id="messages_count">%3$d</xliff:g> missatges directes.</string>
     <string name="notification_light_color">Color de la llum</string>
-    <string name="notification_mention"><xliff:g id="user">%s</xliff:g> t\'ha mencionat.</string>
-    <string name="notification_mention_multiple"><xliff:g id="user">%s</xliff:g> i altres <xliff:g id="count">%d</xliff:g> us han mencionat.</string>
+    <string name="notification_mention"><xliff:g id="user">%1$s</xliff:g> t\'ha mencionat.</string>
+    <string name="notification_mention_multiple"><xliff:g id="user">%1$s</xliff:g> i altres <xliff:g id="count">%2$d</xliff:g> us han mencionat.</string>
     <!-- Notification method, flashing LED light -->
     <!-- Notification method, ringtone -->
     <!-- Notification method, device vibration -->
-    <string name="notification_status">Nova piulada de <xliff:g id="user">%s</xliff:g></string>
+    <string name="notification_status">Nova piulada de <xliff:g id="user">%1$s</xliff:g></string>
     <string name="notification_status_multiple">Nova piulada de <xliff:g id="user">%1$s</xliff:g> i <xliff:g id="count">%2$d</xliff:g> altres usuaris</string>
     <string name="notification_type_home">Inici</string>
     <string name="notification_type_interactions">Interaccions</string>

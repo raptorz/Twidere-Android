@@ -40,7 +40,7 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.Window
-import kotlinx.android.synthetic.main.activity_link_handler.*
+import org.mariotaku.twidere.databinding.ActivityLinkHandlerBinding
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.set
 import org.mariotaku.ktextension.toDoubleOr
@@ -83,6 +83,7 @@ import org.mariotaku.twidere.util.theme.getCurrentThemeResource
 class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControlBarActivity,
         SupportFragmentCallback {
 
+    private lateinit var binding: ActivityLinkHandlerBinding
     private lateinit var multiSelectHandler: MultiSelectEventHandler
     private lateinit var controlBarShowHideHelper: ControlBarShowHideHelper
     private var finishOnly: Boolean = false
@@ -137,6 +138,7 @@ class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControl
         }
 
         val contentFragmentId: Int
+        binding = ActivityLinkHandlerBinding.inflate(layoutInflater)
 
         if (fragment is IToolBarSupportFragment) {
             if (!fragment.setupWindow(this)) {
@@ -146,23 +148,23 @@ class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControl
             ViewCompat.setOnApplyWindowInsetsListener(window.findViewById(android.R.id.content), this)
             contentFragmentId = android.R.id.content
         } else {
-            setContentView(R.layout.activity_link_handler)
-            val toolbar = this.toolbar
+            setContentView(binding.root)
+            val toolbar = binding.toolbar
             if (toolbar != null) {
                 if (supportActionBar != null) {
                     toolbar.visibility = View.GONE
-                    windowOverlay?.visibility = View.GONE
+                    binding.windowOverlay?.visibility = View.GONE
                 } else {
                     toolbar.visibility = View.VISIBLE
-                    windowOverlay?.visibility = View.VISIBLE
+                    binding.windowOverlay?.visibility = View.VISIBLE
                     setSupportActionBar(toolbar)
                 }
             }
-            actionsButton?.setOnClickListener {
+            binding.actionsButton?.setOnClickListener {
                 val f = currentVisibleFragment as? IFloatingActionButtonFragment
                 f?.onActionClick("link_handler")
             }
-            contentView.applyWindowInsetsListener = this
+            binding.contentView.applyWindowInsetsListener = this
             contentFragmentId = R.id.contentFragment
         }
 
@@ -179,7 +181,7 @@ class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControl
 
         supportActionBar?.setBackgroundDrawable(ActionBarColorDrawable.create(theme.colorToolbar,
                 true))
-        contentView?.statusBarColor = theme.statusBarColor
+        binding.contentView?.statusBarColor = theme.statusBarColor
         if (fragment is IToolBarSupportFragment) {
             ThemeUtils.setCompatContentViewOverlay(window, EmptyDrawable())
         }
@@ -236,7 +238,7 @@ class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControl
         if (fragment is IToolBarSupportFragment) {
             return result
         }
-        contentView?.statusBarHeight = insets.systemWindowInsetTop - controlBarHeight
+        binding.contentView?.statusBarHeight = insets.systemWindowInsetTop - controlBarHeight
         return result.consumeSystemWindowInsets()
     }
 
@@ -312,7 +314,7 @@ class LinkHandlerActivity : BaseActivity(), SystemWindowInsetsCallback, IControl
 
     override fun setControlBarVisibleAnimate(visible: Boolean, listener: ControlBarShowHideHelper.ControlBarAnimationListener?) {
         // Currently only search page needs this pattern, so we only enable this feature for it.
-        actionsButton?.let { fab ->
+        binding.actionsButton?.let { fab ->
             if (fab.isEnabled) {
                 if (visible) {
                     fab.show()

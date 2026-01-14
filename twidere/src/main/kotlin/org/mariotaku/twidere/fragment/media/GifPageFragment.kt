@@ -24,11 +24,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.layout_media_viewer_gif.*
 import org.mariotaku.mediaviewer.library.CacheDownloadLoader
 import org.mariotaku.mediaviewer.library.CacheDownloadMediaViewerFragment
 import org.mariotaku.mediaviewer.library.subsampleimageview.SubsampleImageViewerFragment
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.LayoutMediaViewerGifBinding
 import org.mariotaku.twidere.TwidereConstants.EXTRA_ACCOUNT_KEY
 import org.mariotaku.twidere.TwidereConstants.EXTRA_MEDIA
 import org.mariotaku.twidere.activity.MediaViewerActivity
@@ -38,6 +38,9 @@ import pl.droidsonroids.gif.InputSource
 
 class GifPageFragment : CacheDownloadMediaViewerFragment() {
 
+    private var _binding: LayoutMediaViewerGifBinding? = null
+    private val binding get() = _binding!!
+
     private val media: ParcelableMedia
         get() = arguments?.getParcelable(EXTRA_MEDIA)!!
 
@@ -46,7 +49,7 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        gifView.setOnClickListener { (activity as MediaViewerActivity).toggleBar() }
+        binding.gifView.setOnClickListener { (activity as MediaViewerActivity).toggleBar() }
         startLoading(false)
     }
 
@@ -62,9 +65,9 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
         val context = context ?: return
         val cacheUri = result.cacheUri
         if (cacheUri != null) {
-            gifView.setInputSource(InputSource.UriSource(context.contentResolver, cacheUri))
+            binding.gifView.setInputSource(InputSource.UriSource(context.contentResolver, cacheUri))
         } else {
-            gifView.setInputSource(null)
+            binding.gifView.setInputSource(null)
         }
     }
 
@@ -73,11 +76,17 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
     }
 
     override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.layout_media_viewer_gif, parent, false)
+        _binding = LayoutMediaViewerGifBinding.inflate(inflater, parent, false)
+        return binding.root
     }
 
     override fun releaseMediaResources() {
-        gifView?.setInputSource(null)
+        binding.gifView.setInputSource(null)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

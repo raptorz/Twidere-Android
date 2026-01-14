@@ -21,7 +21,7 @@ package org.mariotaku.twidere.view.holder
 
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import android.view.View
-import kotlinx.android.synthetic.main.card_item_group_compact.view.*
+import org.mariotaku.twidere.databinding.CardItemGroupCompactBinding
 import org.mariotaku.ktextension.hideIfEmpty
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.ktextension.toLocalizedString
@@ -34,25 +34,36 @@ import org.mariotaku.twidere.model.ParcelableGroup
 /**
  * Created by mariotaku on 15/4/29.
  */
-class GroupViewHolder(private val adapter: IGroupsAdapter<*>, itemView: View) : ViewHolder(itemView),
-        View.OnClickListener, View.OnLongClickListener {
+class GroupViewHolder private constructor(
+    private val adapter: IGroupsAdapter<*>,
+    private val binding: CardItemGroupCompactBinding
+) : ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
 
-    private val itemContent = itemView.itemContent
-    private val profileImageView = itemView.profileImage
-    private val nameView = itemView.name
-    private val externalIndicator = itemView.externalIndicator
-    private val descriptionView = itemView.description
-    private val membersCountView = itemView.membersCount
-    private val adminsCountView = itemView.adminsCount
+    private val itemContent = binding.itemContent
+    private val profileImageView = binding.profileImage
+    private val nameView = binding.name
+    private val externalIndicator = binding.externalIndicator
+    private val descriptionView = binding.description
+    private val membersCountView = binding.membersCount
+    private val adminsCountView = binding.adminsCount
 
     private var groupClickListener: IGroupsAdapter.GroupAdapterListener? = null
+
+    @Deprecated("Use create() factory method instead", ReplaceWith("GroupViewHolder.create(adapter, itemView)"))
+    constructor(adapter: IGroupsAdapter<*>, itemView: View) : this(adapter, CardItemGroupCompactBinding.bind(itemView))
+
+    companion object {
+        fun create(adapter: IGroupsAdapter<*>, itemView: View): GroupViewHolder {
+            return GroupViewHolder(adapter, CardItemGroupCompactBinding.bind(itemView))
+        }
+    }
 
     init {
         profileImageView.style = adapter.profileImageStyle
     }
 
     fun displayGroup(group: ParcelableGroup) {
-        val context = itemView.context
+        val context = binding.root.context
         val formatter = adapter.bidiFormatter
 
         nameView.name = group.fullname

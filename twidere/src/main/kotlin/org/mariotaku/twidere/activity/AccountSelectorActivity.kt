@@ -28,7 +28,7 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_account_selector.*
+import org.mariotaku.twidere.databinding.ActivityAccountSelectorBinding
 import org.mariotaku.ktextension.getNullableTypedArrayExtra
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.*
@@ -41,6 +41,7 @@ import org.mariotaku.twidere.util.DataStoreUtils
 
 class AccountSelectorActivity : BaseActivity(), OnItemClickListener {
 
+    private lateinit var binding: ActivityAccountSelectorBinding
     private lateinit var adapter: AccountDetailsAdapter
 
     private val onlyIncludeKeys: Array<UserKey>?
@@ -85,7 +86,8 @@ class AccountSelectorActivity : BaseActivity(), OnItemClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_account_selector)
+        binding = ActivityAccountSelectorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         DataStoreUtils.prepareDatabase(this)
         adapter = AccountDetailsAdapter(this, requestManager).apply {
             switchEnabled = !isSingleSelection
@@ -115,17 +117,17 @@ class AccountSelectorActivity : BaseActivity(), OnItemClickListener {
             }
             addAll(matchedAccounts)
         }
-        accountsList.choiceMode = if (isSingleSelection) ListView.CHOICE_MODE_NONE else ListView.CHOICE_MODE_MULTIPLE
+        binding.accountsList.choiceMode = if (isSingleSelection) ListView.CHOICE_MODE_NONE else ListView.CHOICE_MODE_MULTIPLE
         if (isSingleSelection) {
-            accountsList.onItemClickListener = this
+            binding.accountsList.onItemClickListener = this
         }
-        selectAccountButtons.visibility = if (isSingleSelection) View.GONE else View.VISIBLE
-        accountsList.adapter = adapter
+        binding.selectAccountButtons.visibility = if (isSingleSelection) View.GONE else View.VISIBLE
+        binding.accountsList.adapter = adapter
         if (adapter.count == 1 && isSelectOnlyItemAutomatically) {
             selectSingleAccount(0)
         }
-        confirmSelection.setOnClickListener {
-            val checkedIds = accountsList.checkedItemIds
+        binding.confirmSelection.setOnClickListener {
+            val checkedIds = binding.accountsList.checkedItemIds
             if (checkedIds.isEmpty() && !isSelectNoneAllowed) {
                 Toast.makeText(this, R.string.message_toast_no_account_selected, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener

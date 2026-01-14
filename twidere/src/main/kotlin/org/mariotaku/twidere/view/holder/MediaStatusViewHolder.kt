@@ -21,12 +21,14 @@ package org.mariotaku.twidere.view.holder
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import android.view.ViewGroup
+import android.view.LayoutInflater
 import android.widget.ImageView
 import com.commonsware.cwac.layouts.AspectLockedFrameLayout
-import kotlinx.android.synthetic.main.adapter_item_media_status.view.*
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.iface.IStatusesAdapter
+import org.mariotaku.twidere.databinding.AdapterItemMediaStatusBinding
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.graphic.like.LikeAnimationDrawable
 import org.mariotaku.twidere.model.ParcelableMedia
@@ -36,13 +38,16 @@ import org.mariotaku.twidere.model.util.ParcelableMediaUtils
 import org.mariotaku.twidere.view.ProfileImageView
 import org.mariotaku.twidere.view.holder.iface.IStatusViewHolder
 
-class MediaStatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View) : RecyclerView.ViewHolder(itemView), IStatusViewHolder, View.OnClickListener, View.OnLongClickListener {
-    override val profileImageView: ProfileImageView = itemView.mediaProfileImage
+class MediaStatusViewHolder private constructor(
+    private val binding: AdapterItemMediaStatusBinding,
+    private val adapter: IStatusesAdapter<*>
+) : RecyclerView.ViewHolder(binding.root), IStatusViewHolder, View.OnClickListener, View.OnLongClickListener {
+    override val profileImageView: ProfileImageView = binding.mediaProfileImage
 
-    private val mediaImageContainer = itemView.mediaImageContainer
+    private val mediaImageContainer = binding.mediaImageContainer
 
-    private val mediaImageView = itemView.mediaImage
-    private val mediaTextView = itemView.mediaText
+    private val mediaImageView = binding.mediaImage
+    private val mediaTextView = binding.mediaText
 
     private val aspectRatioSource = SimpleAspectRatioSource()
 
@@ -56,9 +61,24 @@ class MediaStatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: 
         mediaImageContainer.setAspectRatioSource(aspectRatioSource)
     }
 
+    constructor(adapter: IStatusesAdapter<*>, itemView: View) : this(
+        AdapterItemMediaStatusBinding.bind(itemView), adapter
+    )
+
+    companion object {
+        const val layoutResource = R.layout.adapter_item_media_status
+
+        fun create(parent: ViewGroup, adapter: IStatusesAdapter<*>): MediaStatusViewHolder {
+            val binding = AdapterItemMediaStatusBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return MediaStatusViewHolder(binding, adapter)
+        }
+    }
+
     override fun display(status: ParcelableStatus, displayInReplyTo: Boolean,
             displayPinned: Boolean) {
-        val context = itemView.context
+        val context = binding.root.context
 
         val displayEnd = status.extras?.display_text_range?.getOrNull(1) ?: -1
 
@@ -100,7 +120,7 @@ class MediaStatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: 
 
     override fun setStatusClickListener(listener: IStatusViewHolder.StatusClickListener?) {
         this.listener = listener
-        itemView.itemContent.setOnClickListener(this)
+        binding.itemContent.setOnClickListener(this)
     }
 
     override fun setTextSize(textSize: Float) {

@@ -19,11 +19,13 @@
 
 package org.mariotaku.twidere.view.holder.message
 
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.RelativeLayout
-import kotlinx.android.synthetic.main.list_item_message_conversation_sticker.view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.MessagesConversationAdapter
+import org.mariotaku.twidere.databinding.ListItemMessageConversationStickerBinding
 import org.mariotaku.twidere.model.ParcelableMessage
 import org.mariotaku.twidere.model.message.StickerExtras
 import org.mariotaku.twidere.view.FixedTextView
@@ -33,14 +35,21 @@ import org.mariotaku.twidere.view.ProfileImageView
  * Created by mariotaku on 2017/2/9.
  */
 
-class StickerMessageViewHolder(itemView: View, adapter: MessagesConversationAdapter) : AbsMessageViewHolder(itemView, adapter) {
+class StickerMessageViewHolder private constructor(
+    private val binding: ListItemMessageConversationStickerBinding,
+    adapter: MessagesConversationAdapter
+) : AbsMessageViewHolder(binding.root, adapter) {
 
-    override val date: FixedTextView by lazy { itemView.date }
-    override val messageContent: RelativeLayout by lazy { itemView.messageContent }
-    override val profileImage: ProfileImageView by lazy { itemView.profileImage }
-    override val nameTime: FixedTextView by lazy { itemView.nameTime }
+    constructor(adapter: MessagesConversationAdapter, itemView: View) : this(
+        ListItemMessageConversationStickerBinding.bind(itemView), adapter
+    )
 
-    private val stickerIcon by lazy { itemView.stickerIcon }
+    override val date: FixedTextView get() = binding.date
+    override val messageContent: RelativeLayout get() = binding.messageContent
+    override val profileImage: ProfileImageView get() = binding.profileImage
+    override val nameTime: FixedTextView get() = binding.nameTime
+
+    private val stickerIcon get() = binding.stickerIcon
 
     override fun display(message: ParcelableMessage, showDate: Boolean) {
         super.display(message, showDate)
@@ -51,5 +60,12 @@ class StickerMessageViewHolder(itemView: View, adapter: MessagesConversationAdap
 
     companion object {
         const val layoutResource = R.layout.list_item_message_conversation_sticker
+
+        fun create(parent: ViewGroup, adapter: MessagesConversationAdapter): StickerMessageViewHolder {
+            val binding = ListItemMessageConversationStickerBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return StickerMessageViewHolder(binding, adapter)
+        }
     }
 }

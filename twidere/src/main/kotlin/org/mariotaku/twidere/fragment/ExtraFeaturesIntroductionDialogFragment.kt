@@ -8,7 +8,6 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
 import android.view.View
-import kotlinx.android.synthetic.main.dialog_extra_features_introduction.*
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
 import org.mariotaku.twidere.R
@@ -51,17 +50,19 @@ class ExtraFeaturesIntroductionDialogFragment : BaseDialogFragment() {
         val dialog = builder.create()
         dialog.onShow {
             it.applyTheme()
-            it.restorePurchaseHint.visibility = if (restorePurchaseIntent != null) {
+            val restorePurchaseHint = it.findViewById<View>(R.id.restorePurchaseHint)
+            restorePurchaseHint?.visibility = if (restorePurchaseIntent != null) {
                 View.VISIBLE
             } else {
                 View.GONE
             }
             val description = ExtraFeaturesService.getIntroduction(requireContext(), feature)
-            val featureIcon = it.featureIcon
-            val featureDescription = it.featureDescription
-            featureIcon.setImageResource(description.icon)
-            featureDescription.text = description.description
-            it.buyFeaturesPack.setOnClickListener {
+            val featureIcon = it.findViewById<android.widget.ImageView>(R.id.featureIcon)
+            val featureDescription = it.findViewById<android.widget.TextView>(R.id.featureDescription)
+            featureIcon?.setImageResource(description.icon)
+            featureDescription?.text = description.description
+            val buyFeaturesPack = it.findViewById<View>(R.id.buyFeaturesPack)
+            buyFeaturesPack?.setOnClickListener {
                 startPurchase(ExtraFeaturesService.FEATURE_FEATURES_PACK)
                 dismiss()
             }

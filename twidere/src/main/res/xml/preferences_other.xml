@@ -16,15 +16,6 @@
             android:value="@xml/preferences_scrapyard"/>
     </Preference>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:key="drawer_toggle"
-        android:title="@string/drawer_toggle">
-        <extra
-            android:name="should_recreate"
-            android:value="true"/>
-    </SwitchPreferenceCompat>
-
     <org.mariotaku.twidere.preference.LanguageListPreference
         android:defaultValue=""
         android:key="override_language"

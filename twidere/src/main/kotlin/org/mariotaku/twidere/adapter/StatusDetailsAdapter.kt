@@ -304,7 +304,7 @@ class StatusDetailsAdapter(
             VIEW_TYPE_CONVERSATION_LOAD_INDICATOR, VIEW_TYPE_REPLIES_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent,
                         false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
             VIEW_TYPE_SPACE -> {
                 return EmptyViewHolder(Space(context))

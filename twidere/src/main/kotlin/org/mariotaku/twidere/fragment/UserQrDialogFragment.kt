@@ -34,7 +34,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.Target
 import io.nayuki.qrcodegen.QrCode
 import io.nayuki.qrcodegen.QrSegment
-import kotlinx.android.synthetic.main.fragment_user_qr.*
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.task
@@ -44,6 +43,7 @@ import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_USER
+import org.mariotaku.twidere.databinding.FragmentUserQrBinding
 import org.mariotaku.twidere.extension.loadOriginalProfileImage
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.model.ParcelableUser
@@ -61,6 +61,7 @@ import java.util.concurrent.ExecutionException
  */
 class UserQrDialogFragment : BaseDialogFragment() {
 
+    private var binding: FragmentUserQrBinding? = null
     private val user: ParcelableUser get() = arguments?.getParcelable(EXTRA_USER)!!
 
     init {
@@ -68,7 +69,9 @@ class UserQrDialogFragment : BaseDialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_user_qr, container, false)
+        val binding = FragmentUserQrBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,9 +79,9 @@ class UserQrDialogFragment : BaseDialogFragment() {
         val weakThis = WeakReference(this)
 
         promiseOnUi {
-            val fragment = weakThis.get()?.takeIf { it.view != null } ?: return@promiseOnUi
-            fragment.qrView.visibility = View.INVISIBLE
-            fragment.qrProgress.visibility = View.VISIBLE
+            val fragment = weakThis.get()?.takeIf { it.binding != null } ?: return@promiseOnUi
+            fragment.binding?.qrView?.visibility = View.INVISIBLE
+            fragment.binding?.qrProgress?.visibility = View.VISIBLE
         } and loadProfileImage().then { drawable ->
             val fragment = weakThis.get()?.takeIf { it.context != null } ?: throw InterruptedException()
             val background = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight,
@@ -100,10 +103,10 @@ class UserQrDialogFragment : BaseDialogFragment() {
             background.recycle()
             return@then result
         }.successUi { bitmap ->
-            val fragment = weakThis.get()?.takeIf { it.context != null && it.view != null } ?: return@successUi
-            fragment.qrView.visibility = View.VISIBLE
-            fragment.qrProgress.visibility = View.GONE
-            fragment.qrView.setImageDrawable(BitmapDrawable(fragment.resources, bitmap).apply {
+            val fragment = weakThis.get()?.takeIf { it.context != null && it.binding != null } ?: return@successUi
+            fragment.binding?.qrView?.visibility = View.VISIBLE
+            fragment.binding?.qrProgress?.visibility = View.GONE
+            fragment.binding?.qrView?.setImageDrawable(BitmapDrawable(fragment.resources, bitmap).apply {
                 this.setAntiAlias(false)
                 this.isFilterBitmap = false
             })
@@ -159,5 +162,10 @@ class UserQrDialogFragment : BaseDialogFragment() {
             }
             return getOptimalPatternColor(color)
         }
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 }

@@ -19,20 +19,30 @@
 
 package org.mariotaku.twidere.view.holder.message
 
+import android.view.LayoutInflater
 import android.view.View
-import kotlinx.android.synthetic.main.list_item_message_conversation_notice.view.*
+import android.view.ViewGroup
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.MessagesConversationAdapter
+import org.mariotaku.twidere.databinding.ListItemMessageConversationNoticeBinding
 import org.mariotaku.twidere.extension.model.getSummaryText
 import org.mariotaku.twidere.model.ParcelableMessage
 import org.mariotaku.twidere.view.FixedTextView
 
-class NoticeSummaryEventViewHolder(itemView: View, adapter: MessagesConversationAdapter) : AbsMessageViewHolder(itemView, adapter) {
-    override val messageContent: View = itemView
-    override val date: FixedTextView by lazy { itemView.date }
+class NoticeSummaryEventViewHolder private constructor(
+    private val binding: ListItemMessageConversationNoticeBinding,
+    adapter: MessagesConversationAdapter
+) : AbsMessageViewHolder(binding.root, adapter) {
 
-    private val text by lazy { itemView.text }
+    constructor(adapter: MessagesConversationAdapter, itemView: View) : this(
+        ListItemMessageConversationNoticeBinding.bind(itemView), adapter
+    )
+
+    override val messageContent: View get() = binding.root
+    override val date: FixedTextView get() = binding.date
+
+    private val text get() = binding.text
 
     override fun display(message: ParcelableMessage, showDate: Boolean) {
         super.display(message, showDate)
@@ -46,5 +56,12 @@ class NoticeSummaryEventViewHolder(itemView: View, adapter: MessagesConversation
 
     companion object {
         const val layoutResource = R.layout.list_item_message_conversation_notice
+
+        fun create(parent: ViewGroup, adapter: MessagesConversationAdapter): NoticeSummaryEventViewHolder {
+            val binding = ListItemMessageConversationNoticeBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return NoticeSummaryEventViewHolder(binding, adapter)
+        }
     }
 }

@@ -310,11 +310,11 @@ abstract class ParcelableStatusesAdapter(
         when (viewType) {
             ITEM_VIEW_TYPE_GAP -> {
                 val view = inflater.inflate(GapViewHolder.layoutResource, parent, false)
-                return GapViewHolder(this, view)
+                return GapViewHolder.create(this, view)
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent, false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
             VIEW_TYPE_STATUS -> {
                 return onCreateStatusViewHolder(parent) as RecyclerView.ViewHolder
@@ -323,9 +323,7 @@ abstract class ParcelableStatusesAdapter(
                 return EmptyViewHolder(Space(context))
             }
             VIEW_TYPE_FILTER_HEADER -> {
-                val view = inflater.inflate(TimelineFilterHeaderViewHolder.layoutResource,
-                        parent, false)
-                return TimelineFilterHeaderViewHolder(this, view)
+                return TimelineFilterHeaderViewHolder.create(parent, this)
             }
         }
         throw IllegalStateException("Unknown view type $viewType")

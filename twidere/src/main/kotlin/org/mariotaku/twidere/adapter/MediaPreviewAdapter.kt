@@ -67,8 +67,7 @@ class MediaPreviewAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaPreviewViewHolder {
-        val view = inflater.inflate(R.layout.grid_item_media_editor, parent, false)
-        return MediaPreviewViewHolder(view)
+        return MediaPreviewViewHolder.create(parent)
     }
 
     override fun onViewAttachedToWindow(holder: MediaPreviewViewHolder) {

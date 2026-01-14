@@ -24,7 +24,7 @@ import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.OnClickListener
-import kotlinx.android.synthetic.main.activity_keyboard_shortcut_input.*
+import org.mariotaku.twidere.databinding.ActivityKeyboardShortcutInputBinding
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.VALUE_THEME_BACKGROUND_DEFAULT
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler
@@ -35,6 +35,7 @@ import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutSpec
  */
 class KeyboardShortcutPreferenceCompatActivity : BaseActivity(), OnClickListener {
 
+    private lateinit var binding: ActivityKeyboardShortcutInputBinding
     private var keySpec: KeyboardShortcutSpec? = null
     private var metaState: Int = 0
 
@@ -43,12 +44,13 @@ class KeyboardShortcutPreferenceCompatActivity : BaseActivity(), OnClickListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_keyboard_shortcut_input)
+        binding = ActivityKeyboardShortcutInputBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         title = KeyboardShortcutsHandler.getActionLabel(this, keyAction)
 
-        buttonPositive.setOnClickListener(this)
-        buttonNegative.setOnClickListener(this)
-        buttonNeutral.setOnClickListener(this)
+        binding.buttonPositive.setOnClickListener(this)
+        binding.buttonNegative.setOnClickListener(this)
+        binding.buttonNeutral.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
@@ -86,27 +88,27 @@ class KeyboardShortcutPreferenceCompatActivity : BaseActivity(), OnClickListener
             return super.onKeyUp(keyCode, event)
         }
         keySpec = spec
-        keysLabel.text = spec.toKeyString()
+        binding.keysLabel.text = spec.toKeyString()
         val oldAction = keyboardShortcutsHandler.findAction(spec)
         val copyOfSpec = spec.copy()
         copyOfSpec.contextTag = null
         val oldGeneralAction = keyboardShortcutsHandler.findAction(copyOfSpec)
         if (!TextUtils.isEmpty(oldAction) && keyAction != oldAction) {
             // Conflicts with keys in same context tag
-            conflictLabel.visibility = View.VISIBLE
+            binding.conflictLabel.visibility = View.VISIBLE
             val label = KeyboardShortcutsHandler.getActionLabel(this, oldAction)
-            conflictLabel.text = getString(R.string.conflicts_with_name, label)
+            binding.conflictLabel.text = getString(R.string.conflicts_with_name, label)
 
-            buttonPositive.setText(R.string.overwrite)
+            binding.buttonPositive.setText(R.string.overwrite)
         } else if (!TextUtils.isEmpty(oldGeneralAction) && keyAction != oldGeneralAction) {
             // Conflicts with keys in root context
-            conflictLabel.visibility = View.VISIBLE
+            binding.conflictLabel.visibility = View.VISIBLE
             val label = KeyboardShortcutsHandler.getActionLabel(this, oldGeneralAction)
-            conflictLabel.text = getString(R.string.conflicts_with_name, label)
-            buttonPositive.setText(R.string.overwrite)
+            binding.conflictLabel.text = getString(R.string.conflicts_with_name, label)
+            binding.buttonPositive.setText(R.string.overwrite)
         } else {
-            conflictLabel.visibility = View.GONE
-            buttonPositive.setText(android.R.string.ok)
+            binding.conflictLabel.visibility = View.GONE
+            binding.buttonPositive.setText(android.R.string.ok)
         }
         return true
     }

@@ -98,14 +98,14 @@ class ParcelableGroupsAdapter(
         when (viewType) {
             ITEM_VIEW_TYPE_USER_LIST -> {
                 val view: View = inflater.inflate(R.layout.card_item_group_compact, parent, false)
-                val holder = GroupViewHolder(this, view)
+                val holder = GroupViewHolder.create(this, view)
                 holder.setOnClickListeners()
                 holder.setupViewOptions()
                 return holder
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent, false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
         }
         throw IllegalStateException("Unknown view type $viewType")

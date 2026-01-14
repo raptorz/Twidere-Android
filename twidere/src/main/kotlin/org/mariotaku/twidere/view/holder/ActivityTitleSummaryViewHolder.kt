@@ -22,14 +22,15 @@ package org.mariotaku.twidere.view.holder
 import android.graphics.PorterDuff
 import androidx.core.view.MarginLayoutParamsCompat
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.list_item_activity_summary_compact.view.*
 import org.mariotaku.ktextension.applyFontFamily
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.ParcelableActivitiesAdapter
 import org.mariotaku.twidere.adapter.iface.IActivitiesAdapter
+import org.mariotaku.twidere.databinding.ListItemActivitySummaryCompactBinding
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.model.ActivityTitleSummaryMessage
 import org.mariotaku.twidere.model.ParcelableActivity
@@ -39,39 +40,35 @@ import kotlin.math.min
 /**
  * Created by mariotaku on 15/1/3.
  */
-class ActivityTitleSummaryViewHolder(
-        itemView: View,
-        private val adapter: ParcelableActivitiesAdapter
-) : ViewHolder(itemView), View.OnClickListener {
+class ActivityTitleSummaryViewHolder private constructor(
+    private val binding: ListItemActivitySummaryCompactBinding,
+    private val adapter: ParcelableActivitiesAdapter
+) : ViewHolder(binding.root), View.OnClickListener {
 
-    private val itemContent = itemView.itemContent
-    private val activityTypeView = itemView.activityType
-    private val titleView = itemView.title
-    private val summaryView = itemView.summary
-    private val timeView = itemView.time
-    private val profileImagesContainer = itemView.profileImagesContainer
-    private val profileImageMoreNumber = itemView.activityProfileImageMoreNumber
-    private val profileImageViews = arrayOf(
-            itemView.activityProfileImage0,
-            itemView.activityProfileImage1,
-            itemView.activityProfileImage2,
-            itemView.activityProfileImage3,
-            itemView.activityProfileImage4
+    constructor(adapter: ParcelableActivitiesAdapter, itemView: View) : this(
+        ListItemActivitySummaryCompactBinding.bind(itemView), adapter
     )
-    private val profileImageSpace: View = itemView.profileImageSpace
+
+    private val profileImageViews = arrayOf(
+        binding.activityProfileImage0,
+        binding.activityProfileImage1,
+        binding.activityProfileImage2,
+        binding.activityProfileImage3,
+        binding.activityProfileImage4
+    )
 
     private var activityEventListener: IActivitiesAdapter.ActivityEventListener? = null
 
     init {
         val resources = adapter.context.resources
-        val lp = titleView.layoutParams as ViewGroup.MarginLayoutParams
+        val lp = binding.title.layoutParams as ViewGroup.MarginLayoutParams
         val spacing = resources.getDimensionPixelSize(R.dimen.element_spacing_small)
         lp.leftMargin = spacing
         MarginLayoutParamsCompat.setMarginStart(lp, spacing)
-        timeView.showAbsoluteTime = adapter.showAbsoluteTime
-        titleView.applyFontFamily(adapter.lightFont)
-        summaryView.applyFontFamily(adapter.lightFont)
-        timeView.applyFontFamily(adapter.lightFont)
+        binding.time.showAbsoluteTime = adapter.showAbsoluteTime
+        binding.title.applyFontFamily(adapter.lightFont)
+        binding.summary.applyFontFamily(adapter.lightFont)
+        binding.time.applyFontFamily(adapter.lightFont)
     }
 
     fun displayActivity(activity: ParcelableActivity) {
@@ -83,22 +80,22 @@ class ActivityTitleSummaryViewHolder(
             return
         }
         val message = ActivityTitleSummaryMessage.get(context, adapter.userColorNameManager,
-                activity, sources, activityTypeView.defaultColor, adapter.useStarsForLikes,
+                activity, sources, binding.activityType.defaultColor, adapter.useStarsForLikes,
                 adapter.isNameFirst)
         if (message == null) {
             showNotSupported()
             return
         }
-        activityTypeView.setColorFilter(message.color, PorterDuff.Mode.SRC_ATOP)
-        activityTypeView.setImageResource(message.icon)
-        titleView.spannable = message.title
-        summaryView.spannable = message.summary
-        summaryView.visibility = if (summaryView.length() > 0) View.VISIBLE else View.GONE
-        timeView.time = activity.timestamp
+        binding.activityType.setColorFilter(message.color, PorterDuff.Mode.SRC_ATOP)
+        binding.activityType.setImageResource(message.icon)
+        binding.title.spannable = message.title
+        binding.summary.spannable = message.summary
+        binding.summary.visibility = if (binding.summary.length() > 0) View.VISIBLE else View.GONE
+        binding.time.time = activity.timestamp
         if (adapter.showAccountsColor) {
-            itemContent.drawEnd(activity.account_color)
+            binding.itemContent.drawEnd(activity.account_color)
         } else {
-            itemContent.drawEnd()
+            binding.itemContent.drawEnd()
         }
         displayUserProfileImages(sources)
     }
@@ -109,9 +106,9 @@ class ActivityTitleSummaryViewHolder(
 
     fun setupViewOptions() {
         val textSize = adapter.textSize
-        titleView.textSize = textSize
-        summaryView.textSize = textSize * 0.85f
-        timeView.textSize = textSize * 0.80f
+        binding.title.textSize = textSize
+        binding.summary.textSize = textSize * 0.85f
+        binding.time.textSize = textSize * 0.80f
 
         profileImageViews.forEach {
             it.style = adapter.profileImageStyle
@@ -120,8 +117,8 @@ class ActivityTitleSummaryViewHolder(
 
     private fun displayUserProfileImages(users: Array<ParcelableLiteUser>?) {
         val shouldDisplayImages = adapter.profileImageEnabled
-        profileImagesContainer.visibility = if (shouldDisplayImages) View.VISIBLE else View.GONE
-        profileImageSpace.visibility = if (shouldDisplayImages) View.VISIBLE else View.GONE
+        binding.profileImagesContainer.visibility = if (shouldDisplayImages) View.VISIBLE else View.GONE
+        binding.profileImageSpace.visibility = if (shouldDisplayImages) View.VISIBLE else View.GONE
         if (!shouldDisplayImages) return
         if (users == null) {
             for (view in profileImageViews) {
@@ -144,10 +141,10 @@ class ActivityTitleSummaryViewHolder(
         }
         if (users.size > profileImageViews.size) {
             val moreNumber = users.size - profileImageViews.size
-            profileImageMoreNumber.visibility = View.VISIBLE
-            profileImageMoreNumber.setText(moreNumber.toString())
+            binding.activityProfileImageMoreNumber.visibility = View.VISIBLE
+            binding.activityProfileImageMoreNumber.setText(moreNumber.toString())
         } else {
-            profileImageMoreNumber.visibility = View.GONE
+            binding.activityProfileImageMoreNumber.visibility = View.GONE
         }
     }
 
@@ -157,7 +154,7 @@ class ActivityTitleSummaryViewHolder(
 
     fun setActivityEventListener(listener: IActivitiesAdapter.ActivityEventListener) {
         activityEventListener = listener
-        (itemContent as View).setOnClickListener(this)
+        binding.itemContent.setOnClickListener(this)
         //        ((View) itemContent).setOnLongClickListener(this);
 
     }
@@ -169,6 +166,17 @@ class ActivityTitleSummaryViewHolder(
             R.id.itemContent -> {
                 activityEventListener!!.onActivityClick(this, position)
             }
+        }
+    }
+
+    companion object {
+        const val layoutResource = R.layout.list_item_activity_summary_compact
+
+        fun create(parent: ViewGroup, adapter: ParcelableActivitiesAdapter): ActivityTitleSummaryViewHolder {
+            val binding = ListItemActivitySummaryCompactBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            return ActivityTitleSummaryViewHolder(binding, adapter)
         }
     }
 

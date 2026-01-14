@@ -22,7 +22,7 @@ package org.mariotaku.twidere.fragment
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.dialog_user_list_detail_editor.*
+import org.mariotaku.twidere.databinding.DialogUserListDetailEditorBinding
 import org.mariotaku.ktextension.string
 import org.mariotaku.microblog.library.twitter.model.UserList
 import org.mariotaku.microblog.library.twitter.model.UserListUpdate
@@ -38,35 +38,46 @@ class EditUserListDialogFragment : BaseDialogFragment() {
 
     private val accountKey by lazy { arguments?.getParcelable<UserKey>(EXTRA_ACCOUNT_KEY)!! }
     private val listId: String by lazy { arguments?.getString(EXTRA_LIST_ID)!! }
+    private var binding: DialogUserListDetailEditorBinding? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setView(R.layout.dialog_user_list_detail_editor)
+        
+        val binding = DialogUserListDetailEditorBinding.inflate(layoutInflater)
+        this.binding = binding
+        
+        builder.setView(binding.root)
         builder.setTitle(R.string.title_user_list)
         builder.positive(android.R.string.ok, this::onPositiveClick)
         builder.setNegativeButton(android.R.string.cancel, null)
         val dialog = builder.create()
         dialog.onShow { alertDialog ->
             alertDialog.applyTheme()
-            alertDialog.editName.addValidator(UserListNameValidator(getString(R.string.invalid_list_name)))
+            binding.editName.addValidator(UserListNameValidator(getString(R.string.invalid_list_name)))
             if (savedInstanceState == null) {
-                alertDialog.editName.setText(arguments?.getString(EXTRA_LIST_NAME))
-                alertDialog.editDescription.setText(arguments?.getString(EXTRA_DESCRIPTION))
-                alertDialog.isPublic.isChecked = arguments?.getBoolean(EXTRA_IS_PUBLIC, true) ?: true
+                binding.editName.setText(arguments?.getString(EXTRA_LIST_NAME))
+                binding.editDescription.setText(arguments?.getString(EXTRA_DESCRIPTION))
+                binding.isPublic.isChecked = arguments?.getBoolean(EXTRA_IS_PUBLIC, true) ?: true
             }
         }
         return dialog
     }
 
     private fun onPositiveClick(dialog: Dialog) {
-        val name = dialog.editName.string?.takeIf(String::isNotEmpty) ?: return
-        val description = dialog.editDescription.string
-        val isPublic = dialog.isPublic.isChecked
+        val binding = this.binding ?: return
+        val name = binding.editName.string?.takeIf(String::isNotEmpty) ?: return
+        val description = binding.editDescription.string
+        val isPublic = binding.isPublic.isChecked
         val update = UserListUpdate()
         update.setMode(if (isPublic) UserList.Mode.PUBLIC else UserList.Mode.PRIVATE)
         update.setName(name)
         update.setDescription(description)
         twitterWrapper.updateUserListDetails(accountKey, listId, update)
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
 }

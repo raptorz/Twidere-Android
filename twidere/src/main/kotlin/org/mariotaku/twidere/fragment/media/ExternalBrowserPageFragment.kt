@@ -25,47 +25,56 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.layout_media_viewer_browser_fragment.*
 import org.mariotaku.mediaviewer.library.MediaViewerFragment
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.EXTRA_MEDIA
 import org.mariotaku.twidere.model.ParcelableMedia
+import org.mariotaku.twidere.databinding.LayoutMediaViewerBrowserFragmentBinding
 
 class ExternalBrowserPageFragment : MediaViewerFragment() {
 
+    private var _binding: LayoutMediaViewerBrowserFragmentBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup,
             savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.layout_media_viewer_browser_fragment, parent, false)
+        _binding = LayoutMediaViewerBrowserFragmentBinding.inflate(inflater, parent, false)
+        return binding.root
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val webSettings = webView.settings
+        val webSettings = binding.webView.settings
         webSettings.javaScriptEnabled = true
         webSettings.loadsImagesAutomatically = true
         val media = arguments?.getParcelable<ParcelableMedia>(EXTRA_MEDIA) ?: throw NullPointerException()
         val target = if (TextUtils.isEmpty(media.media_url)) media.url else media.media_url
         target?.let {
-            webView.loadUrl(it)
+            binding.webView.loadUrl(it)
         }
-        webViewContainer.setAspectRatioSource(VideoPageFragment.MediaAspectRatioSource(media, this))
+        binding.webViewContainer.setAspectRatioSource(VideoPageFragment.MediaAspectRatioSource(media, this))
     }
 
     override fun onResume() {
         super.onResume()
-        webView.onResume()
+        binding.webView.onResume()
     }
 
 
     override fun onPause() {
-        webView.onPause()
+        binding.webView.onPause()
         super.onPause()
     }
 
     override fun onDestroy() {
-        webView?.destroy()
+        binding.webView.destroy()
         super.onDestroy()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun isMediaLoaded(): Boolean {

@@ -29,7 +29,7 @@ import android.view.MenuItem
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageOptions
 import com.theartofdev.edmodo.cropper.CropImageView
-import kotlinx.android.synthetic.main.activity_crop_image.*
+import org.mariotaku.twidere.databinding.ActivityCropImageBinding
 import org.mariotaku.twidere.R
 
 /**
@@ -37,6 +37,8 @@ import org.mariotaku.twidere.R
  * Use [CropImage.activity] to create a builder to start this activity.
  */
 class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriCompleteListener, CropImageView.OnCropImageCompleteListener {
+
+    private lateinit var binding: ActivityCropImageBinding
 
     /**
      * Persist URI image to crop URI if specific permissions are required
@@ -57,27 +59,28 @@ class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriComplete
     @SuppressLint("NewApi")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_crop_image)
+        binding = ActivityCropImageBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (savedInstanceState == null) {
             // no permissions required or already grunted, can start crop image activity
-            cropImageView.setImageUriAsync(cropImageUri)
+            binding.cropImageView.setImageUriAsync(cropImageUri)
         }
 
     }
 
     override fun onStart() {
         super.onStart()
-        cropImageView.setOnSetImageUriCompleteListener(this)
-        cropImageView.setOnCropImageCompleteListener(this)
+        binding.cropImageView.setOnSetImageUriCompleteListener(this)
+        binding.cropImageView.setOnCropImageCompleteListener(this)
     }
 
     override fun onStop() {
         super.onStop()
-        cropImageView.setOnSetImageUriCompleteListener(null)
-        cropImageView.setOnCropImageCompleteListener(null)
+        binding.cropImageView.setOnSetImageUriCompleteListener(null)
+        binding.cropImageView.setOnCropImageCompleteListener(null)
     }
 
     override fun onBackPressed() {
@@ -109,10 +112,10 @@ class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriComplete
         if (error == null) {
             options?.let { options ->
                 if (options.initialCropWindowRectangle != null) {
-                    cropImageView.cropRect = options.initialCropWindowRectangle
+                    view.cropRect = options.initialCropWindowRectangle
                 }
                 if (options.initialRotation > -1) {
-                    cropImageView.rotatedDegrees = options.initialRotation
+                    view.rotatedDegrees = options.initialRotation
                 }
             }
         } else {
@@ -135,7 +138,7 @@ class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriComplete
                 setResult(null, null, 1)
             } else {
                 val outputUri = outputUri
-                cropImageView.saveCroppedImageAsync(outputUri,
+                binding.cropImageView.saveCroppedImageAsync(outputUri,
                         options.outputCompressFormat,
                         options.outputCompressQuality,
                         options.outputRequestWidth,
@@ -149,7 +152,7 @@ class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriComplete
      * Rotate the image in the crop image view.
      */
     protected fun rotateImage(degrees: Int) {
-        cropImageView.rotateImage(degrees)
+        binding.cropImageView.rotateImage(degrees)
     }
 
     /**
@@ -173,9 +176,9 @@ class ImageCropperActivity : BaseActivity(), CropImageView.OnSetImageUriComplete
      * Get intent instance to be used for the result of this activity.
      */
     private fun getResultIntent(uri: Uri?, error: Exception?, sampleSize: Int): Intent {
-        val result = CropImage.ActivityResult(cropImageView.imageUri, uri, error,
-                cropImageView.cropPoints, cropImageView.cropRect, cropImageView.rotatedDegrees,
-                cropImageView.wholeImageRect, sampleSize)
+        val result = CropImage.ActivityResult(binding.cropImageView.imageUri, uri, error,
+                binding.cropImageView.cropPoints, binding.cropImageView.cropRect, binding.cropImageView.rotatedDegrees,
+                binding.cropImageView.wholeImageRect, sampleSize)
         val intent = Intent()
         intent.putExtra(CropImage.CROP_IMAGE_EXTRA_RESULT, result)
         return intent

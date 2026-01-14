@@ -42,7 +42,7 @@ class SimpleParcelableUsersAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = super.getView(position, convertView, parent)
         val holder = view.tag as? SimpleUserViewHolder<*> ?: run {
-            val h = SimpleUserViewHolder(view, this)
+            val h = SimpleUserViewHolder.fromView(view, this)
             view.tag = h
             return@run h
         }

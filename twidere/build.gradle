@@ -36,12 +36,15 @@ buildscript {
 repositories {
     mavenLocal()
     maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
-    flatDir { dirs "$projectDir/lib" }
 }
 
 android {
     compileSdkVersion globalCompileSdkVersion
     buildToolsVersion globalBuildToolsVersion
+    
+    buildFeatures {
+        viewBinding true
+    }
 
     defaultConfig {
         applicationId "org.mariotaku.twidere"

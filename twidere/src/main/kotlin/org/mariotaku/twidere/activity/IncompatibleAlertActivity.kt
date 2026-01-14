@@ -3,7 +3,7 @@ package org.mariotaku.twidere.activity
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_device_incompatible.*
+import org.mariotaku.twidere.databinding.ActivityDeviceIncompatibleBinding
 import org.mariotaku.twidere.BuildConfig
 import org.mariotaku.twidere.R
 import java.util.*
@@ -13,20 +13,23 @@ import java.util.*
  */
 class IncompatibleAlertActivity : Activity() {
 
+    private lateinit var binding: ActivityDeviceIncompatibleBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_device_incompatible)
+        binding = ActivityDeviceIncompatibleBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        infoText.append(String.format(Locale.US, "Twidere version %s (%d)\n",
+        binding.infoText.append(String.format(Locale.US, "Twidere version %s (%d)\n",
                 BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE))
-        infoText.append(String.format(Locale.US, "Classpath %s\n", ClassLoader.getSystemClassLoader()))
-        infoText.append(String.format(Locale.US, "Brand %s\n", Build.BRAND))
-        infoText.append(String.format(Locale.US, "Device %s\n", Build.DEVICE))
-        infoText.append(String.format(Locale.US, "Display %s\n", Build.DISPLAY))
-        infoText.append(String.format(Locale.US, "Hardware %s\n", Build.HARDWARE))
-        infoText.append(String.format(Locale.US, "Manufacturer %s\n", Build.MANUFACTURER))
-        infoText.append(String.format(Locale.US, "Model %s\n", Build.MODEL))
-        infoText.append(String.format(Locale.US, "Product %s\n", Build.PRODUCT))
+        binding.infoText.append(String.format(Locale.US, "Classpath %s\n", ClassLoader.getSystemClassLoader()))
+        binding.infoText.append(String.format(Locale.US, "Brand %s\n", Build.BRAND))
+        binding.infoText.append(String.format(Locale.US, "Device %s\n", Build.DEVICE))
+        binding.infoText.append(String.format(Locale.US, "Display %s\n", Build.DISPLAY))
+        binding.infoText.append(String.format(Locale.US, "Hardware %s\n", Build.HARDWARE))
+        binding.infoText.append(String.format(Locale.US, "Manufacturer %s\n", Build.MANUFACTURER))
+        binding.infoText.append(String.format(Locale.US, "Model %s\n", Build.MODEL))
+        binding.infoText.append(String.format(Locale.US, "Product %s\n", Build.PRODUCT))
     }
 
 }

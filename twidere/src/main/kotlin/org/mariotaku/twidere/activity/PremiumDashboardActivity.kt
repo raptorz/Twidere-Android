@@ -14,8 +14,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.activity_premium_dashboard.*
-import kotlinx.android.synthetic.main.adapter_item_extra_feature_normal.view.*
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.alwaysUi
@@ -26,6 +24,7 @@ import org.mariotaku.kpreferences.set
 import org.mariotaku.ktextension.setItemAvailability
 import org.mariotaku.twidere.BuildConfig
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.ActivityPremiumDashboardBinding
 import org.mariotaku.twidere.TwidereConstants.REQUEST_PURCHASE_EXTRA_FEATURES
 import org.mariotaku.twidere.adapter.BaseRecyclerViewAdapter
 import org.mariotaku.twidere.constant.promotionsEnabledKey
@@ -43,15 +42,17 @@ import javax.inject.Inject
 
 class PremiumDashboardActivity : BaseActivity() {
 
+    private lateinit var binding: ActivityPremiumDashboardBinding
     private lateinit var adapter: ControllersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_premium_dashboard)
+        binding = ActivityPremiumDashboardBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         adapter = ControllersAdapter(this, requestManager)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
         if (extraFeaturesService.isSupported()) {
             adapter.controllers = extraFeaturesService.getDashboardControllers()
         } else {
@@ -61,9 +62,9 @@ class PremiumDashboardActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        val lm = recyclerView.layoutManager as LinearLayoutManager
+        val lm = binding.recyclerView.layoutManager as LinearLayoutManager
         for (pos in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
-            val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? ControllerViewHolder ?: return
+            val holder = binding.recyclerView.findViewHolderForLayoutPosition(pos) as? ControllerViewHolder ?: return
             val controller = holder.controller as? BaseItemViewController ?: return
             controller.onPause()
         }
@@ -71,9 +72,9 @@ class PremiumDashboardActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        val lm = recyclerView.layoutManager as LinearLayoutManager
+        val lm = binding.recyclerView.layoutManager as LinearLayoutManager
         for (pos in lm.findFirstVisibleItemPosition()..lm.findLastVisibleItemPosition()) {
-            val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? ControllerViewHolder ?: return
+            val holder = binding.recyclerView.findViewHolderForLayoutPosition(pos) as? ControllerViewHolder ?: return
             val controller = holder.controller as? BaseItemViewController ?: return
             controller.onResume()
         }
@@ -99,7 +100,7 @@ class PremiumDashboardActivity : BaseActivity() {
             else -> {
                 val position = ((requestCode and 0xFF00) shr 8) - 1
                 if (position >= 0) {
-                    val holder = recyclerView.findViewHolderForLayoutPosition(position) as? ControllerViewHolder ?: return
+                    val holder = binding.recyclerView.findViewHolderForLayoutPosition(position) as? ControllerViewHolder ?: return
                     val controller = holder.controller as? BaseItemViewController ?: return
                     controller.onActivityResult(requestCode and 0xFF, resultCode, data)
                 }
@@ -173,7 +174,7 @@ class PremiumDashboardActivity : BaseActivity() {
     }
 
     class ControllerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val containerView by lazy { itemView.containerView }
+        private val containerView by lazy { itemView.findViewById<ContainerView>(R.id.containerView) }
         var controller: ContainerView.ViewController?
             get() = containerView.viewController
             set(value) {

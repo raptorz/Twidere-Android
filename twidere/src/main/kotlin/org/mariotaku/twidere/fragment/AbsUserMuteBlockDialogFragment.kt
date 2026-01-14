@@ -23,8 +23,9 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import android.view.View
 import android.widget.CheckBox
-import kotlinx.android.synthetic.main.dialog_block_mute_filter_user_confirm.*
+import android.widget.TextView
 import org.mariotaku.ktextension.spannable
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.IntentConstants.EXTRA_USER
@@ -57,11 +58,13 @@ abstract class AbsUserMuteBlockDialogFragment : BaseDialogFragment(), DialogInte
         dialog.applyOnShow {
             // Workaround for "Invalid Android class type: UNKNOWN"
             applyTheme()
-            filterEverywhereHelp.setOnClickListener {
+            val filterEverywhereHelp = findViewById<View>(R.id.filterEverywhereHelp)
+            filterEverywhereHelp?.setOnClickListener {
                 MessageDialogFragment.show(childFragmentManager, title = getString(R.string.filter_everywhere),
                         message = getString(R.string.filter_everywhere_description), tag = "filter_everywhere_help")
             }
-            confirmMessage.spannable = getMessage(user)
+            val confirmMessage = findViewById<TextView>(R.id.confirmMessage)
+            confirmMessage?.spannable = getMessage(user)
         }
         return dialog
     }

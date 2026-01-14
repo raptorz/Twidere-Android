@@ -21,20 +21,29 @@ package org.mariotaku.twidere.view.holder
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
-import kotlinx.android.synthetic.main.list_item_load_indicator.view.*
+import org.mariotaku.twidere.databinding.ListItemLoadIndicatorBinding
 import org.mariotaku.twidere.R
 
 /**
  * Created by mariotaku on 14/11/19.
  */
-class LoadIndicatorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    private val loadProgress by lazy { itemView.loadProgress }
+class LoadIndicatorViewHolder private constructor(
+    private val binding: ListItemLoadIndicatorBinding
+) : RecyclerView.ViewHolder(binding.root) {
+    private val loadProgress by lazy { binding.loadProgress }
 
     fun setLoadProgressVisible(visible: Boolean) {
         loadProgress.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
+    @Deprecated("Use create() factory method instead", ReplaceWith("LoadIndicatorViewHolder.create(view)"))
+    constructor(view: View) : this(ListItemLoadIndicatorBinding.bind(view))
+
     companion object {
         const val layoutResource = R.layout.list_item_load_indicator
+        
+        fun create(view: View): LoadIndicatorViewHolder {
+            return LoadIndicatorViewHolder(ListItemLoadIndicatorBinding.bind(view))
+        }
     }
 }

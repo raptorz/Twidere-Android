@@ -17,7 +17,7 @@ import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.ExpandableListView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.dialog_expandable_list.*
+import org.mariotaku.twidere.databinding.DialogExpandableListBinding
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.alwaysUi
@@ -95,16 +95,17 @@ class TrendsLocationSelectorActivity : BaseActivity() {
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             val selectorBuilder = AlertDialog.Builder(requireContext())
             selectorBuilder.setTitle(R.string.trends_location)
-            selectorBuilder.setView(R.layout.dialog_expandable_list)
+            
+            val binding = DialogExpandableListBinding.inflate(LayoutInflater.from(requireContext()))
+            selectorBuilder.setView(binding.root)
             selectorBuilder.setNegativeButton(android.R.string.cancel, null)
             val dialog = selectorBuilder.create()
             dialog.onShow {
                 it.applyTheme()
-                val listView = it.expandableList
                 val adapter = ExpandableTrendLocationsListAdapter(requireContext())
                 adapter.data = list
-                listView.setAdapter(adapter)
-                listView.setOnGroupClickListener(ExpandableListView.OnGroupClickListener { _, _, groupPosition, _ ->
+                binding.expandableList.setAdapter(adapter)
+                binding.expandableList.setOnGroupClickListener(ExpandableListView.OnGroupClickListener { _, _, groupPosition, _ ->
                     val group = adapter.getGroup(groupPosition)
                     if (group.woeid.toLong() == WORLDWIDE) {
                         setActivityResult(group)
@@ -113,14 +114,13 @@ class TrendsLocationSelectorActivity : BaseActivity() {
                     }
                     return@OnGroupClickListener false
                 })
-                listView.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
+                binding.expandableList.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
                     val child = adapter.getChild(groupPosition, childPosition)
                     setActivityResult(child)
                     dismiss()
                     return@setOnChildClickListener true
                 }
             }
-            dialog.show()
             return dialog
         }
 

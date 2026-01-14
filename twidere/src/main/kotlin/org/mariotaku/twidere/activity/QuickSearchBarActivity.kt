@@ -44,7 +44,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.AdapterView.OnItemSelectedListener
-import kotlinx.android.synthetic.main.activity_quick_search_bar.*
+import org.mariotaku.twidere.databinding.ActivityQuickSearchBarBinding
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.empty
 import org.mariotaku.ktextension.spannable
@@ -79,6 +79,7 @@ import org.mariotaku.twidere.view.ProfileImageView
 class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<Cursor?>,
         OnItemSelectedListener, OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks {
 
+    private lateinit var binding: ActivityQuickSearchBarBinding
     private var textChanged: Boolean = false
     private var hasQrScanner: Boolean = false
 
@@ -90,9 +91,10 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
             return@run scanIntent.resolveActivity(packageManager) != null
         }
 
-        setContentView(R.layout.activity_quick_search_bar)
+        binding = ActivityQuickSearchBarBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        promotionService.setupBanner(adContainer, PromotionService.BannerType.QUICK_SEARCH,
+        promotionService.setupBanner(binding.adContainer, PromotionService.BannerType.QUICK_SEARCH,
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
 
@@ -102,8 +104,8 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
                 requestManager = requestManager)
         accountsSpinnerAdapter.setDropDownViewResource(R.layout.list_item_simple_user)
         accountsSpinnerAdapter.addAll(accounts)
-        accountSpinner.adapter = accountsSpinnerAdapter
-        accountSpinner.onItemSelectedListener = this
+        binding.accountSpinner.adapter = accountsSpinnerAdapter
+        binding.accountSpinner.onItemSelectedListener = this
         if (savedInstanceState == null) {
             val intent = intent
             val accountKey = intent.getParcelableExtra<UserKey>(EXTRA_ACCOUNT_KEY)
@@ -112,22 +114,22 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
                 index = accountsSpinnerAdapter.findPositionByKey(accountKey)
             }
             if (index != -1) {
-                accountSpinner.setSelection(index)
+                binding.accountSpinner.setSelection(index)
             }
         }
-        ViewCompat.setOnApplyWindowInsetsListener(mainContent, this)
-        mainContent.setOnClickListener {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainContent, this)
+        binding.mainContent.setOnClickListener {
             finish()
         }
-        suggestionsList.adapter = SuggestionsAdapter(this)
-        suggestionsList.onItemClickListener = this
+        binding.suggestionsList.adapter = SuggestionsAdapter(this)
+        binding.suggestionsList.onItemClickListener = this
 
-        val listener = SwipeDismissListViewTouchListener(suggestionsList, this)
-        suggestionsList.setOnTouchListener(listener)
-        suggestionsList.setOnScrollListener(listener.makeScrollListener())
-        searchSubmit.setOnClickListener(this)
+        val listener = SwipeDismissListViewTouchListener(binding.suggestionsList, this)
+        binding.suggestionsList.setOnTouchListener(listener)
+        binding.suggestionsList.setOnScrollListener(listener.makeScrollListener())
+        binding.searchSubmit.setOnClickListener(this)
 
-        EditTextEnterHandler.attach(searchQuery, object : EnterListener {
+        EditTextEnterHandler.attach(binding.searchQuery, object : EnterListener {
             override fun shouldCallListener(): Boolean {
                 return true
             }
@@ -137,7 +139,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
                 return true
             }
         }, true)
-        searchQuery.addTextChangedListener(object : TextWatcher {
+        binding.searchQuery.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
 
             }
@@ -154,23 +156,23 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
         })
 
         if (savedInstanceState == null) {
-            searchQuery.setText(intent.getStringExtra(EXTRA_QUERY))
-            searchQuery.setSelection(searchQuery.length())
+            binding.searchQuery.setText(intent.getStringExtra(EXTRA_QUERY))
+            binding.searchQuery.setSelection(binding.searchQuery.length())
         }
 
         LoaderManager.getInstance(this).initLoader(0, null, this)
 
         updateSubmitButton()
-        promotionService.loadBanner(adContainer)
+        promotionService.loadBanner(binding.adContainer)
     }
 
     override fun canDismiss(position: Int): Boolean {
-        val adapter = suggestionsList.adapter as SuggestionsAdapter
+        val adapter = binding.suggestionsList.adapter as SuggestionsAdapter
         return adapter.getItemViewType(position) == SuggestionsAdapter.VIEW_TYPE_SEARCH_HISTORY
     }
 
     override fun onDismiss(listView: ListView, reverseSortedPositions: IntArray) {
-        val adapter = suggestionsList.adapter as SuggestionsAdapter
+        val adapter = binding.suggestionsList.adapter as SuggestionsAdapter
         val ids = LongArray(reverseSortedPositions.size)
         for (i in reverseSortedPositions.indices) {
             val position = reverseSortedPositions[i]
@@ -185,10 +187,10 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
 
     override fun onClick(v: View) {
         when (v) {
-            searchSubmit -> {
-                if (searchQuery.empty && hasQrScanner) {
+            binding.searchSubmit -> {
+                if (binding.searchQuery.empty && hasQrScanner) {
                     val currentFocus = currentFocus
-                    if (currentFocus === searchQuery) {
+                    if (currentFocus === binding.searchQuery) {
                         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                         imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
                         currentFocus.clearFocus()
@@ -245,7 +247,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
         val account = selectedAccountDetails
         val builder = Suggestions.Search.CONTENT_URI.buildUpon()
-        builder.appendQueryParameter(QUERY_PARAM_QUERY, ParseUtils.parseString(searchQuery.text))
+        builder.appendQueryParameter(QUERY_PARAM_QUERY, ParseUtils.parseString(binding.searchQuery.text))
         if (account != null) {
             builder.appendQueryParameter(QUERY_PARAM_ACCOUNT_KEY, account.key.toString())
             builder.appendQueryParameter(QUERY_PARAM_ACCOUNT_TYPE, account.type)
@@ -257,12 +259,12 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
     }
 
     override fun onLoadFinished(loader: Loader<Cursor?>, data: Cursor?) {
-        val adapter = suggestionsList.adapter as SuggestionsAdapter
+        val adapter = binding.suggestionsList.adapter as SuggestionsAdapter
         adapter.changeCursor(data)
     }
 
     override fun onLoaderReset(loader: Loader<Cursor?>) {
-        val adapter = suggestionsList.adapter as SuggestionsAdapter
+        val adapter = binding.suggestionsList.adapter as SuggestionsAdapter
         adapter.changeCursor(null)
     }
 
@@ -274,7 +276,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
     }
 
     override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val adapter = suggestionsList.adapter as SuggestionsAdapter
+        val adapter = binding.suggestionsList.adapter as SuggestionsAdapter
         val item = adapter.getSuggestionItem(position) ?: return
         val details = selectedAccountDetails ?: return
         when (adapter.getItemViewType(position)) {
@@ -308,7 +310,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
 
     override fun handleKeyboardShortcutSingle(handler: KeyboardShortcutsHandler, keyCode: Int, event: KeyEvent, metaState: Int): Boolean {
         val action = handler.getKeyAction(CONTEXT_TAG_NAVIGATION, keyCode, event, metaState)
-        if (ACTION_NAVIGATION_BACK == action && searchQuery.length() == 0) {
+        if (ACTION_NAVIGATION_BACK == action && binding.searchQuery.length() == 0) {
             if (!textChanged) {
                 onBackPressed()
             } else {
@@ -326,7 +328,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
 
     private fun doSearch() {
         if (isFinishing) return
-        val query = ParseUtils.parseString(searchQuery.text)
+        val query = ParseUtils.parseString(binding.searchQuery.text)
         if (TextUtils.isEmpty(query)) return
         val details = selectedAccountDetails ?: return
         IntentUtils.openSearch(this, details.key, query)
@@ -336,7 +338,7 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
 
     private val selectedAccountDetails: AccountDetails?
         get() {
-            return accountSpinner.selectedItem as? AccountDetails
+            return binding.accountSpinner.selectedItem as? AccountDetails
         }
 
     private fun updateWindowAttributes() {
@@ -348,16 +350,16 @@ class QuickSearchBarActivity : BaseActivity(), OnClickListener, LoaderCallbacks<
     }
 
     private fun setSearchQueryText(query: String?) {
-        searchQuery.setText(query)
+        binding.searchQuery.setText(query)
         if (query == null) return
-        searchQuery.setSelection(query.length)
+        binding.searchQuery.setSelection(query.length)
     }
 
     private fun updateSubmitButton() {
-        if (searchQuery.empty && hasQrScanner) {
-            searchSubmit.setImageResource(R.drawable.ic_action_qr_scan)
+        if (binding.searchQuery.empty && hasQrScanner) {
+            binding.searchSubmit.setImageResource(R.drawable.ic_action_qr_scan)
         } else {
-            searchSubmit.setImageResource(R.drawable.ic_action_search)
+            binding.searchSubmit.setImageResource(R.drawable.ic_action_search)
         }
     }
 

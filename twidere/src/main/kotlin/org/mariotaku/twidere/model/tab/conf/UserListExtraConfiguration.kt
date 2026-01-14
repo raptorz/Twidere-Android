@@ -7,8 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.layout_extra_config_user_list.view.*
-import kotlinx.android.synthetic.main.list_item_simple_user_list.view.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.activity.UserListSelectorActivity
 import org.mariotaku.twidere.adapter.DummyItemAdapter
@@ -51,9 +49,10 @@ class UserListExtraConfiguration(key: String) : TabConfiguration.ExtraConfigurat
             intent.setClass(context, UserListSelectorActivity::class.java)
             fragment.startExtraConfigurationActivityForResult(this@UserListExtraConfiguration, intent, 1)
         }
-        hintView = view.selectUserListHint
+        hintView = view.findViewById(R.id.selectUserListHint)
         val adapter = DummyItemAdapter(context, requestManager = Glide.with(context))
-        viewHolder = SimpleUserListViewHolder(adapter, view.listItem)
+        val listItemView = view.findViewById<View>(R.id.listItem)
+        viewHolder = SimpleUserListViewHolder(adapter, listItemView)
 
         viewHolder.itemView.visibility = View.GONE
         hintView.visibility = View.VISIBLE

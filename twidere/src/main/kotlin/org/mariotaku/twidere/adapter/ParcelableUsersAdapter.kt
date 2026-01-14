@@ -29,6 +29,7 @@ import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.iface.ILoadMoreSupportAdapter
 import org.mariotaku.twidere.adapter.iface.ILoadMoreSupportAdapter.Companion.ITEM_VIEW_TYPE_LOAD_INDICATOR
 import org.mariotaku.twidere.adapter.iface.IUsersAdapter
+import org.mariotaku.twidere.databinding.ListItemUserBinding
 import org.mariotaku.twidere.model.ParcelableUser
 import org.mariotaku.twidere.model.UserKey
 import org.mariotaku.twidere.view.holder.LoadIndicatorViewHolder
@@ -137,7 +138,7 @@ class ParcelableUsersAdapter(
             }
             ITEM_VIEW_TYPE_LOAD_INDICATOR -> {
                 val view = inflater.inflate(R.layout.list_item_load_indicator, parent, false)
-                return LoadIndicatorViewHolder(view)
+                return LoadIndicatorViewHolder.create(view)
             }
         }
         throw IllegalStateException("Unknown view type $viewType")
@@ -167,8 +168,8 @@ class ParcelableUsersAdapter(
 
 
         fun createUserViewHolder(adapter: IUsersAdapter<*>, inflater: LayoutInflater, parent: ViewGroup): UserViewHolder {
-            val view = inflater.inflate(R.layout.list_item_user, parent, false)
-            val holder = UserViewHolder(view, adapter, adapter.simpleLayout, adapter.showFollow)
+            val binding = ListItemUserBinding.inflate(inflater, parent, false)
+            val holder = UserViewHolder.create(binding, adapter, adapter.simpleLayout, adapter.showFollow)
             holder.setOnClickListeners()
             holder.setupViewOptions()
             return holder

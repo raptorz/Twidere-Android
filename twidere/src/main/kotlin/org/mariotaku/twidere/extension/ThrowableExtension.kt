@@ -50,5 +50,16 @@ private fun MicroBlogException.getMicroBlogErrorMessage(context: Context): Strin
         StatusCodeMessageUtils.containsHttpStatus(statusCode) -> StatusCodeMessageUtils.getHttpStatusMessage(context, statusCode)
         else -> errorMessage
     }
-    return msg ?: message ?: javaClass.simpleName
+    if (msg != null) return msg
+    val message = this.message ?: javaClass.simpleName
+    val errorCodePattern = Regex("Error (\\d+)")
+    val matchResult = errorCodePattern.find(message)
+    if (matchResult != null) {
+        val code = matchResult.groupValues[1].toIntOrNull()
+        if (code != null) {
+            val httpMessage = StatusCodeMessageUtils.getHttpStatusMessage(context, code)
+            if (httpMessage != null) return httpMessage
+        }
+    }
+    return message
 }

@@ -675,7 +675,7 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
     internal class UserViewHolder(
             itemView: View,
             adapter: ConversationInfoAdapter
-    ) : SimpleUserViewHolder<ConversationInfoAdapter>(itemView, adapter) {
+    ) : SimpleUserViewHolder<ConversationInfoAdapter>(null, itemView, adapter) {
 
         private val headerIcon = itemView.findViewById<View>(R.id.headerIcon)
         private val itemContent = itemView.findViewById<View>(R.id.itemContent)
