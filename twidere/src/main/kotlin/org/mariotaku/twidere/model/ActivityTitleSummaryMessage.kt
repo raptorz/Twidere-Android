@@ -139,7 +139,7 @@ class ActivityTitleSummaryMessage private constructor(val icon: Int, val color: 
                             nameFirst))
                     title.setSpan(StyleSpan(Typeface.BOLD), 0, title.length,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    return ActivityTitleSummaryMessage(0, 0, title, status.text_unescaped)
+                    return ActivityTitleSummaryMessage(0, 0, title, status.text_unescaped ?: "")
                 }
                 Activity.Action.JOINED_TWITTER -> {
                     val typeIcon = R.drawable.ic_activity_action_follow

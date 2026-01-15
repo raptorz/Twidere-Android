@@ -1005,13 +1005,13 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         }
         when (statusAccount.type) {
             AccountType.FANFOU -> {
-                addFanfouHtmlToMentions(status.text_unescaped, status.spans, mentions)
+                addFanfouHtmlToMentions(status.text_unescaped ?: "", status.spans, mentions)
                 if (status.is_quote) {
-                    addFanfouHtmlToMentions(status.quoted_text_unescaped, status.quoted_spans, mentions)
+                    addFanfouHtmlToMentions(status.quoted_text_unescaped ?: "", status.quoted_spans, mentions)
                 }
             }
             AccountType.MASTODON -> {
-                addMastodonMentions(status.text_unescaped, status.spans, mentions)
+                addMastodonMentions(status.text_unescaped ?: "", status.spans, mentions)
                 mentions.remove("${accountUser.screen_name}@${accountUser.key.host}")
             }
             else -> if (status.mentions.isNotNullOrEmpty()) {
@@ -1200,7 +1200,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             return false
         }
         val replyToName = userColorNameManager.getDisplayName(status, nameFirst)
-        replyLabel.spannable = getString(R.string.label_quote_name_text, replyToName, status.text_unescaped)
+        replyLabel.spannable = getString(R.string.label_quote_name_text, replyToName, status.text_unescaped ?: "")
         replyLabel.visibility = View.VISIBLE
         editText.hint = getString(R.string.label_quote_name, replyToName)
         return true
@@ -1212,7 +1212,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             return false
         }
         val replyToName = userColorNameManager.getDisplayName(status, nameFirst)
-        replyLabel.spannable = getString(R.string.label_reply_name_text, replyToName, status.text_unescaped)
+        replyLabel.spannable = getString(R.string.label_reply_name_text, replyToName, status.text_unescaped ?: "")
         replyLabel.visibility = View.VISIBLE
         editText.hint = getString(R.string.label_reply_name, replyToName)
         return true

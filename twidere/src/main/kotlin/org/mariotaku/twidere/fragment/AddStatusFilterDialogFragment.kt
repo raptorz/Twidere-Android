@@ -138,16 +138,16 @@ class AddStatusFilterDialogFragment : BaseDialogFragment() {
             val list = ArrayList<FilterItemInfo>()
             if (status.is_retweet && status.retweeted_by_user_key != null) {
                 list.add(FilterItemInfo(FilterItemInfo.FILTER_TYPE_USER,
-                        UserItem(status.retweeted_by_user_key!!, status.retweeted_by_user_name,
-                                status.retweeted_by_user_screen_name)))
+                        UserItem(status.retweeted_by_user_key!!, status.retweeted_by_user_name ?: "",
+                                status.retweeted_by_user_screen_name ?: "")))
             }
             if (status.is_quote && status.quoted_user_key != null) {
                 list.add(FilterItemInfo(FilterItemInfo.FILTER_TYPE_USER,
-                        UserItem(status.quoted_user_key!!, status.quoted_user_name,
-                                status.quoted_user_screen_name)))
+                        UserItem(status.quoted_user_key!!, status.quoted_user_name ?: "",
+                                status.quoted_user_screen_name ?: "")))
             }
             list.add(FilterItemInfo(FilterItemInfo.FILTER_TYPE_USER, UserItem(status.user_key,
-                    status.user_name, status.user_screen_name)))
+                    status.user_name ?: "", status.user_screen_name ?: "")))
             val mentions = status.mentions
             if (mentions != null) {
                 for (mention in mentions) {

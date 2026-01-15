@@ -44,7 +44,7 @@ object IntentUtils {
     fun getStatusShareSubject(context: Context, status: ParcelableStatus): String {
         val timeString = Utils.formatToLongTimeString(context, status.timestamp)
         return context.getString(R.string.status_share_subject_format_with_time,
-                status.user_name, status.user_screen_name, timeString)
+                status.user_name ?: "", status.user_screen_name ?: "", timeString)
     }
 
     fun openUserProfile(context: Context, user: ParcelableUser, newDocument: Boolean,

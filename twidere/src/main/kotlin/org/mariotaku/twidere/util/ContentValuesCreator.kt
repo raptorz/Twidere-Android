@@ -34,8 +34,8 @@ object ContentValuesCreator {
     fun createFilteredUser(status: ParcelableStatus): ContentValues {
         val values = ContentValues()
         values.put(Filters.Users.USER_KEY, status.user_key.toString())
-        values.put(Filters.Users.NAME, status.user_name)
-        values.put(Filters.Users.SCREEN_NAME, status.user_screen_name)
+        values.put(Filters.Users.NAME, status.user_name ?: "")
+        values.put(Filters.Users.SCREEN_NAME, status.user_screen_name ?: "")
         return values
     }
 

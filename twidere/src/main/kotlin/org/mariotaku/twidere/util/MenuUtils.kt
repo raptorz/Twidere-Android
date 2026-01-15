@@ -116,10 +116,10 @@ object MenuUtils {
             twitter: AsyncTwitterWrapper, manager: UserColorNameManager, status: ParcelableStatus,
             details: AccountDetails) {
         if (menu is ContextMenu) {
-            val displayName = manager.getDisplayName(status.user_key, status.user_name,
-                    status.user_screen_name, preferences[nameFirstKey])
+            val displayName = manager.getDisplayName(status.user_key, status.user_name ?: "",
+                    status.user_screen_name ?: "", preferences[nameFirstKey])
             menu.setHeaderTitle(context.getString(R.string.status_menu_title_format, displayName,
-                    status.text_unescaped))
+                    status.text_unescaped ?: ""))
         }
         val retweetHighlight = ContextCompat.getColor(context, R.color.highlight_retweet)
         val favoriteHighlight = ContextCompat.getColor(context, R.color.highlight_favorite)

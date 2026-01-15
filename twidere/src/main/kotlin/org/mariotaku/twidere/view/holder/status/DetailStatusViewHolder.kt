@@ -115,8 +115,8 @@ class DetailStatusViewHolder(
         linkClickHandler.status = status
 
         if (status.retweet_id != null) {
-            val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key!!,
-                    status.retweeted_by_user_name!!, status.retweeted_by_user_acct!!, nameFirst)
+            val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key ?: status.user_key,
+                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_acct ?: "", nameFirst)
             retweetedByView.spannable = context.getString(R.string.name_retweeted, retweetedBy)
             retweetedByView.visibility = View.VISIBLE
         } else {
@@ -139,14 +139,14 @@ class DetailStatusViewHolder(
                 itemView.quotedName.visibility = View.VISIBLE
                 itemView.quotedText.visibility = View.VISIBLE
 
-                itemView.quotedName.name = colorNameManager.getUserNickname(status.quoted_user_key!!,
-                        status.quoted_user_name)
-                itemView.quotedName.screenName = "@${status.quoted_user_acct}"
+                itemView.quotedName.name = colorNameManager.getUserNickname(status.quoted_user_key ?: status.user_key,
+                        status.quoted_user_name ?: "")
+                itemView.quotedName.screenName = "@${status.quoted_user_acct ?: ""}"
                 itemView.quotedName.updateText(formatter)
 
 
                 val quotedDisplayEnd = status.extras?.quoted_display_text_range?.getOrNull(1) ?: -1
-                val quotedText = SpannableStringBuilder.valueOf(status.quoted_text_unescaped)
+                val quotedText = SpannableStringBuilder.valueOf(status.quoted_text_unescaped ?: "")
                 status.quoted_spans?.applyTo(quotedText)
                 linkify.applyAllLinks(quotedText, status.account_key, layoutPosition.toLong(),
                         status.is_possibly_sensitive, skipLinksInText)
@@ -157,7 +157,7 @@ class DetailStatusViewHolder(
                 }
                 itemView.quotedText.hideIfEmpty()
 
-                val quotedUserColor = colorNameManager.getUserColor(status.quoted_user_key!!)
+                val quotedUserColor = colorNameManager.getUserColor(status.quoted_user_key ?: status.user_key)
                 if (quotedUserColor != 0) {
                     itemView.quotedView.drawStart(quotedUserColor)
                 } else {
@@ -212,7 +212,7 @@ class DetailStatusViewHolder(
             status.timestamp
         }
 
-        nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name)
+        nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name ?: "")
         nameView.screenName = "@${status.user_acct}"
         nameView.updateText(formatter)
 
@@ -248,7 +248,7 @@ class DetailStatusViewHolder(
         itemView.timeSource.movementMethod = LinkMovementMethod.getInstance()
 
         val displayEnd = status.extras?.display_text_range?.getOrNull(1) ?: -1
-        val text = SpannableStringBuilder.valueOf(status.text_unescaped).apply {
+        val text = SpannableStringBuilder.valueOf(status.text_unescaped ?: "").apply {
             status.spans?.applyTo(this)
             linkify.applyAllLinks(this, status.account_key, layoutPosition.toLong(),
                     status.is_possibly_sensitive, skipLinksInText)

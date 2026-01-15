@@ -81,11 +81,12 @@ class MediaStatusViewHolder private constructor(
         val context = binding.root.context
 
         val displayEnd = status.extras?.display_text_range?.getOrNull(1) ?: -1
+        val textUnescaped = status.text_unescaped ?: ""
 
         if (displayEnd >= 0) {
-            mediaTextView.spannable = status.text_unescaped.subSequence(0, displayEnd)
+            mediaTextView.spannable = textUnescaped.subSequence(0, displayEnd.coerceAtMost(textUnescaped.length))
         } else {
-            mediaTextView.spannable = status.text_unescaped
+            mediaTextView.spannable = textUnescaped
         }
         adapter.requestManager.loadProfileImage(context, status,
                 adapter.profileImageStyle, profileImageView.cornerRadius,

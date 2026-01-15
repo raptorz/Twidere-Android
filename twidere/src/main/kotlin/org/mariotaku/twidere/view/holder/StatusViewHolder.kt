@@ -177,8 +177,8 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
 
             statusContentUpperSpace.visibility = View.GONE
         } else if (status.retweet_id != null) {
-            val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key!!,
-                    status.retweeted_by_user_name, status.retweeted_by_user_acct!!, nameFirst)
+            val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key ?: status.user_key,
+                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_acct ?: "", nameFirst)
             statusInfoLabel.spannable = context.getString(R.string.name_retweeted, formatter.unicodeWrap(retweetedBy))
             statusInfoIcon.setImageResource(R.drawable.ic_activity_action_retweet)
             statusInfoLabel.visibility = View.VISIBLE
@@ -188,7 +188,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         } else if (status.in_reply_to_status_id != null && status.in_reply_to_user_key != null && displayInReplyTo) {
             if (status.in_reply_to_name != null && status.in_reply_to_screen_name != null) {
                 val inReplyTo = colorNameManager.getDisplayName(status.in_reply_to_user_key!!,
-                        status.in_reply_to_name, status.in_reply_to_screen_name, nameFirst)
+                        status.in_reply_to_name ?: "", status.in_reply_to_screen_name ?: "", nameFirst)
                 statusInfoLabel.spannable = context.getString(R.string.in_reply_to_name, formatter.unicodeWrap(inReplyTo))
             } else {
                 statusInfoLabel.spannable = context.getString(R.string.label_status_type_reply)
@@ -216,15 +216,15 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
                 quotedNameView.visibility = View.VISIBLE
                 quotedTextView.visibility = View.VISIBLE
 
-                val quotedUserKey = status.quoted_user_key!!
+                val quotedUserKey = status.quoted_user_key ?: status.user_key
                 quotedNameView.name = colorNameManager.getUserNickname(quotedUserKey,
-                        status.quoted_user_name)
-                quotedNameView.screenName = "@${status.quoted_user_acct}"
+                        status.quoted_user_name ?: "")
+                quotedNameView.screenName = "@${status.quoted_user_acct ?: ""}"
 
                 val quotedDisplayEnd = status.extras?.quoted_display_text_range?.getOrNull(1) ?: -1
                 val quotedText: CharSequence
                 if (adapter.linkHighlightingStyle != VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE) {
-                    quotedText = SpannableStringBuilder.valueOf(status.quoted_text_unescaped)
+                    quotedText = SpannableStringBuilder.valueOf(status.quoted_text_unescaped ?: "")
                     status.quoted_spans?.applyTo(quotedText)
                     linkify.applyAllLinks(quotedText, status.account_key, layoutPosition.toLong(),
                             status.is_possibly_sensitive, adapter.linkHighlightingStyle,
@@ -299,7 +299,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
             status.timestamp
         }
 
-        nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name)
+        nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name ?: "")
         nameView.screenName = "@${status.user_acct}"
 
         if (adapter.profileImageEnabled) {
@@ -388,7 +388,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
             }
             displayEnd = -1
         } else if (adapter.linkHighlightingStyle != VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE) {
-            text = SpannableStringBuilder.valueOf(status.text_unescaped).apply {
+            text = SpannableStringBuilder.valueOf(status.text_unescaped ?: "").apply {
                 status.spans?.applyTo(this)
                 linkify.applyAllLinks(this, status.account_key, layoutPosition.toLong(),
                         status.is_possibly_sensitive, adapter.linkHighlightingStyle,
@@ -396,7 +396,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
             }
             displayEnd = status.extras?.display_text_range?.getOrNull(1) ?: -1
         } else {
-            text = status.text_unescaped
+            text = status.text_unescaped ?: ""
             displayEnd = status.extras?.display_text_range?.getOrNull(1) ?: -1
         }
 
