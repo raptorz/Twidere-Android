@@ -40,11 +40,9 @@ import androidx.appcompat.widget.Toolbar
 import android.view.*
 import com.bumptech.glide.RequestManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.activity_premium_dashboard.*
-import kotlinx.android.synthetic.main.fragment_messages_conversation.*
-import kotlinx.android.synthetic.main.fragment_messages_conversation.view.*
-import kotlinx.android.synthetic.main.layout_toolbar_message_conversation_title.*
 import org.mariotaku.abstask.library.TaskStarter
+import org.mariotaku.twidere.databinding.FragmentMessagesConversationBinding
+import org.mariotaku.twidere.databinding.LayoutToolbarMessageConversationTitleBinding
 import org.mariotaku.chameleon.Chameleon
 import org.mariotaku.chameleon.ChameleonUtils
 import org.mariotaku.kpreferences.get
@@ -94,6 +92,13 @@ import java.util.concurrent.atomic.AtomicReference
 class MessagesConversationFragment : AbsContentListRecyclerViewFragment<MessagesConversationAdapter>(),
         IToolBarSupportFragment, LoaderManager.LoaderCallbacks<List<ParcelableMessage>?>,
         EditAltTextDialogFragment.EditAltTextCallback {
+
+    private var _fragmentBinding: FragmentMessagesConversationBinding? = null
+    private val fragmentBinding get() = _fragmentBinding!!
+
+    private var _toolbarBinding: LayoutToolbarMessageConversationTitleBinding? = null
+    private val toolbarBinding get() = _toolbarBinding!!
+
     private lateinit var mediaPreviewAdapter: MediaPreviewAdapter
 
     private val accountKey: UserKey get() = arguments?.getParcelable(EXTRA_ACCOUNT_KEY)!!
@@ -121,7 +126,7 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
     override var controlBarOffset: Float = 1f
 
     override val toolbar: Toolbar
-        get() = conversationContainer.toolbar
+        get() = fragmentBinding.toolbar
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -140,7 +145,7 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
             }
 
             override fun onMessageLongClick(position: Int, holder: RecyclerView.ViewHolder): Boolean {
-                return recyclerView.showContextMenuForChild(holder.itemView)
+                return binding.recyclerView.showContextMenuForChild(holder.itemView)
             }
         }
         mediaPreviewAdapter = MediaPreviewAdapter(context, requestManager)
@@ -153,23 +158,23 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
             }
 
             override fun onEditClick(position: Int, holder: MediaPreviewViewHolder) {
-                attachedMediaPreview.showContextMenuForChild(holder.itemView)
+                fragmentBinding.attachedMediaPreview.showContextMenuForChild(holder.itemView)
             }
         }
-        attachedMediaPreview.layoutManager = FixedLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        attachedMediaPreview.adapter = mediaPreviewAdapter
-        attachedMediaPreview.addItemDecoration(PreviewGridItemDecoration(resources.getDimensionPixelSize(R.dimen.element_spacing_small)))
+        fragmentBinding.attachedMediaPreview.layoutManager = FixedLinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        fragmentBinding.attachedMediaPreview.adapter = mediaPreviewAdapter
+        fragmentBinding.attachedMediaPreview.addItemDecoration(PreviewGridItemDecoration(resources.getDimensionPixelSize(R.dimen.element_spacing_small)))
 
-        registerForContextMenu(recyclerView)
-        registerForContextMenu(attachedMediaPreview)
+        registerForContextMenu(binding.recyclerView)
+        registerForContextMenu(fragmentBinding.attachedMediaPreview)
 
-        sendMessage.setOnClickListener {
+        fragmentBinding.sendMessage.setOnClickListener {
             performSendMessage()
         }
-        addMedia.setOnClickListener {
+        fragmentBinding.addMedia.setOnClickListener {
             openMediaPicker()
         }
-        conversationTitleContainer.setOnClickListener {
+        toolbarBinding.conversationTitleContainer.setOnClickListener {
             val intent = IntentUtils.messageConversationInfo(accountKey, conversationId)
             startActivityForResult(intent, REQUEST_MANAGE_CONVERSATION_INFO)
         }
@@ -179,10 +184,10 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
             activity.supportActionBar?.setDisplayShowTitleEnabled(false)
         }
         val theme = Chameleon.getOverrideTheme(context, activity)
-        conversationTitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
-        conversationSubtitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
+        toolbarBinding.conversationTitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
+        toolbarBinding.conversationSubtitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
 
-        conversationAvatar.style = preferences[profileImageStyleKey]
+        toolbarBinding.conversationAvatar.style = preferences[profileImageStyleKey]
 
         setupEditText()
 
@@ -191,9 +196,9 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
         adapter.loadMoreSupportedPosition = ILoadMoreSupportAdapter.NONE
 
         if (account.type == AccountType.TWITTER) {
-            addMedia.visibility = View.VISIBLE
+            fragmentBinding.addMedia.visibility = View.VISIBLE
         } else {
-            addMedia.visibility = View.GONE
+            fragmentBinding.addMedia.visibility = View.GONE
         }
 
         if (savedInstanceState != null) {
@@ -263,7 +268,16 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_messages_conversation, container, false)
+        _fragmentBinding = FragmentMessagesConversationBinding.inflate(inflater, container, false)
+        val toolbarView = fragmentBinding.toolbar.findViewById<View>(R.id.conversationTitleLayout)
+        _toolbarBinding = LayoutToolbarMessageConversationTitleBinding.bind(toolbarView)
+        return fragmentBinding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _fragmentBinding = null
+        _toolbarBinding = null
     }
 
     override fun setupWindow(activity: FragmentActivity): Boolean {
@@ -391,7 +405,7 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
     }
 
     override fun onApplySystemWindowInsets(insets: Rect) {
-        view?.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+        fragmentBinding.root.setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 
     @Subscribe
@@ -421,22 +435,22 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
         val conversation = adapter.conversation ?: return
         val conversationAccount = this.account ?: return
         if (conversation.readOnly) return
-        if (editText.empty && mediaPreviewAdapter.itemCount == 0) {
-            editText.error = getString(R.string.hint_error_message_no_content)
+        if (fragmentBinding.editText.empty && mediaPreviewAdapter.itemCount == 0) {
+            fragmentBinding.editText.error = getString(R.string.hint_error_message_no_content)
             return
         }
         if (conversationAccount.type == AccountType.TWITTER) {
             if (mediaPreviewAdapter.itemCount > defaultFeatures.twitterDirectMessageMediaLimit) {
-                editText.error = getString(R.string.error_message_media_message_too_many)
+                fragmentBinding.editText.error = getString(R.string.error_message_media_message_too_many)
                 return
             } else {
-                editText.error = null
+                fragmentBinding.editText.error = null
             }
         } else if (mediaPreviewAdapter.itemCount > 0) {
-            editText.error = getString(R.string.error_message_media_message_attachment_not_supported)
+            fragmentBinding.editText.error = getString(R.string.error_message_media_message_attachment_not_supported)
             return
         }
-        val text = editText.text.toString()
+        val text = fragmentBinding.editText.text.toString()
         val message = ParcelableNewMessage().apply {
             this.account = conversationAccount
             this.media = mediaPreviewAdapter.asList().toTypedArray()
@@ -450,7 +464,7 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
             this.is_temp_conversation = conversation.is_temp
         }
         LengthyOperationsService.sendMessageAsync(context, message)
-        editText.text = null
+        fragmentBinding.editText.text = null
 
         // Clear media, those media will be deleted after sent
         mediaPreviewAdapter.clear()
@@ -484,12 +498,12 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
     }
 
     private fun updateMediaPreview() {
-        attachedMediaPreview.visibility = if (mediaPreviewAdapter.itemCount > 0) {
+        fragmentBinding.attachedMediaPreview.visibility = if (mediaPreviewAdapter.itemCount > 0) {
             View.VISIBLE
         } else {
             View.GONE
         }
-        editText.error = null
+        fragmentBinding.editText.error = null
     }
 
     private fun setProgressVisible(visible: Boolean) {
@@ -511,35 +525,35 @@ class MessagesConversationFragment : AbsContentListRecyclerViewFragment<Messages
         val subtitle = conversation.getSubtitle(context)
         activity.title = title
         val readOnly = conversation.readOnly
-        addMedia.isEnabled = !readOnly
-        sendMessage.isEnabled = !readOnly
-        editText.isEnabled = !readOnly
+        fragmentBinding.addMedia.isEnabled = !readOnly
+        fragmentBinding.sendMessage.isEnabled = !readOnly
+        fragmentBinding.editText.isEnabled = !readOnly
 
-        conversationTitle.spannable = title
+        toolbarBinding.conversationTitle.spannable = title
         if (subtitle != null) {
-            conversationSubtitle.visibility = View.VISIBLE
-            conversationSubtitle.spannable = subtitle
+            toolbarBinding.conversationSubtitle.visibility = View.VISIBLE
+            toolbarBinding.conversationSubtitle.spannable = subtitle
         } else {
-            conversationSubtitle.visibility = View.GONE
+            toolbarBinding.conversationSubtitle.visibility = View.GONE
         }
 
 
         val stateIcon = if (conversation.notificationDisabled) {
             ContextCompat.getDrawable(context, R.drawable.ic_message_type_speaker_muted)?.apply {
-                mutate().setColorFilter(conversationTitle.currentTextColor, PorterDuff.Mode.SRC_ATOP)
+                mutate().setColorFilter(toolbarBinding.conversationTitle.currentTextColor, PorterDuff.Mode.SRC_ATOP)
             }
         } else {
             null
         }
-        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(conversationTitle, null,
+        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(toolbarBinding.conversationTitle, null,
                 null, stateIcon, null)
 
         requestManager.loadProfileImage(context, conversation, preferences[profileImageStyleKey])
-                .into(conversationAvatar)
+                .into(toolbarBinding.conversationAvatar)
     }
 
     private fun setupEditText() {
-        editText.imageInputListener = { contentInfo ->
+        fragmentBinding.editText.imageInputListener = { contentInfo ->
             val type = if (contentInfo.description.mimeTypeCount > 0) {
                 AbsAddMediaTask.inferMediaType(contentInfo.description.getMimeType(0))
             } else {

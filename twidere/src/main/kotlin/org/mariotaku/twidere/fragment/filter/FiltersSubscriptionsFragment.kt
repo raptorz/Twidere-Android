@@ -17,8 +17,8 @@ import android.widget.AbsListView
 import android.widget.ListView
 import android.widget.TextView
 import com.rengwuxian.materialedittext.MaterialEditText
-import kotlinx.android.synthetic.main.layout_list_with_empty_view.*
 import okhttp3.HttpUrl
+import org.mariotaku.twidere.databinding.LayoutListWithEmptyViewBinding
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.ktextension.*
 import org.mariotaku.library.objectcursor.ObjectCursor
@@ -53,6 +53,9 @@ import java.lang.ref.WeakReference
 class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbacks<Cursor>,
         AbsListView.MultiChoiceModeListener {
 
+    protected lateinit var binding: LayoutListWithEmptyViewBinding
+        private set
+    
     private lateinit var adapter: FilterSubscriptionsAdapter
     private var actionMode: ActionMode? = null
 
@@ -61,12 +64,12 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
         setHasOptionsMenu(true)
 
         adapter = FilterSubscriptionsAdapter(requireContext())
-        listView.adapter = adapter
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.setMultiChoiceModeListener(this)
+        binding.listView.adapter = adapter
+        binding.listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+        binding.listView.setMultiChoiceModeListener(this)
 
-        listContainer.visibility = View.GONE
-        progressContainer.visibility = View.VISIBLE
+        binding.listContainer.visibility = View.GONE
+        binding.progressContainer.visibility = View.VISIBLE
         LoaderManager.getInstance(this).initLoader(0, null, this)
 
 
@@ -153,7 +156,8 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.layout_list_with_empty_view, container, false)
+        binding = LayoutListWithEmptyViewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
@@ -170,16 +174,16 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
     override fun onLoadFinished(loader: Loader<Cursor>, cursor: Cursor) {
         adapter.changeCursor(cursor)
         if (cursor.isEmpty) {
-            listView.visibility = View.GONE
-            emptyView.visibility = View.VISIBLE
-            emptyIcon.setImageResource(R.drawable.ic_info_info_generic)
-            emptyText.setText(R.string.hint_empty_filters_subscriptions)
+            binding.listView.visibility = View.GONE
+            binding.emptyView.visibility = View.VISIBLE
+            binding.emptyIcon.setImageResource(R.drawable.ic_info_info_generic)
+            binding.emptyText.setText(R.string.hint_empty_filters_subscriptions)
         } else {
-            listView.visibility = View.VISIBLE
-            emptyView.visibility = View.GONE
+            binding.listView.visibility = View.VISIBLE
+            binding.emptyView.visibility = View.GONE
         }
-        listContainer.visibility = View.VISIBLE
-        progressContainer.visibility = View.GONE
+        binding.listContainer.visibility = View.VISIBLE
+        binding.progressContainer.visibility = View.GONE
     }
 
     override fun onItemCheckedStateChanged(mode: ActionMode?, position: Int, id: Long, checked: Boolean) {
@@ -195,7 +199,7 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        listView.updateSelectionItems(menu)
+        binding.listView.updateSelectionItems(menu)
         return true
     }
 
@@ -206,13 +210,13 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
                 mode.finish()
             }
             R.id.select_all -> {
-                listView.selectAll()
+                binding.listView.selectAll()
             }
             R.id.select_none -> {
-                listView.selectNone()
+                binding.listView.selectNone()
             }
             R.id.invert_selection -> {
-                listView.invertSelection()
+                binding.listView.invertSelection()
             }
         }
         return true
@@ -223,7 +227,7 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
     }
 
     private fun performDeletion() {
-        val ids = listView.checkedItemIds
+        val ids = binding.listView.checkedItemIds
         val resolver = context?.contentResolver ?: return
         val where = Expression.inArgs(Filters.Subscriptions._ID, ids.size).sql
         val whereArgs = ids.toStringArray()

@@ -45,9 +45,11 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import android.text.TextUtils
 import android.view.*
 import android.widget.Toast
+import org.mariotaku.twidere.view.IconActionView
+import org.mariotaku.twidere.view.FixedTextView
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_status.*
-import kotlinx.android.synthetic.main.layout_content_fragment_common.*
+import org.mariotaku.twidere.databinding.FragmentStatusBinding
+import org.mariotaku.twidere.databinding.LayoutContentFragmentCommonBinding
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.alwaysUi
@@ -123,8 +125,15 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     override lateinit var adapter: StatusDetailsAdapter
 
     private lateinit var layoutManager: LinearLayoutManager
+
+    protected lateinit var binding: FragmentStatusBinding
     private lateinit var navigationHelper: RecyclerViewNavigationHelper
     private lateinit var scrollListener: RecyclerViewScrollHandler<StatusDetailsAdapter>
+
+    private val progressContainer by lazy { binding.root.findViewById<View>(R.id.progressContainer) }
+    private val errorContainer by lazy { binding.root.findViewById<View>(R.id.errorContainer) }
+    private val errorIcon by lazy { binding.root.findViewById<IconActionView>(R.id.errorIcon) }
+    private val errorText by lazy { binding.root.findViewById<FixedTextView>(R.id.errorText) }
 
     private var loadTranslationTask: LoadTranslationTask? = null
     // Data fields
@@ -230,7 +239,8 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_status, container, false)
+        binding = FragmentStatusBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -243,21 +253,21 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
             NdefMessage(arrayOf(NdefRecord.createUri(LinkCreator.getStatusWebLink(status))))
         })
         adapter = StatusDetailsAdapter(this)
-        layoutManager = StatusListLinearLayoutManager(context, recyclerView)
+        layoutManager = StatusListLinearLayoutManager(context, binding.recyclerView)
         mItemDecoration = StatusDividerItemDecoration(context, adapter, layoutManager.orientation).apply {
-            recyclerView.addItemDecoration(this)
+            binding.recyclerView.addItemDecoration(this)
         }
         layoutManager.recycleChildrenOnDetach = true
-        recyclerView.layoutManager = layoutManager
-        recyclerView.clipToPadding = false
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.clipToPadding = false
         adapter.statusClickListener = this
-        recyclerView.adapter = adapter
-        registerForContextMenu(recyclerView)
+        binding.recyclerView.adapter = adapter
+        registerForContextMenu(binding.recyclerView)
 
-        scrollListener = RecyclerViewScrollHandler(this, RecyclerViewCallback(recyclerView))
+        scrollListener = RecyclerViewScrollHandler(this, RecyclerViewCallback(binding.recyclerView))
         scrollListener.touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager,
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager,
                 adapter, null)
 
         setState(STATE_LOADING)
@@ -316,7 +326,7 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     override fun onItemMenuClick(holder: ViewHolder, menuView: View, position: Int) {
         if (activity == null) return
         val view = layoutManager.findViewByPosition(position) ?: return
-        recyclerView.showContextMenuForChild(view)
+        binding.recyclerView.showContextMenuForChild(view)
     }
 
     override fun onUserProfileClick(holder: IStatusViewHolder, position: Int) {
@@ -343,10 +353,10 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
             keyCode: Int, event: KeyEvent,
             metaState: Int): Boolean {
         if (!KeyboardShortcutsHandler.isValidForHotkey(keyCode, event)) return false
-        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(recyclerView, layoutManager.focusedChild)
+        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(binding.recyclerView, layoutManager.focusedChild)
         val position: Int
-        if (focusedChild != null && focusedChild.parent === recyclerView) {
-            position = recyclerView.getChildLayoutPosition(focusedChild)
+        if (focusedChild != null && focusedChild.parent === binding.recyclerView) {
+            position = binding.recyclerView.getChildLayoutPosition(focusedChild)
         } else {
             return false
         }
@@ -448,7 +458,7 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     }
 
     override fun onApplySystemWindowInsets(insets: Rect) {
-        recyclerView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+        binding.recyclerView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 
     override val reachingEnd: Boolean
@@ -561,7 +571,7 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     }
 
     private fun setState(state: Int) {
-        statusContent.visibility = if (state == STATE_LOADED) View.VISIBLE else View.GONE
+        binding.statusContent.visibility = if (state == STATE_LOADED) View.VISIBLE else View.GONE
         progressContainer.visibility = if (state == STATE_LOADING) View.VISIBLE else View.GONE
         errorContainer.visibility = if (state == STATE_ERROR) View.VISIBLE else View.GONE
     }
@@ -569,13 +579,13 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
     override fun onStart() {
         super.onStart()
         bus.register(this)
-        recyclerView.addOnScrollListener(scrollListener)
-        recyclerView.setOnTouchListener(scrollListener.touchListener)
+        binding.recyclerView.addOnScrollListener(scrollListener)
+        binding.recyclerView.setOnTouchListener(scrollListener.touchListener)
     }
 
     override fun onStop() {
-        recyclerView.setOnTouchListener(null)
-        recyclerView.removeOnScrollListener(scrollListener)
+        binding.recyclerView.setOnTouchListener(null)
+        binding.recyclerView.removeOnScrollListener(scrollListener)
         bus.unregister(this)
         super.onStop()
     }

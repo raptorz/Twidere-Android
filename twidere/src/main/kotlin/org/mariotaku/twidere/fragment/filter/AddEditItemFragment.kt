@@ -30,8 +30,8 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.CheckBox
 import android.widget.Toast
-import kotlinx.android.synthetic.main.dialog_filter_rule_editor.*
 import org.mariotaku.ktextension.ContentValues
+import org.mariotaku.twidere.databinding.DialogFilterRuleEditorBinding
 import org.mariotaku.ktextension.set
 import org.mariotaku.ktextension.string
 import org.mariotaku.sqliteqb.library.Expression
@@ -50,6 +50,8 @@ import org.mariotaku.twidere.provider.TwidereDataStore.Filters
 import org.mariotaku.twidere.util.premium.ExtraFeaturesService
 
 class AddEditItemFragment : BaseDialogFragment() {
+
+    private var dialogBinding: DialogFilterRuleEditorBinding? = null
 
     private val contentUri: Uri
         get() = arguments?.getParcelable(EXTRA_URI)!!
@@ -75,37 +77,40 @@ class AddEditItemFragment : BaseDialogFragment() {
     private val canEditValue: Boolean
         get() = contentUri != Filters.Users.CONTENT_URI
 
-    private var Dialog.value: String?
-        get() = editText.string?.takeIf(String::isNotEmpty)
+    private val editBinding: DialogFilterRuleEditorBinding?
+        get() = dialogBinding
+
+    private var value: String?
+        get() = editBinding?.editText?.string?.takeIf(String::isNotEmpty)
         set(value) {
-            editText.string = value
+            editBinding?.editText?.string = value
         }
 
-    private var Dialog.scopes: FilterScopesHolder?
+    private var scopes: FilterScopesHolder?
         get() = defaultScopes.also {
             if (extraFeaturesService.isAdvancedFiltersEnabled) {
-                saveScopes(it)
+                editBinding?.let { binding -> saveScopes(binding, it) }
             }
         }
         set(value) {
             loadScopes(value ?: defaultScopes)
         }
 
-    private var Dialog.advancedExpanded: Boolean
-        get() = advancedContainer.visibility == View.VISIBLE
+    private var advancedExpanded: Boolean
+        get() = editBinding?.advancedContainer?.visibility == View.VISIBLE
         set(value) {
-            advancedContainer.setVisible(value)
-            advancedCollapseIndicator.rotation = if (value) 90f else 0f
+            editBinding?.advancedContainer?.setVisible(value)
+            editBinding?.advancedCollapseIndicator?.rotation = if (value) 90f else 0f
         }
 
     private fun handlePositiveClick(button: View) {
-        val scope = dialog?.scopes ?: return
+        val scope = scopes ?: return
         if (!canEditValue) {
             saveScopeOnly(scope)
         } else {
-            val value = dialog!!.value?.takeIf(String::isNotEmpty)
+            val value = this.value?.takeIf(String::isNotEmpty)
             if (value == null) {
-                dialog!!.editText.error = getString(R.string.hint_error_field_required)
+                editBinding?.editText?.error = getString(R.string.hint_error_field_required)
                 return
             }
             saveItem(value, scope)
@@ -115,7 +120,8 @@ class AddEditItemFragment : BaseDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setView(R.layout.dialog_filter_rule_editor)
+        val binding = DialogFilterRuleEditorBinding.inflate(requireActivity().layoutInflater)
+        builder.setView(binding.root)
 
         if (arguments?.getLong(EXTRA_ID, -1) ?: -1 >= 0) {
             builder.setTitle(R.string.action_edit_filter_rule)
@@ -128,7 +134,7 @@ class AddEditItemFragment : BaseDialogFragment() {
         dialog.applyOnShow {
             applyTheme()
             window!!.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-            editText.setAdapter(when (contentUri) {
+            binding.editText.setAdapter(when (contentUri) {
                 Filters.Sources.CONTENT_URI -> SourceAutoCompleteAdapter(requireActivity())
                 Filters.Users.CONTENT_URI -> ComposeAutoCompleteAdapter(requireActivity(), requestManager).apply {
                     val am = AccountManager.get(activity)
@@ -136,13 +142,13 @@ class AddEditItemFragment : BaseDialogFragment() {
                 }
                 else -> null
             })
-            editText.threshold = 1
-            editText.isEnabled = canEditValue
-            advancedToggle.setOnClickListener {
+            binding.editText.threshold = 1
+            binding.editText.isEnabled = canEditValue
+            binding.advancedToggle.setOnClickListener {
                 advancedExpanded = !advancedExpanded
             }
             positiveButton.setOnClickListener(this@AddEditItemFragment::handlePositiveClick)
-            advancedContainer.children.filterIsInstance<CheckBox>().forEach {
+            binding.advancedContainer.children.filterIsInstance<CheckBox>().forEach {
                 val checkBox = it as CheckBox
                 checkBox.setOnClickListener onClick@ {
                     if (extraFeaturesService.isAdvancedFiltersEnabled) return@onClick
@@ -159,49 +165,49 @@ class AddEditItemFragment : BaseDialogFragment() {
                 value = defaultValue
                 scopes = defaultScopes
                 advancedExpanded = false
-                editText.setSelection(editText.length().coerceAtLeast(0))
-                if (editText.isEnabled) {
+                binding.editText.setSelection(binding.editText.length().coerceAtLeast(0))
+                if (binding.editText.isEnabled) {
                     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE)
                             as InputMethodManager
-                    imm.showSoftInput(editText, 0)
+                    imm.showSoftInput(binding.editText, 0)
                 }
             } else {
                 value = savedInstanceState.getString(EXTRA_VALUE)
                 scopes = savedInstanceState.getParcelable(EXTRA_SCOPE)
             }
         }
+        dialogBinding = binding
         return dialog
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(EXTRA_VALUE, dialog?.value)
-        outState.putParcelable(EXTRA_SCOPE, dialog?.scopes)
+        outState.putString(EXTRA_VALUE, value)
+        outState.putParcelable(EXTRA_SCOPE, scopes)
     }
 
-    private fun Dialog.saveScopes(scopes: FilterScopesHolder) {
-        targetText.saveScope(scopes, FilterScope.TARGET_TEXT)
-        targetName.saveScope(scopes, FilterScope.TARGET_NAME)
-        targetDescription.saveScope(scopes, FilterScope.TARGET_DESCRIPTION)
-        scopeHome.saveScope(scopes, FilterScope.HOME)
-        scopeInteractions.saveScope(scopes, FilterScope.INTERACTIONS)
-        scopeMessages.saveScope(scopes, FilterScope.MESSAGES)
-        scopeSearchResults.saveScope(scopes, FilterScope.SEARCH_RESULTS)
-        scopeOther.saveScope(scopes, FilterScope.UGC_TIMELINE)
+    private fun saveScopes(binding: DialogFilterRuleEditorBinding, scopes: FilterScopesHolder) {
+        binding.targetText.saveScope(scopes, FilterScope.TARGET_TEXT)
+        binding.targetName.saveScope(scopes, FilterScope.TARGET_NAME)
+        binding.targetDescription.saveScope(scopes, FilterScope.TARGET_DESCRIPTION)
+        binding.scopeHome.saveScope(scopes, FilterScope.HOME)
+        binding.scopeInteractions.saveScope(scopes, FilterScope.INTERACTIONS)
+        binding.scopeMessages.saveScope(scopes, FilterScope.MESSAGES)
+        binding.scopeSearchResults.saveScope(scopes, FilterScope.SEARCH_RESULTS)
+        binding.scopeOther.saveScope(scopes, FilterScope.UGC_TIMELINE)
     }
 
-    private fun Dialog.loadScopes(scopes: FilterScopesHolder) {
-        labelTarget.setVisible(scopes.hasMask(FilterScope.MASK_TARGET))
-        targetText.loadScope(scopes, FilterScope.TARGET_TEXT)
-        targetName.loadScope(scopes, FilterScope.TARGET_NAME)
-        targetDescription.loadScope(scopes, FilterScope.TARGET_DESCRIPTION)
-
-        labelScope.setVisible(scopes.hasMask(FilterScope.MASK_SCOPE))
-        scopeHome.loadScope(scopes, FilterScope.HOME)
-        scopeInteractions.loadScope(scopes, FilterScope.INTERACTIONS)
-        scopeMessages.loadScope(scopes, FilterScope.MESSAGES)
-        scopeSearchResults.loadScope(scopes, FilterScope.SEARCH_RESULTS)
-        scopeOther.loadScope(scopes, FilterScope.UGC_TIMELINE)
+    private fun loadScopes(scopes: FilterScopesHolder) {
+        editBinding?.let { binding ->
+            binding.targetText.loadScope(scopes, FilterScope.TARGET_TEXT)
+            binding.targetName.loadScope(scopes, FilterScope.TARGET_NAME)
+            binding.targetDescription.loadScope(scopes, FilterScope.TARGET_DESCRIPTION)
+            binding.scopeHome.loadScope(scopes, FilterScope.HOME)
+            binding.scopeInteractions.loadScope(scopes, FilterScope.INTERACTIONS)
+            binding.scopeMessages.loadScope(scopes, FilterScope.MESSAGES)
+            binding.scopeSearchResults.loadScope(scopes, FilterScope.SEARCH_RESULTS)
+            binding.scopeOther.loadScope(scopes, FilterScope.UGC_TIMELINE)
+        }
     }
 
     private fun CheckBox.saveScope(scopes: FilterScopesHolder, scope: Int) {

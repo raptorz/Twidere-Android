@@ -39,8 +39,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
-import kotlinx.android.synthetic.main.activity_settings.*
 import org.mariotaku.chameleon.Chameleon
+import org.mariotaku.twidere.databinding.ActivitySettingsBinding
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
 import org.mariotaku.twidere.R
@@ -62,11 +62,13 @@ class SettingsActivity : BaseActivity(), OnItemClickListener, OnPreferenceStartF
     var shouldRestart: Boolean = false
     var shouldTerminate: Boolean = false
     private lateinit var entriesAdapter: EntriesAdapter
+    private lateinit var binding: ActivitySettingsBinding
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         entriesAdapter = EntriesAdapter(this)
 
         if (savedInstanceState != null) {
@@ -81,23 +83,23 @@ class SettingsActivity : BaseActivity(), OnItemClickListener, OnPreferenceStartF
         val backgroundOption = currentThemeBackgroundOption
         val backgroundAlpha = currentThemeBackgroundAlpha
 
-        detailFragmentContainer.setBackgroundColor(ThemeUtils.getColorBackground(this,
+        binding.detailFragmentContainer.setBackgroundColor(ThemeUtils.getColorBackground(this,
                 backgroundOption, backgroundAlpha))
 
-        slidingPane.setShadowResourceLeft(R.drawable.sliding_pane_shadow_left)
-        slidingPane.setShadowResourceRight(R.drawable.sliding_pane_shadow_right)
-        slidingPane.sliderFadeColor = 0
+        binding.slidingPane.setShadowResourceLeft(R.drawable.sliding_pane_shadow_left)
+        binding.slidingPane.setShadowResourceRight(R.drawable.sliding_pane_shadow_right)
+        binding.slidingPane.sliderFadeColor = 0
 
-        ViewCompat.setOnApplyWindowInsetsListener(slidingPane) listener@ { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.slidingPane) listener@ { view, insets ->
             onApplyWindowInsets(view, insets)
-            entriesList.setPadding(0, insets.systemWindowInsetTop, 0, insets.systemWindowInsetBottom)
+            binding.entriesList.setPadding(0, insets.systemWindowInsetTop, 0, insets.systemWindowInsetBottom)
             return@listener insets
         }
 
         initEntries()
-        entriesList.adapter = entriesAdapter
-        entriesList.choiceMode = AbsListView.CHOICE_MODE_SINGLE
-        entriesList.onItemClickListener = this
+        binding.entriesList.adapter = entriesAdapter
+        binding.entriesList.choiceMode = AbsListView.CHOICE_MODE_SINGLE
+        binding.entriesList.onItemClickListener = this
 
         if (savedInstanceState == null) {
             val initialTag = intent.data?.authority
@@ -120,7 +122,7 @@ class SettingsActivity : BaseActivity(), OnItemClickListener, OnPreferenceStartF
             }
             if (initialItem != -1) {
                 openDetails(initialItem)
-                entriesList.setItemChecked(initialItem, true)
+                binding.entriesList.setItemChecked(initialItem, true)
             }
         }
     }
@@ -255,7 +257,7 @@ class SettingsActivity : BaseActivity(), OnItemClickListener, OnPreferenceStartF
         }
         ft.setBreadCrumbTitle(entry.title)
         ft.commit()
-        slidingPane.closePane()
+        binding.slidingPane.closePane()
     }
 
     private fun notifyUnsavedChange(): Boolean {

@@ -16,7 +16,6 @@ import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.list_item_status.view.*
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.ktextension.*
 import org.mariotaku.microblog.library.mastodon.annotation.StatusVisibility
@@ -47,8 +46,14 @@ import org.mariotaku.twidere.util.ThemeUtils
 import org.mariotaku.twidere.util.UnitConvertUtils
 import org.mariotaku.twidere.util.Utils
 import org.mariotaku.twidere.util.Utils.getUserTypeIconRes
+import org.mariotaku.twidere.view.CardMediaContainer
+import org.mariotaku.twidere.view.ColorLabelRelativeLayout
+import org.mariotaku.twidere.view.IconActionView
 import org.mariotaku.twidere.view.LinkPreviewData
+import org.mariotaku.twidere.view.LinkPreviewView
+import org.mariotaku.twidere.view.NameView
 import org.mariotaku.twidere.view.ShapedImageView
+import org.mariotaku.twidere.view.ShortTimeView
 import org.mariotaku.twidere.view.holder.iface.IStatusViewHolder
 import java.lang.ref.WeakReference
 
@@ -60,36 +65,36 @@ import java.lang.ref.WeakReference
  */
 class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View) : ViewHolder(itemView), IStatusViewHolder {
 
-    override val profileImageView: ShapedImageView by lazy { itemView.profileImage }
-    override val profileTypeView: ImageView by lazy { itemView.profileType }
+    override val profileImageView: ShapedImageView = itemView.findViewById(R.id.profileImage)
+    override val profileTypeView: ImageView = itemView.findViewById(R.id.profileType)
 
-    private val itemContent by lazy { itemView.itemContent }
-    private val mediaPreview by lazy { itemView.mediaPreview }
-    private val linkPreview by lazy { itemView.linkPreview }
-    private val statusContentUpperSpace by lazy { itemView.statusContentUpperSpace }
-    private val summaryView by lazy { itemView.summary }
-    private val textView by lazy { itemView.text }
-    private val nameView by lazy { itemView.name }
-    private val itemMenu by lazy { itemView.itemMenu }
-    private val statusInfoLabel by lazy { itemView.statusInfoLabel }
-    private val statusInfoIcon by lazy { itemView.statusInfoIcon }
-    private val quotedNameView by lazy { itemView.quotedName }
-    private val timeView by lazy { itemView.time }
-    private val replyCountView by lazy { itemView.replyCount }
-    private val retweetCountView by lazy { itemView.retweetCount }
-    private val quotedView by lazy { itemView.quotedView }
-    private val quotedTextView by lazy { itemView.quotedText }
-    private val actionButtons by lazy { itemView.actionButtons }
-    private val mediaLabel by lazy { itemView.mediaLabel }
-    private val quotedMediaLabel by lazy { itemView.quotedMediaLabel }
-    private val statusContentLowerSpace by lazy { itemView.statusContentLowerSpace }
-    private val quotedMediaPreview by lazy { itemView.quotedMediaPreview }
-    private val favoriteIcon by lazy { itemView.favoriteIcon }
-    private val retweetIcon by lazy { itemView.retweetIcon }
-    private val favoriteCountView by lazy { itemView.favoriteCount }
-    private val replyButton by lazy { itemView.reply }
-    private val retweetButton by lazy { itemView.retweet }
-    private val favoriteButton by lazy { itemView.favorite }
+    private val itemContent = itemView.findViewById<ColorLabelRelativeLayout>(R.id.itemContent)
+    private val mediaPreview = itemView.findViewById<CardMediaContainer>(R.id.mediaPreview)
+    private val linkPreview = itemView.findViewById<LinkPreviewView>(R.id.linkPreview)
+    private val statusContentUpperSpace = itemView.findViewById<View>(R.id.statusContentUpperSpace)
+    private val summaryView = itemView.findViewById<TextView>(R.id.summary)
+    private val textView = itemView.findViewById<TextView>(R.id.text)
+    private val nameView = itemView.findViewById<NameView>(R.id.name)
+    private val itemMenu = itemView.findViewById<View>(R.id.itemMenu)
+    private val statusInfoLabel = itemView.findViewById<TextView>(R.id.statusInfoLabel)
+    private val statusInfoIcon = itemView.findViewById<ImageView>(R.id.statusInfoIcon)
+    private val quotedNameView = itemView.findViewById<NameView>(R.id.quotedName)
+    private val timeView = itemView.findViewById<ShortTimeView>(R.id.time)
+    private val replyCountView = itemView.findViewById<TextView>(R.id.replyCount)
+    private val retweetCountView = itemView.findViewById<TextView>(R.id.retweetCount)
+    private val quotedView = itemView.findViewById<ColorLabelRelativeLayout>(R.id.quotedView)
+    private val quotedTextView = itemView.findViewById<TextView>(R.id.quotedText)
+    private val actionButtons = itemView.findViewById<View>(R.id.actionButtons)
+    private val mediaLabel = itemView.findViewById<TextView>(R.id.mediaLabel)
+    private val quotedMediaLabel = itemView.findViewById<TextView>(R.id.quotedMediaLabel)
+    private val statusContentLowerSpace = itemView.findViewById<View>(R.id.statusContentLowerSpace)
+    private val quotedMediaPreview = itemView.findViewById<CardMediaContainer>(R.id.quotedMediaPreview)
+    private val favoriteIcon = itemView.findViewById<IconActionView>(R.id.favoriteIcon)
+    private val retweetIcon = itemView.findViewById<ImageView>(R.id.retweetIcon)
+    private val favoriteCountView = itemView.findViewById<TextView>(R.id.favoriteCount)
+    private val replyButton = itemView.findViewById<View>(R.id.reply)
+    private val retweetButton = itemView.findViewById<View>(R.id.retweet)
+    private val favoriteButton = itemView.findViewById<View>(R.id.favorite)
 
     private val eventListener: EventListener
 
@@ -101,9 +106,9 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
 
         if (adapter.mediaPreviewEnabled) {
             View.inflate(mediaPreview.context, R.layout.layout_card_media_preview,
-                    itemView.mediaPreview)
+                    mediaPreview)
             View.inflate(quotedMediaPreview.context, R.layout.layout_card_media_preview,
-                    itemView.quotedMediaPreview)
+                    quotedMediaPreview)
         }
 
     }

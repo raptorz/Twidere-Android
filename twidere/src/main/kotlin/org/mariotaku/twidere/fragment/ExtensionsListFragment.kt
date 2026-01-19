@@ -35,7 +35,6 @@ import android.widget.AdapterView
 import android.widget.AdapterView.AdapterContextMenuInfo
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import org.mariotaku.ktextension.isNullOrEmpty
 import org.mariotaku.ktextension.setItemAvailability
 import org.mariotaku.twidere.R
@@ -51,7 +50,7 @@ class ExtensionsListFragment : AbsContentListViewFragment<ExtensionsAdapter>(),
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        listView.onItemClickListener = this
+        binding.listView.onItemClickListener = this
 
         LoaderManager.getInstance(this).initLoader(0, null, this)
         showProgress()

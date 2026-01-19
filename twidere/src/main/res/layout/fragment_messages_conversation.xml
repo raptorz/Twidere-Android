@@ -172,7 +172,9 @@
         app:popupTheme="?actionBarPopupTheme"
         tools:elevation="0dp">
 
-        <include layout="@layout/layout_toolbar_message_conversation_title"/>
+        <include
+            android:id="@+id/conversationTitleLayout"
+            layout="@layout/layout_toolbar_message_conversation_title"/>
     </androidx.appcompat.widget.Toolbar>
 
     <View

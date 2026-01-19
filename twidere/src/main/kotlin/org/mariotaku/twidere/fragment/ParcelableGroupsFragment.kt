@@ -27,7 +27,6 @@ import android.view.KeyEvent
 import androidx.loader.app.LoaderManager
 import androidx.loader.app.hasRunningLoadersSafe
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.twidere.adapter.ParcelableGroupsAdapter
 import org.mariotaku.twidere.adapter.iface.IGroupsAdapter.GroupAdapterListener
 import org.mariotaku.twidere.adapter.iface.ILoadMoreSupportAdapter
@@ -122,7 +121,7 @@ abstract class ParcelableGroupsFragment : AbsContentListRecyclerViewFragment<Par
         val layoutManager = layoutManager
         adapter.groupAdapterListener = this
 
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager, adapter,
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager, adapter,
                 this)
         val loaderArgs = Bundle(arguments)
         loaderArgs.putBoolean(EXTRA_FROM_USER, true)

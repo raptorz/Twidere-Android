@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.kpreferences.get
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.adapter.VariousItemsAdapter
@@ -46,7 +45,7 @@ open class ItemsListFragment : AbsContentListRecyclerViewFragment<VariousItemsAd
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        registerForContextMenu(recyclerView)
+        registerForContextMenu(binding.recyclerView)
         LoaderManager.getInstance(this).initLoader(0, null, this)
         refreshEnabled = false
         showProgress()
@@ -91,7 +90,7 @@ open class ItemsListFragment : AbsContentListRecyclerViewFragment<VariousItemsAd
             override fun onItemMenuClick(holder: RecyclerView.ViewHolder, menuView: View, position: Int) {
                 if (activity == null) return
                 val view = layoutManager.findViewByPosition(position) ?: return
-                recyclerView.showContextMenuForChild(view)
+                binding.recyclerView.showContextMenuForChild(view)
             }
 
             override fun onMediaClick(holder: IStatusViewHolder, view: View, current: ParcelableMedia, statusPosition: Int) {

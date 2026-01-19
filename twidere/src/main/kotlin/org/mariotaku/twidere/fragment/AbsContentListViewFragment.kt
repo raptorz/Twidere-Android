@@ -26,11 +26,13 @@ import android.os.Bundle
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import android.view.*
 import android.widget.AbsListView
+import android.widget.ImageView
 import android.widget.ListAdapter
+import android.widget.TextView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_listview.*
-import kotlinx.android.synthetic.main.layout_content_fragment_common.*
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.FragmentContentListviewBinding
+import org.mariotaku.twidere.databinding.LayoutContentFragmentCommonBinding
 import org.mariotaku.twidere.activity.iface.IControlBarActivity
 import org.mariotaku.twidere.activity.iface.IControlBarActivity.ControlBarOffsetListener
 import org.mariotaku.twidere.adapter.iface.ILoadMoreSupportAdapter
@@ -47,12 +49,21 @@ import kotlin.math.roundToInt
 abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
         OnRefreshListener, RefreshScrollTopInterface, ControlBarOffsetListener, ContentListSupport<A>,
         AbsListView.OnScrollListener {
+
+    protected lateinit var binding: FragmentContentListviewBinding
+        private set
+
+    protected val progressContainer by lazy { binding.root.findViewById<View>(R.id.progressContainer) }
+    protected val errorContainer by lazy { binding.root.findViewById<View>(R.id.errorContainer) }
+    protected val errorIcon by lazy { binding.root.findViewById<ImageView>(R.id.errorIcon) }
+    protected val errorText by lazy { binding.root.findViewById<TextView>(R.id.errorText) }
+
     override lateinit var adapter: A
 
     var refreshEnabled: Boolean
-        get() = swipeLayout.isEnabled
+        get() = binding.swipeLayout.isEnabled
         set(value) {
-            swipeLayout.isEnabled = value
+            binding.swipeLayout.isEnabled = value
         }
 
     protected open val overrideDivider: Drawable?
@@ -82,7 +93,7 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
     }
 
     override fun scrollToStart(): Boolean {
-        listView.setSelectionFromTop(0, 0)
+        binding.listView.setSelectionFromTop(0, 0)
         setControlVisible(true)
         return true
     }
@@ -97,12 +108,12 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
     override var refreshing: Boolean
         get() = false
         set(refreshing) {
-            val currentRefreshing = swipeLayout.isRefreshing
+            val currentRefreshing = binding.swipeLayout.isRefreshing
             if (!currentRefreshing) {
                 updateRefreshProgressOffset()
             }
             if (refreshing == currentRefreshing) return
-            swipeLayout.isRefreshing = refreshing
+            binding.swipeLayout.isRefreshing = refreshing
         }
 
     override fun onLoadMoreContents(@ILoadMoreSupportAdapter.IndicatorPosition position: Long) {
@@ -125,7 +136,8 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_content_listview, container, false)
+        binding = FragmentContentListviewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -133,19 +145,19 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
         val backgroundColor = ThemeUtils.getColorBackground(requireContext())
         val colorRes = TwidereColorUtils.getContrastYIQ(backgroundColor,
                 R.color.bg_refresh_progress_color_light, R.color.bg_refresh_progress_color_dark)
-        swipeLayout.setOnRefreshListener(this)
-        swipeLayout.setProgressBackgroundColorSchemeResource(colorRes)
+        binding.swipeLayout.setOnRefreshListener(this)
+        binding.swipeLayout.setProgressBackgroundColorSchemeResource(colorRes)
         adapter = onCreateAdapter(requireContext(), requestManager)
-        listView.setOnTouchListener { _, event ->
+        binding.listView.setOnTouchListener { _, event ->
             if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                 updateRefreshProgressOffset()
             }
             false
         }
-        listView.adapter = adapter
-        listView.clipToPadding = false
-        overrideDivider?.let { listView.divider = it }
-        scrollHandler = ListViewScrollHandler(this, ListViewScrollHandler.ListViewCallback(listView)).apply {
+        binding.listView.adapter = adapter
+        binding.listView.clipToPadding = false
+        overrideDivider?.let { binding.listView.divider = it }
+        scrollHandler = ListViewScrollHandler(this, ListViewScrollHandler.ListViewCallback(binding.listView)).apply {
             this.touchSlop = ViewConfiguration.get(context).scaledTouchSlop
             this.onScrollListener = this@AbsContentListViewFragment
         }
@@ -154,16 +166,16 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
 
     override fun onStart() {
         super.onStart()
-        listView.setOnScrollListener(scrollHandler)
+        binding.listView.setOnScrollListener(scrollHandler)
     }
 
     override fun onStop() {
-        listView.setOnScrollListener(scrollHandler)
+        binding.listView.setOnScrollListener(scrollHandler)
         super.onStop()
     }
 
     override fun onApplySystemWindowInsets(insets: Rect) {
-        listView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+        binding.listView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
         errorContainer.setPadding(insets.left, insets.top, insets.right, insets.bottom)
         progressContainer.setPadding(insets.left, insets.top, insets.right, insets.bottom)
         systemWindowsInsets.set(insets)
@@ -179,19 +191,19 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
     protected fun showContent() {
         errorContainer.visibility = View.GONE
         progressContainer.visibility = View.GONE
-        swipeLayout.visibility = View.VISIBLE
+        binding.swipeLayout.visibility = View.VISIBLE
     }
 
     protected fun showProgress() {
         errorContainer.visibility = View.GONE
         progressContainer.visibility = View.VISIBLE
-        swipeLayout.visibility = View.GONE
+        binding.swipeLayout.visibility = View.GONE
     }
 
     protected fun showError(icon: Int, text: CharSequence) {
         errorContainer.visibility = View.VISIBLE
         progressContainer.visibility = View.GONE
-        swipeLayout.visibility = View.GONE
+        binding.swipeLayout.visibility = View.GONE
         errorIcon.setImageResource(icon)
         errorText.text = text
     }
@@ -199,19 +211,19 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
     protected fun showEmpty(icon: Int, text: CharSequence) {
         errorContainer.visibility = View.VISIBLE
         progressContainer.visibility = View.GONE
-        swipeLayout.visibility = View.VISIBLE
+        binding.swipeLayout.visibility = View.VISIBLE
         errorIcon.setImageResource(icon)
         errorText.text = text
     }
 
     protected fun updateRefreshProgressOffset() {
         val activity = activity
-        if (activity !is IControlBarActivity || systemWindowsInsets.top == 0 || swipeLayout == null
+        if (activity !is IControlBarActivity || systemWindowsInsets.top == 0 || binding.swipeLayout == null
                 || refreshing) {
             return
         }
         val density = resources.displayMetrics.density
-        val progressCircleDiameter = swipeLayout.progressCircleDiameter
+        val progressCircleDiameter = binding.swipeLayout.progressCircleDiameter
         val controlBarOffsetPixels =
             ((activity.controlBarHeight * (1 - activity.controlBarOffset)).takeIf { !it.isNaN() }
                 ?: 0f)
@@ -219,14 +231,14 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
         val swipeStart = systemWindowsInsets.top - controlBarOffsetPixels - progressCircleDiameter
         // 64: SwipeRefreshLayout.DEFAULT_CIRCLE_TARGET
         val swipeDistance = (64 * density).roundToInt()
-        swipeLayout.setProgressViewOffset(false, swipeStart, swipeStart + swipeDistance)
+        binding.swipeLayout.setProgressViewOffset(false, swipeStart, swipeStart + swipeDistance)
     }
 
     override val reachingStart: Boolean
-        get() = listView.firstVisiblePosition <= 0
+        get() = binding.listView.firstVisiblePosition <= 0
 
     override val reachingEnd: Boolean
-        get() = listView.lastVisiblePosition >= listView.count - 1
+        get() = binding.listView.lastVisiblePosition >= binding.listView.count - 1
 
     override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
 

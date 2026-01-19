@@ -35,12 +35,12 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import android.view.*
 import androidx.loader.app.LoaderManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.*
 import org.mariotaku.microblog.library.twitter.model.Activity
 import org.mariotaku.sqliteqb.library.Expression
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.FragmentContentRecyclerviewBinding
 import org.mariotaku.twidere.adapter.ParcelableActivitiesAdapter
 import org.mariotaku.twidere.adapter.ParcelableActivitiesAdapter.Companion.ITEM_VIEW_TYPE_GAP
 import org.mariotaku.twidere.adapter.ParcelableActivitiesAdapter.Companion.ITEM_VIEW_TYPE_STATUS
@@ -101,8 +101,8 @@ abstract class AbsActivitiesFragment protected constructor() :
         activitiesBusCallback = createMessageBusCallback()
         scrollListener.reversed = preferences[readFromBottomKey]
         adapter.setListener(this)
-        registerForContextMenu(recyclerView)
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager, adapter,
+        registerForContextMenu(binding.recyclerView)
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager, adapter,
                 this)
         pauseOnScrollListener = PauseRecyclerViewOnScrollListener(
             pauseOnScroll = false, pauseOnFling = false,
@@ -132,11 +132,11 @@ abstract class AbsActivitiesFragment protected constructor() :
             triggerRefresh()
             return true
         }
-        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(recyclerView,
+        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(binding.recyclerView,
                 layoutManager.focusedChild)
         var position = RecyclerView.NO_POSITION
-        if (focusedChild != null && focusedChild.parent === recyclerView) {
-            position = recyclerView.getChildLayoutPosition(focusedChild)
+        if (focusedChild != null && focusedChild.parent === binding.recyclerView) {
+            position = binding.recyclerView.getChildLayoutPosition(focusedChild)
         }
         if (position != RecyclerView.NO_POSITION) {
             val activity = adapter.getActivity(position)
@@ -363,7 +363,7 @@ abstract class AbsActivitiesFragment protected constructor() :
         if (lm.getItemViewType(view) != ITEM_VIEW_TYPE_STATUS) {
             return
         }
-        recyclerView.showContextMenuForChild(view)
+        binding.recyclerView.showContextMenuForChild(view)
     }
 
     override fun onStatusClick(holder: IStatusViewHolder, position: Int) {
@@ -388,15 +388,15 @@ abstract class AbsActivitiesFragment protected constructor() :
 
     override fun onStart() {
         super.onStart()
-        recyclerView.addOnScrollListener(onScrollListener)
-        recyclerView.addOnScrollListener(pauseOnScrollListener)
+        binding.recyclerView.addOnScrollListener(onScrollListener)
+        binding.recyclerView.addOnScrollListener(pauseOnScrollListener)
         bus.register(activitiesBusCallback)
     }
 
     override fun onStop() {
         bus.unregister(activitiesBusCallback)
-        recyclerView.removeOnScrollListener(pauseOnScrollListener)
-        recyclerView.removeOnScrollListener(onScrollListener)
+        binding.recyclerView.removeOnScrollListener(pauseOnScrollListener)
+        binding.recyclerView.removeOnScrollListener(onScrollListener)
         if (userVisibleHint) {
             saveReadPosition()
         }

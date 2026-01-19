@@ -37,8 +37,8 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.activity_main.*
 import nl.komponents.kovenant.Promise
+import org.mariotaku.twidere.databinding.ActivityMainBinding
 import org.mariotaku.chameleon.Chameleon
 import org.mariotaku.chameleon.ChameleonActivity
 import org.mariotaku.kpreferences.get
@@ -100,6 +100,7 @@ open class MainActivity : ChameleonActivity(), IBaseActivity<MainActivity> {
     }
 
     private lateinit var requestManager: RequestManager
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (BuildConfig.DEBUG) {
@@ -114,39 +115,40 @@ open class MainActivity : ChameleonActivity(), IBaseActivity<MainActivity> {
         super.onCreate(savedInstanceState)
         GeneralComponent.get(this).inject(this)
         requestManager = Glide.with(this)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (!preferences[promotionsEnabledKey]) {
-            main.visibility = View.GONE
+            binding.main.visibility = View.GONE
             launchDirectly()
             return
         }
 
-        main.visibility = View.VISIBLE
-        appIcon.setImageDrawable(activityIcon)
-        skipPresentation.setOnClickListener {
+        binding.main.visibility = View.VISIBLE
+        binding.appIcon.setImageDrawable(activityIcon)
+        binding.skipPresentation.setOnClickListener {
             launchDirectly()
         }
         if (BuildConfig.DEBUG) {
-            skipPresentation.setOnLongClickListener {
+            binding.skipPresentation.setOnLongClickListener {
                 handler.removeCallbacks(launchLaterRunnable)
                 return@setOnLongClickListener true
             }
         }
-        controlOverlay.setOnClickListener {
-            val presentation = controlOverlay.tag as? LaunchPresentation ?: return@setOnClickListener
+        binding.controlOverlay.setOnClickListener {
+            val presentation = binding.controlOverlay.tag as? LaunchPresentation ?: return@setOnClickListener
             val uri = presentation.url?.let(Uri::parse) ?: return@setOnClickListener
             OnLinkClickHandler.openLink(this, preferences, uri)
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(main) lambda@ { _, insets ->
-            main.setPadding(0, 0, insets.systemWindowInsetRight,
+ViewCompat.setOnApplyWindowInsetsListener(binding.main) lambda@ { _, insets ->
+            binding.main.setPadding(0, 0, insets.systemWindowInsetRight,
                     insets.systemWindowInsetBottom)
 
-            controlOverlay.setPadding(0, insets.systemWindowInsetTop, 0, 0)
+            binding.controlOverlay.setPadding(0, insets.systemWindowInsetTop, 0, 0)
             return@lambda insets.consumeSystemWindowInsets()
         }
-        ViewSupport.setOutlineProvider(skipPresentation, ViewOutlineProviderCompat.BACKGROUND)
+        ViewSupport.setOutlineProvider(binding.skipPresentation, ViewOutlineProviderCompat.BACKGROUND)
 
         showPresentationOrLaunch()
     }
@@ -227,22 +229,22 @@ open class MainActivity : ChameleonActivity(), IBaseActivity<MainActivity> {
     }
 
     private fun displayPresentation(presentation: LaunchPresentation): Boolean {
-        skipPresentation.visibility = View.VISIBLE
-        controlOverlay.tag = presentation
+        binding.skipPresentation.visibility = View.VISIBLE
+        binding.controlOverlay.tag = presentation
 
         val dm = resources.displayMetrics
-        main.measure(MeasureSpec.makeMeasureSpec(dm.widthPixels,
+        binding.main.measure(MeasureSpec.makeMeasureSpec(dm.widthPixels,
                 MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(dm.heightPixels,
                 MeasureSpec.EXACTLY))
 
-        val width = presentationView.measuredWidth
-        val height = presentationView.measuredHeight
+        val width = binding.presentationView.measuredWidth
+        val height = binding.presentationView.measuredHeight
         val images = presentation.images.sortedByDescending { it.displayingScore(dm.density, width, height) }
         val image = images.firstOrNull() ?: return false
 
         Glide.with(this).load(image.url)
                 .priority(Priority.HIGH)
-                .into(presentationView)
+                .into(binding.presentationView)
         return true
     }
 

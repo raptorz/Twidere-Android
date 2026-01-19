@@ -46,12 +46,11 @@ import android.view.View.OnClickListener
 import android.webkit.CookieManager
 import android.webkit.CookieSyncManager
 import android.widget.BaseExpandableListAdapter
+import android.widget.EditText
 import android.widget.ExpandableListView
 import android.widget.TextView
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_sign_in.*
-import kotlinx.android.synthetic.main.dialog_expandable_list.*
-import kotlinx.android.synthetic.main.dialog_login_verification_code.*
+import org.mariotaku.twidere.databinding.ActivitySignInBinding
 import nl.komponents.kovenant.CancelException
 import nl.komponents.kovenant.Deferred
 import nl.komponents.kovenant.combine.and
@@ -121,25 +120,26 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
 
     private var accountAuthenticatorResponse: AccountAuthenticatorResponse? = null
     private var accountAuthenticatorResult: Bundle? = null
+    private lateinit var binding: ActivitySignInBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         accountAuthenticatorResponse = intent.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
         accountAuthenticatorResponse?.onRequestContinued()
 
-        setContentView(R.layout.activity_sign_in)
+        binding = ActivitySignInBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        binding.editUsername.addTextChangedListener(this)
+        binding.editPassword.addTextChangedListener(this)
 
-        editUsername.addTextChangedListener(this)
-        editPassword.addTextChangedListener(this)
-
-        signIn.setOnClickListener(this)
-        signUp.setOnClickListener(this)
-        passwordSignIn.setOnClickListener(this)
+        binding.signIn.setOnClickListener(this)
+        binding.signUp.setOnClickListener(this)
+        binding.passwordSignIn.setOnClickListener(this)
 
         val color = ColorStateList.valueOf(ContextCompat.getColor(this,
-                R.color.material_light_green))
-        ViewCompat.setBackgroundTintList(signIn, color)
+            R.color.material_light_green))
+        ViewCompat.setBackgroundTintList(binding.signIn, color)
 
 
         if (savedInstanceState != null) {
@@ -227,14 +227,14 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
 
     override fun onClick(v: View) {
         when (v) {
-            signUp -> {
+            binding.signUp -> {
                 val uri = apiConfig.signUpUrl?.let(Uri::parse) ?: return
                 OnLinkClickHandler.openLink(this, preferences, uri)
             }
-            signIn -> {
-                if (usernamePasswordContainer.visibility != View.VISIBLE) {
-                    editUsername.text = null
-                    editPassword.text = null
+            binding.signIn -> {
+                if (binding.usernamePasswordContainer.visibility != View.VISIBLE) {
+                    binding.editUsername.text = null
+                    binding.editPassword.text = null
                 }
                 setDefaultAPI()
                 if (apiConfig.type == AccountType.MASTODON) {
@@ -244,13 +244,13 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
                         performBrowserLogin()
                     }
                     else -> {
-                        val username = editUsername.text.toString()
-                        val password = editPassword.text.toString()
+                        val username = binding.editUsername.text.toString()
+                        val password = binding.editPassword.text.toString()
                         performUserPassLogin(username, password)
                     }
                 }
             }
-            passwordSignIn -> {
+            binding.passwordSignIn -> {
                 executeAfterFragmentResumed { fragment ->
                     val df = PasswordSignInDialogFragment()
                     df.show(fragment.supportFragmentManager, "password_sign_in")
@@ -360,7 +360,7 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
 
     private fun performMastodonLogin() {
         val weakThis = WeakReference(this)
-        val host = editUsername.string?.takeIf(String::isNotEmpty) ?: run {
+        val host = binding.editUsername.string?.takeIf(String::isNotEmpty) ?: run {
             Toast.makeText(this, R.string.message_toast_invalid_mastodon_host,
                     Toast.LENGTH_SHORT).show()
             return
@@ -517,20 +517,20 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
     private fun updateSignInType() {
         // Mastodon have different case
         if (apiConfig.type == AccountType.MASTODON) {
-            usernamePasswordContainer.visibility = View.VISIBLE
-            editPassword.visibility = View.GONE
-            editUsername.hint = getString(R.string.label_mastodon_host)
+            binding.usernamePasswordContainer.visibility = View.VISIBLE
+            binding.editPassword.visibility = View.GONE
+            binding.editUsername.hint = getString(R.string.label_mastodon_host)
         } else when (apiConfig.credentialsType) {
             Credentials.Type.XAUTH, Credentials.Type.BASIC -> {
-                usernamePasswordContainer.visibility = View.VISIBLE
-                editPassword.visibility = View.VISIBLE
-                editUsername.hint = getString(R.string.label_username)
+                binding.usernamePasswordContainer.visibility = View.VISIBLE
+                binding.editPassword.visibility = View.VISIBLE
+                binding.editUsername.hint = getString(R.string.label_username)
             }
             Credentials.Type.EMPTY -> {
-                usernamePasswordContainer.visibility = View.GONE
+                binding.usernamePasswordContainer.visibility = View.GONE
             }
             else -> {
-                usernamePasswordContainer.visibility = View.GONE
+                binding.usernamePasswordContainer.visibility = View.GONE
             }
         }
     }
@@ -538,28 +538,28 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
     private fun setSignInButton() {
         // Mastodon have different case
         if (apiConfig.type == AccountType.MASTODON) {
-            passwordSignIn.visibility = View.GONE
-            signIn.isEnabled = true
+            binding.passwordSignIn.visibility = View.GONE
+            binding.signIn.isEnabled = true
         } else when (apiConfig.credentialsType) {
             Credentials.Type.XAUTH, Credentials.Type.BASIC -> {
-                passwordSignIn.visibility = View.GONE
-                signIn.isEnabled = !(editPassword.text.isNullOrEmpty() || editUsername.text.isNullOrEmpty())
+                binding.passwordSignIn.visibility = View.GONE
+                binding.signIn.isEnabled = !(binding.editPassword.text.isNullOrEmpty() || binding.editUsername.text.isNullOrEmpty())
             }
             Credentials.Type.OAUTH -> {
-                passwordSignIn.visibility = View.VISIBLE
-                signIn.isEnabled = true
+                binding.passwordSignIn.visibility = View.VISIBLE
+                binding.signIn.isEnabled = true
             }
             else -> {
-                passwordSignIn.visibility = View.GONE
-                signIn.isEnabled = true
+                binding.passwordSignIn.visibility = View.GONE
+                binding.signIn.isEnabled = true
             }
         }
-        signUp.visibility = if (apiConfig.signUpUrlOrDefault != null) {
+        binding.signUp.visibility = if (apiConfig.signUpUrlOrDefault != null) {
             View.VISIBLE
         } else {
             View.GONE
         }
-        passwordSignIn.visibility = if (apiConfig.type == null || apiConfig.type == AccountType.TWITTER) {
+        binding.passwordSignIn.visibility = if (apiConfig.type == null || apiConfig.type == AccountType.TWITTER) {
             View.VISIBLE
         } else {
             View.GONE
@@ -589,7 +589,7 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
             val dialog = builder.create()
             dialog.onShow { alertDialog ->
                 alertDialog.applyTheme()
-                val listView = alertDialog.expandableList
+                val listView = alertDialog.findViewById<ExpandableListView>(R.id.expandableList)!!
                 val adapter = LoginTypeAdapter(requireContext())
                 listView.setAdapter(adapter)
                 listView.setOnGroupClickListener { _, _, groupPosition, _ ->
@@ -720,7 +720,7 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
         }
 
         private fun performVerification(dialog: Dialog) {
-            deferred?.resolve(dialog.editVerificationCode.string)
+            deferred?.resolve(dialog.findViewById<EditText>(R.id.editVerificationCode)!!.string)
         }
 
         private fun cancelVerification(dialog: Dialog) {
@@ -729,9 +729,8 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
 
         private fun onDialogShow(dialog: Dialog) {
             (dialog as? AlertDialog)?.applyTheme()
-            val verificationHint = dialog.verificationHint
-            val editVerification = dialog.editVerificationCode
-            if (verificationHint == null || editVerification == null) return
+            val verificationHint = dialog.findViewById<TextView>(R.id.verificationHint) ?: return
+            val editVerification = dialog.findViewById<EditText>(R.id.editVerificationCode) ?: return
             when {
                 "Push".equals(challengeType, ignoreCase = true) -> {
                     verificationHint.setText(R.string.login_verification_push_hint)
@@ -772,8 +771,8 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
             val alertDialog = builder.create()
             alertDialog.onShow { dialog ->
                 dialog.applyTheme()
-                val editUsername = dialog.editUsername
-                val editPassword = dialog.editPassword
+                val editUsername = dialog.findViewById<EditText>(R.id.editUsername)!!
+                val editPassword = dialog.findViewById<EditText>(R.id.editPassword)!!
                 val textWatcher = object : TextWatcher {
                     override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
 
@@ -797,8 +796,8 @@ class SignInActivity : BaseActivity(), OnClickListener, TextWatcher,
 
         private fun onPositiveButton(dialog: Dialog) {
             val activity = activity as SignInActivity
-            val username = dialog.editUsername.string.orEmpty()
-            val password = dialog.editPassword.string.orEmpty()
+            val username = dialog.findViewById<EditText>(R.id.editUsername)!!.string.orEmpty()
+            val password = dialog.findViewById<EditText>(R.id.editPassword)!!.string.orEmpty()
             activity.setDefaultAPI()
             activity.performUserPassLogin(username, password)
         }

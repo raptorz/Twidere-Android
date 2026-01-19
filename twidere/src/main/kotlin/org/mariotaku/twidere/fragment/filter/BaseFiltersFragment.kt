@@ -39,7 +39,6 @@ import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.TextView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
 import org.mariotaku.ktextension.setGroupAvailability
@@ -83,11 +82,11 @@ abstract class BaseFiltersFragment : AbsContentListViewFragment<SimpleCursorAdap
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         setHasOptionsMenu(true)
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, pos, _ ->
+        binding.listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+        binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, pos, _ ->
             onItemClick(pos)
         }
-        listView.setMultiChoiceModeListener(this)
+        binding.listView.setMultiChoiceModeListener(this)
         LoaderManager.getInstance(this).initLoader(0, null, this)
         refreshEnabled = false
         showProgress()
@@ -114,8 +113,8 @@ abstract class BaseFiltersFragment : AbsContentListViewFragment<SimpleCursorAdap
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         updateTitle(mode)
-        listView.updateSelectionItems(menu)
-        val checkedPos = listView.checkedItemPositions
+        binding.listView.updateSelectionItems(menu)
+        val checkedPos = binding.listView.checkedItemPositions
         val adapter = this.adapter
         val hasUneditableItem = (0 until checkedPos.size()).any { i ->
             if (checkedPos.valueAt(i) && adapter is IFilterAdapter) {
@@ -134,13 +133,13 @@ abstract class BaseFiltersFragment : AbsContentListViewFragment<SimpleCursorAdap
                 mode.finish()
             }
             R.id.select_all -> {
-                listView.selectAll()
+                binding.listView.selectAll()
             }
             R.id.select_none -> {
-                listView.selectNone()
+                binding.listView.selectNone()
             }
             R.id.invert_selection -> {
-                listView.invertSelection()
+                binding.listView.invertSelection()
             }
             else -> {
                 return false
@@ -222,7 +221,7 @@ abstract class BaseFiltersFragment : AbsContentListViewFragment<SimpleCursorAdap
     }
 
     protected open fun performDeletion() {
-        val ids = listView.checkedItemIds
+        val ids = binding.listView.checkedItemIds
         val where = Expression.inArgs(Columns.Column(Filters._ID), ids.size)
         context?.contentResolver?.delete(contentUri, where.sql, Array(ids.size) { ids[it].toString() })
     }
@@ -240,8 +239,8 @@ abstract class BaseFiltersFragment : AbsContentListViewFragment<SimpleCursorAdap
 
 
     private fun updateTitle(mode: ActionMode?) {
-        if (listView == null || mode == null || activity == null) return
-        val count = listView!!.checkedItemCount
+        if (binding.listView == null || mode == null || activity == null) return
+        val count = binding.listView.checkedItemCount
         mode.title = resources.getQuantityString(R.plurals.Nitems_selected, count, count)
     }
 

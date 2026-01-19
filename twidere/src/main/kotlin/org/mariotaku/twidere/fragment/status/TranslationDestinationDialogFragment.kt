@@ -21,9 +21,9 @@ package org.mariotaku.twidere.fragment.status
 
 import android.app.Dialog
 import android.os.Bundle
+import android.os.Parcel
 import android.os.Parcelable
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.parcel.Parcelize
 import org.mariotaku.kpreferences.get
 import org.mariotaku.kpreferences.set
 import org.mariotaku.ktextension.Bundle
@@ -67,8 +67,31 @@ class TranslationDestinationDialogFragment : BaseDialogFragment() {
         return dialog
     }
 
-    @Parcelize
-    data class DisplayLanguage(val name: String, val code: String): Parcelable
+    data class DisplayLanguage(val name: String, val code: String) : Parcelable {
+        constructor(parcel: Parcel) : this(
+            parcel.readString() ?: "",
+            parcel.readString() ?: ""
+        )
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeString(name)
+            parcel.writeString(code)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<DisplayLanguage> {
+            override fun createFromParcel(parcel: Parcel): DisplayLanguage {
+                return DisplayLanguage(parcel)
+            }
+
+            override fun newArray(size: Int): Array<DisplayLanguage?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
 
     private class LanguageComparator : Comparator<DisplayLanguage> {
 
@@ -77,7 +100,6 @@ class TranslationDestinationDialogFragment : BaseDialogFragment() {
         override fun compare(object1: DisplayLanguage, object2: DisplayLanguage): Int {
             return collator.compare(object1.name, object2.name)
         }
-
     }
 
     companion object {

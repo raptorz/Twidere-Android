@@ -17,8 +17,8 @@ import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView
 import android.widget.AdapterView.AdapterContextMenuInfo
-import kotlinx.android.synthetic.main.layout_draggable_list_with_empty_view.*
 import nl.komponents.kovenant.task
+import org.mariotaku.twidere.databinding.LayoutDraggableListWithEmptyViewBinding
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
@@ -54,6 +54,9 @@ import org.mariotaku.twidere.util.support.removeAccountSupport
 class AccountsManagerFragment : BaseFragment(), LoaderManager.LoaderCallbacks<List<AccountDetails>>,
         AdapterView.OnItemClickListener {
 
+    protected lateinit var binding: LayoutDraggableListWithEmptyViewBinding
+        private set
+    
     private lateinit var adapter: AccountDetailsAdapter
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -69,10 +72,10 @@ class AccountsManagerFragment : BaseFragment(), LoaderManager.LoaderCallbacks<Li
                 item.account.setActivated(am, checked)
             }
         }
-        listView.adapter = adapter
-        listView.isDragEnabled = true
-        listView.onItemClickListener = this
-        listView.setDropListener { from, to ->
+        binding.listView.adapter = adapter
+        binding.listView.isDragEnabled = true
+        binding.listView.onItemClickListener = this
+        binding.listView.setDropListener { from, to ->
             adapter.drop(from, to)
             for (i in 0 until adapter.count) {
                 val item = adapter.getItem(i)
@@ -80,10 +83,10 @@ class AccountsManagerFragment : BaseFragment(), LoaderManager.LoaderCallbacks<Li
                 item.account.setPosition(am, i)
             }
         }
-        listView.setOnCreateContextMenuListener(this)
-        listView.emptyView = emptyView
-        emptyText.setText(R.string.message_toast_no_account)
-        emptyIcon.setImageResource(R.drawable.ic_info_error_generic)
+        binding.listView.setOnCreateContextMenuListener(this)
+        binding.listView.emptyView = binding.emptyView
+        binding.emptyText.setText(R.string.message_toast_no_account)
+        binding.emptyIcon.setImageResource(R.drawable.ic_info_error_generic)
         setListShown(false)
 
         LoaderManager.getInstance(this).initLoader(0, null, this)
@@ -182,12 +185,13 @@ class AccountsManagerFragment : BaseFragment(), LoaderManager.LoaderCallbacks<Li
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.layout_draggable_list_with_empty_view, container, false)
+        binding = LayoutDraggableListWithEmptyViewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     private fun setListShown(shown: Boolean) {
-        listContainer.visibility = if (shown) View.VISIBLE else View.GONE
-        progressContainer.visibility = if (shown) View.GONE else View.VISIBLE
+        binding.listContainer.visibility = if (shown) View.VISIBLE else View.GONE
+        binding.progressContainer.visibility = if (shown) View.GONE else View.VISIBLE
     }
 
     private fun updateContentsColor(resolver: ContentResolver, details: AccountDetails) {

@@ -19,7 +19,6 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.alwaysUi
 import org.mariotaku.kpreferences.KPreferences
@@ -181,7 +180,7 @@ class FilteredUsersFragment : BaseFiltersFragment() {
 
     override fun performDeletion() {
         val context = context ?: return
-        val positions = listView.checkedItemPositions
+        val positions = binding.listView.checkedItemPositions
         val keys = (0 until positions.size()).mapNotNull {
             if (!positions.valueAt(it)) return@mapNotNull null
             return@mapNotNull (adapter as FilterUsersListAdapter).getUserKeyString(positions.keyAt(it))
@@ -195,7 +194,7 @@ class FilteredUsersFragment : BaseFiltersFragment() {
 
     private fun requestExportToMutes() {
         val adapter = this.adapter as? FilterUsersListAdapter ?: return
-        val checkedPos = listView.checkedItemPositions
+        val checkedPos = binding.listView.checkedItemPositions
         val userKeys = (0 until checkedPos.size()).mapNotNull { i ->
             if (checkedPos.valueAt(i)) {
                 return@mapNotNull adapter.getUserKey(checkedPos.keyAt(i))

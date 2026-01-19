@@ -42,7 +42,11 @@ import android.view.*
 import android.view.View.OnClickListener
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.ViewAnimator
+import android.widget.ViewSwitcher
 import androidx.appcompat.view.SupportMenuInflater
+import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.ActionMenuView.OnMenuItemClickListener
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuItemCompat
@@ -52,7 +56,6 @@ import androidx.loader.content.FixedAsyncTaskLoader
 import androidx.loader.content.Loader
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.navigation.NavigationView
-import kotlinx.android.synthetic.main.header_drawer_account_selector.view.*
 import org.mariotaku.chameleon.Chameleon
 import org.mariotaku.kpreferences.get
 import org.mariotaku.kpreferences.set
@@ -88,6 +91,7 @@ import org.mariotaku.twidere.model.util.AccountUtils
 import org.mariotaku.twidere.provider.TwidereDataStore.Drafts
 import org.mariotaku.twidere.util.*
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutCallback
+import org.mariotaku.twidere.view.ShapedImageView
 import org.mariotaku.twidere.view.holder.AccountProfileImageViewHolder
 import org.mariotaku.twidere.view.transformer.AccountsSelectorTransformer
 import java.lang.ref.WeakReference
@@ -102,17 +106,17 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
 
     private val navigationView by lazy { view as NavigationView }
     private val accountsHeader by lazy { navigationView.getHeaderView(0) }
-    private val hasNextAccountIndicator by lazy { accountsHeader.hasNextAccountIndicator }
-    private val hasPrevAccountIndicator by lazy { accountsHeader.hasPrevAccountIndicator }
-    private val accountsSelector by lazy { accountsHeader.otherAccountsList }
-    private val accountProfileBanner by lazy { accountsHeader.accountProfileBanner }
-    private val floatingProfileImageSnapshot by lazy { accountsHeader.floatingProfileImageSnapshot }
-    private val accountProfileImageView by lazy { accountsHeader.profileImage }
-    private val accountProfileNameView by lazy { accountsHeader.name }
-    private val accountProfileScreenNameView by lazy { accountsHeader.screenName }
-    private val accountDashboardMenu by lazy { accountsHeader.accountDashboardMenu }
-    private val profileContainer by lazy { accountsHeader.profileContainer }
-    private val noAccountContainer by lazy { accountsHeader.noAccountContainer }
+    private val hasNextAccountIndicator by lazy { accountsHeader.findViewById<View>(R.id.hasNextAccountIndicator) }
+    private val hasPrevAccountIndicator by lazy { accountsHeader.findViewById<View>(R.id.hasPrevAccountIndicator) }
+    private val accountsSelector by lazy { accountsHeader.findViewById<ViewPager>(R.id.otherAccountsList) }
+    private val accountProfileBanner by lazy { accountsHeader.findViewById<ViewSwitcher>(R.id.accountProfileBanner) }
+    private val floatingProfileImageSnapshot by lazy { accountsHeader.findViewById<ShapedImageView>(R.id.floatingProfileImageSnapshot) }
+    private val accountProfileImageView by lazy { accountsHeader.findViewById<ShapedImageView>(R.id.profileImage) }
+    private val accountProfileNameView by lazy { accountsHeader.findViewById<TextView>(R.id.name) }
+    private val accountProfileScreenNameView by lazy { accountsHeader.findViewById<TextView>(R.id.screenName) }
+    private val accountDashboardMenu by lazy { accountsHeader.findViewById<ActionMenuView>(R.id.accountDashboardMenu) }
+    private val profileContainer by lazy { accountsHeader.findViewById<View>(R.id.profileContainer) }
+    private val noAccountContainer by lazy { accountsHeader.findViewById<View>(R.id.noAccountContainer) }
 
     private lateinit var accountActionProvider: AccountToggleProvider
 
@@ -149,8 +153,8 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
         hasNextAccountIndicator.alpha = 0f
 
         val profileImageStyle = preferences[profileImageStyleKey]
-        floatingProfileImageSnapshot.style = profileImageStyle
-        accountProfileImageView.style = profileImageStyle
+        floatingProfileImageSnapshot.setStyle(profileImageStyle)
+        accountProfileImageView.setStyle(profileImageStyle)
 
         SupportMenuInflater(context).inflate(R.menu.action_dashboard_timeline_toggle,
                 accountDashboardMenu.menu)
@@ -180,9 +184,10 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
         })
 
         profileContainer.setOnClickListener(this)
-        accountProfileBanner.setInAnimation(context, android.R.anim.fade_in)
-        accountProfileBanner.setOutAnimation(context, android.R.anim.fade_out)
-        accountProfileBanner.setFactory {
+        val profileBannerAnimator = accountProfileBanner as ViewSwitcher
+        profileBannerAnimator.setInAnimation(context, android.R.anim.fade_in)
+        profileBannerAnimator.setOutAnimation(context, android.R.anim.fade_out)
+        profileBannerAnimator.setFactory {
             layoutInflater.inflate(R.layout.layout_account_dashboard_profile_banner,
                     accountProfileBanner, false)
         }
@@ -429,7 +434,7 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
     override fun onAccountSelected(holder: AccountProfileImageViewHolder, details: AccountDetails) {
         if (switchAccountAnimationPlaying) return
         val snapshotView = floatingProfileImageSnapshot
-        val profileImageView = accountProfileImageView
+        val currentProfileImageView = accountProfileImageView
         val clickedImageView = holder.iconView
 
         // Reset snapshot view position
@@ -443,7 +448,7 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
         val destBounds = RectF()
         val snapshotBounds = RectF()
         getLocationOnScreen(clickedImageView, sourceBounds)
-        getLocationOnScreen(profileImageView, destBounds)
+        getLocationOnScreen(currentProfileImageView, destBounds)
         getLocationOnScreen(snapshotView, snapshotBounds)
         val finalScale = destBounds.width() / sourceBounds.width()
         val snapshotBitmap = TransitionUtils.createViewBitmap(clickedImageView, matrix,
@@ -456,11 +461,11 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
         val set = AnimatorSet()
         set.play(ObjectAnimator.ofFloat(snapshotView, View.TRANSLATION_X, sourceBounds.left - snapshotBounds.left, destBounds.left - snapshotBounds.left))
                 .with(ObjectAnimator.ofFloat(snapshotView, View.TRANSLATION_Y, sourceBounds.top - snapshotBounds.top, destBounds.top - snapshotBounds.top))
-                .with(ObjectAnimator.ofFloat<View>(snapshotView, View.SCALE_X, 1f, finalScale))
-                .with(ObjectAnimator.ofFloat<View>(snapshotView, View.SCALE_Y, 1f, finalScale))
-                .with(ObjectAnimator.ofFloat<View>(profileImageView, View.ALPHA, 1f, 0f))
-                .with(ObjectAnimator.ofFloat<View>(clickedImageView, View.SCALE_X, 0f, 1f))
-                .with(ObjectAnimator.ofFloat<View>(clickedImageView, View.SCALE_Y, 0f, 1f))
+                .with(ObjectAnimator.ofFloat(snapshotView, View.SCALE_X, 1f, finalScale))
+                .with(ObjectAnimator.ofFloat(snapshotView, View.SCALE_Y, 1f, finalScale))
+                .with(ObjectAnimator.ofFloat(currentProfileImageView, View.ALPHA, 1f, 0f))
+                .with(ObjectAnimator.ofFloat(clickedImageView, View.SCALE_X, 0f, 1f))
+                .with(ObjectAnimator.ofFloat(clickedImageView, View.SCALE_Y, 0f, 1f))
         val animationTransition: Long = 400
         set.duration = animationTransition
         set.interpolator = DecelerateInterpolator()
@@ -473,7 +478,7 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
                 if (context == null || isDetached || (activity?.isFinishing != false)) return
                 snapshotView.visibility = View.VISIBLE
                 snapshotView.setImageBitmap(snapshotBitmap)
-                val profileDrawable = profileImageView.drawable
+                val profileDrawable = currentProfileImageView.drawable
                 clickedDrawable = clickedImageView.drawable
                 //TODO complete border color
                 clickedColors = clickedImageView.borderColors
@@ -483,7 +488,7 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
                         profileImageStyle, clickedImageView.cornerRadius, clickedImageView.cornerRadiusRatio)
                         .into(clickedImageView).onLoadStarted(profileDrawable)
                 //TODO complete border color
-                clickedImageView.setBorderColors(*profileImageView.borderColors)
+                clickedImageView.setBorderColors(*currentProfileImageView.borderColors)
 
                 displayAccountBanner(details)
 
@@ -511,10 +516,10 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
                 displayCurrentAccount(clickedDrawable)
                 snapshotView.visibility = View.INVISIBLE
                 snapshotView.setImageDrawable(null)
-                profileImageView.setImageDrawable(clickedDrawable)
+                currentProfileImageView.setImageDrawable(clickedDrawable)
                 //TODO complete border color
-                //profileImageView.setBorderColors(*clickedColors!!)
-                profileImageView.alpha = 1f
+                //currentProfileImageView.setBorderColors(*clickedColors!!)
+                currentProfileImageView.alpha = 1f
                 clickedImageView.scaleX = 1f
                 clickedImageView.scaleY = 1f
                 clickedImageView.alpha = 1f
@@ -527,11 +532,12 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
 
     private fun displayAccountBanner(account: AccountDetails) {
         if (context == null || isDetached || (activity?.isFinishing != false)) return
+        val profileBannerAnimator = accountProfileBanner as ViewSwitcher
         val bannerWidth = accountProfileBanner.width
         val res = resources
         val defWidth = res.displayMetrics.widthPixels
         val width = if (bannerWidth > 0) bannerWidth else defWidth
-        val bannerView = accountProfileBanner.nextView as ImageView
+        val bannerView = profileBannerAnimator.nextView as ImageView
         val user = account.user
         val fallbackBanner = when {
             user.link_color != 0 -> {

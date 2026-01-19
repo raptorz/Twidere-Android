@@ -31,7 +31,6 @@ import android.view.KeyEvent
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.commons.parcel.ParcelUtils
 import org.mariotaku.kpreferences.get
 import org.mariotaku.twidere.R
@@ -99,7 +98,7 @@ abstract class ParcelableUsersFragment : AbsContentListRecyclerViewFragment<Parc
         }
         adapter.userClickListener = this
 
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager, adapter,
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager, adapter,
                 this)
         val loaderArgs = Bundle(arguments)
         loaderArgs.putBoolean(EXTRA_FROM_USER, true)
@@ -169,7 +168,7 @@ abstract class ParcelableUsersFragment : AbsContentListRecyclerViewFragment<Parc
     }
 
     override fun onCreateAdapter(context: Context, requestManager: RequestManager): ParcelableUsersAdapter {
-        val adapter = ParcelableUsersAdapter(context, this.requestManager)
+        val adapter = ParcelableUsersAdapter(context, requestManager)
         adapter.simpleLayout = simpleLayout
         adapter.showFollow = showFollow
         val accountType = arguments?.getParcelable<UserKey?>(EXTRA_ACCOUNT_KEY)?.let { key ->

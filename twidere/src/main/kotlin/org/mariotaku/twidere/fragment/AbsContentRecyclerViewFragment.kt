@@ -26,10 +26,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import android.view.*
+import android.widget.ImageView
+import android.widget.TextView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
-import kotlinx.android.synthetic.main.layout_content_fragment_common.*
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.FragmentContentRecyclerviewBinding
 import org.mariotaku.twidere.activity.iface.IControlBarActivity
 import org.mariotaku.twidere.activity.iface.IControlBarActivity.ControlBarShowHideHelper
 import org.mariotaku.twidere.adapter.LoadMoreSupportAdapter
@@ -56,6 +57,14 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
     var itemDecoration: ItemDecoration? = null
         private set
 
+    protected lateinit var binding: FragmentContentRecyclerviewBinding
+        private set
+
+    protected val progressContainer by lazy { binding.root.findViewById<View>(R.id.progressContainer) }
+    protected val errorContainer by lazy { binding.root.findViewById<View>(R.id.errorContainer) }
+    protected val errorIcon by lazy { binding.root.findViewById<ImageView>(R.id.errorIcon) }
+    protected val errorText by lazy { binding.root.findViewById<TextView>(R.id.errorText) }
+
     // Callbacks and listeners
     private lateinit var drawerCallback: SimpleDrawerCallback
     lateinit var scrollListener: RecyclerViewScrollHandler<A>
@@ -69,10 +78,10 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
         get() = progressContainer.visibility == View.VISIBLE
 
     override var refreshing: Boolean
-        get () = swipeLayout.isRefreshing
+        get () = binding.swipeLayout.isRefreshing
         set(value) {
             if (isProgressShowing) return
-            val currentRefreshing = swipeLayout.isRefreshing
+            val currentRefreshing = binding.swipeLayout.isRefreshing
             if (!currentRefreshing) {
                 updateRefreshProgressOffset()
             }
@@ -81,7 +90,7 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
             }
             if (value == currentRefreshing) return
             val layoutRefreshing = value && adapter.loadMoreIndicatorPosition != ILoadMoreSupportAdapter.NONE
-            swipeLayout.isRefreshing = layoutRefreshing
+            binding.swipeLayout.isRefreshing = layoutRefreshing
         }
 
     override fun canScroll(dy: Float): Boolean {
@@ -121,7 +130,7 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
 
     override fun scrollToStart(): Boolean {
         scrollToPositionWithOffset(0, 0)
-        recyclerView.stopScroll()
+        binding.recyclerView.stopScroll()
         setControlVisible(true)
         return true
     }
@@ -157,9 +166,9 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
     }
 
     var refreshEnabled: Boolean
-        get() = swipeLayout.isEnabled
+        get() = binding.swipeLayout.isEnabled
         set(value) {
-            swipeLayout.isEnabled = value
+            binding.swipeLayout.isEnabled = value
         }
 
     override fun onLoadMoreContents(@IndicatorPosition position: Long) {
@@ -175,25 +184,26 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_content_recyclerview, container, false)
+        binding = FragmentContentRecyclerviewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        drawerCallback = SimpleDrawerCallback(recyclerView)
+        drawerCallback = SimpleDrawerCallback(binding.recyclerView)
 
         val backgroundColor = ThemeUtils.getColorBackground(requireContext())
         val colorRes = TwidereColorUtils.getContrastYIQ(backgroundColor,
                 R.color.bg_refresh_progress_color_light, R.color.bg_refresh_progress_color_dark)
-        swipeLayout.setOnRefreshListener(this)
-        swipeLayout.setProgressBackgroundColorSchemeResource(colorRes)
+        binding.swipeLayout.setOnRefreshListener(this)
+        binding.swipeLayout.setProgressBackgroundColorSchemeResource(colorRes)
         adapter = onCreateAdapter(requireContext(), requestManager)
         layoutManager = onCreateLayoutManager(requireContext())
-        scrollListener = RecyclerViewScrollHandler(this, RecyclerViewScrollHandler.RecyclerViewCallback(recyclerView))
+        scrollListener = RecyclerViewScrollHandler(this, RecyclerViewScrollHandler.RecyclerViewCallback(binding.recyclerView))
 
-        recyclerView.layoutManager = layoutManager
-        recyclerView.setHasFixedSize(true)
-        val swipeLayout = swipeLayout
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.setHasFixedSize(true)
+        val swipeLayout = binding.swipeLayout
         if (swipeLayout is ExtendedSwipeRefreshLayout) {
             swipeLayout.touchInterceptor = object : IExtendedView.TouchInterceptor {
                 override fun dispatchTouchEvent(view: View, event: MotionEvent): Boolean {
@@ -214,10 +224,10 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
 
             }
         } else {
-            recyclerView.setOnTouchListener(scrollListener.touchListener)
+            binding.recyclerView.setOnTouchListener(scrollListener.touchListener)
         }
-        setupRecyclerView(requireContext(), recyclerView)
-        recyclerView.adapter = adapter
+        setupRecyclerView(requireContext(), binding.recyclerView)
+        binding.recyclerView.adapter = adapter
 
         scrollListener.touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
@@ -234,11 +244,11 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
 
     override fun onStart() {
         super.onStart()
-        recyclerView.addOnScrollListener(scrollListener)
+        binding.recyclerView.addOnScrollListener(scrollListener)
     }
 
     override fun onStop() {
-        recyclerView.removeOnScrollListener(scrollListener)
+        binding.recyclerView.removeOnScrollListener(scrollListener)
         super.onStop()
     }
 
@@ -255,7 +265,7 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
 
     override fun onApplySystemWindowInsets(insets: Rect) {
         val extraPadding = extraContentPadding
-        recyclerView.setPadding(insets.left + extraPadding.left, insets.top + extraPadding.top,
+        binding.recyclerView.setPadding(insets.left + extraPadding.left, insets.top + extraPadding.top,
                 insets.right + extraPadding.right, insets.bottom + extraPadding.bottom)
         errorContainer.setPadding(insets.left, insets.top, insets.right, insets.bottom)
         progressContainer.setPadding(insets.left, insets.top, insets.right, insets.bottom)
@@ -281,19 +291,19 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
     protected fun showContent() {
         errorContainer.visibility = View.GONE
         progressContainer.visibility = View.GONE
-        recyclerView.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.VISIBLE
     }
 
     protected fun showProgress() {
         errorContainer.visibility = View.GONE
         progressContainer.visibility = View.VISIBLE
-        recyclerView.visibility = View.GONE
+        binding.recyclerView.visibility = View.GONE
     }
 
     protected fun showError(icon: Int, text: CharSequence) {
         errorContainer.visibility = View.VISIBLE
         progressContainer.visibility = View.GONE
-        recyclerView.visibility = View.GONE
+        binding.recyclerView.visibility = View.GONE
         errorIcon.setImageResource(icon)
         errorText.text = text
     }
@@ -301,21 +311,21 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
     protected fun showEmpty(icon: Int, text: CharSequence) {
         errorContainer.visibility = View.VISIBLE
         progressContainer.visibility = View.GONE
-        recyclerView.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.VISIBLE
         errorIcon.setImageResource(icon)
         errorText.text = text
     }
 
     protected fun updateRefreshProgressOffset() {
         val insets = this.systemWindowsInsets
-        if (insets.top == 0 || swipeLayout == null || swipeLayout.isRefreshing) {
+        if (insets.top == 0 || binding.swipeLayout == null || binding.swipeLayout.isRefreshing) {
             return
         }
-        val progressCircleDiameter = swipeLayout.progressCircleDiameter
+        val progressCircleDiameter = binding.swipeLayout.progressCircleDiameter
         if (progressCircleDiameter == 0) return
         val progressViewStart = 0 - progressCircleDiameter
         val progressViewEnd = insets.top + resources.getDimensionPixelSize(R.dimen.element_spacing_normal)
-        swipeLayout.setProgressViewOffset(false, progressViewStart, progressViewEnd)
+        binding.swipeLayout.setProgressViewOffset(false, progressViewStart, progressViewEnd)
     }
 
     interface RefreshCompleteListener {

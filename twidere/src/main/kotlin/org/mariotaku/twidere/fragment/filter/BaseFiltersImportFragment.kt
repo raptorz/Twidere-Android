@@ -15,7 +15,7 @@ import android.view.MenuItem
 import android.widget.CheckBox
 import android.widget.Toast
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.dialog_block_mute_filter_user_confirm.*
+import org.mariotaku.twidere.databinding.DialogBlockMuteFilterUserConfirmBinding
 import nl.komponents.kovenant.combine.and
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.alwaysUi
@@ -236,10 +236,13 @@ abstract class BaseFiltersImportFragment : AbsContentListRecyclerViewFragment<Se
 
     class ImportConfirmDialogFragment : BaseDialogFragment(), DialogInterface.OnClickListener {
 
+        private var dialogBinding: DialogBlockMuteFilterUserConfirmBinding? = null
+
         override fun onClick(dialog: DialogInterface, which: Int) {
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> {
-                    val filterEverywhere = (dialog as Dialog).findViewById<CheckBox>(R.id.filterEverywhereToggle).isChecked
+                    val binding = dialogBinding ?: return
+                    val filterEverywhere = binding.filterEverywhereToggle.isChecked
                     (parentFragment as BaseFiltersImportFragment).performImport(filterEverywhere)
                 }
             }
@@ -248,14 +251,16 @@ abstract class BaseFiltersImportFragment : AbsContentListRecyclerViewFragment<Se
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle(R.string.action_add_to_filter)
-            builder.setView(R.layout.dialog_block_mute_filter_user_confirm)
+            val binding = DialogBlockMuteFilterUserConfirmBinding.inflate(layoutInflater)
+            builder.setView(binding.root)
             builder.setPositiveButton(android.R.string.ok, this)
             builder.setNegativeButton(android.R.string.cancel, null)
             val dialog = builder.create()
+            dialogBinding = binding
             dialog.onShow {
                 it.applyTheme()
-                val confirmMessageView = it.confirmMessage
-                val filterEverywhereHelp = it.filterEverywhereHelp
+                val confirmMessageView = binding.confirmMessage
+                val filterEverywhereHelp = binding.filterEverywhereHelp
                 filterEverywhereHelp.setOnClickListener {
                     MessageDialogFragment.show(childFragmentManager, title = getString(R.string.filter_everywhere),
                             message = getString(R.string.filter_everywhere_description), tag = "filter_everywhere_help")

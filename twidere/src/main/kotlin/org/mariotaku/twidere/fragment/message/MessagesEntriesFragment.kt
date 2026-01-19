@@ -32,7 +32,6 @@ import android.view.View
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.activity_premium_dashboard.*
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.toStringArray
@@ -88,7 +87,7 @@ class MessagesEntriesFragment : AbsContentListRecyclerViewFragment<MessagesEntri
         adapter.listener = this
         adapter.loadMoreSupportedPosition = ILoadMoreSupportAdapter.END
         LoaderManager.getInstance(this).initLoader(loaderId, null, this)
-        registerForContextMenu(recyclerView)
+        registerForContextMenu(binding.recyclerView)
     }
 
     override fun onStart() {
@@ -182,8 +181,8 @@ class MessagesEntriesFragment : AbsContentListRecyclerViewFragment<MessagesEntri
     }
 
     override fun onConversationLongClick(position: Int): Boolean {
-        val view = recyclerView.layoutManager?.findViewByPosition(position) ?: return false
-        recyclerView.showContextMenuForChild(view)
+        val view = binding.recyclerView.layoutManager?.findViewByPosition(position) ?: return false
+        binding.recyclerView.showContextMenuForChild(view)
         return true
     }
 

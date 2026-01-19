@@ -27,7 +27,6 @@ import androidx.loader.app.hasRunningLoadersSafe
 import androidx.loader.content.Loader
 import android.view.KeyEvent
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.ktextension.set
 import org.mariotaku.twidere.adapter.ParcelableUserListsAdapter
 import org.mariotaku.twidere.adapter.iface.ILoadMoreSupportAdapter
@@ -127,7 +126,7 @@ abstract class ParcelableUserListsFragment : AbsContentListRecyclerViewFragment<
         val layoutManager = layoutManager
         adapter.userListClickListener = this
 
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager, adapter,
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager, adapter,
                 this)
         val loaderArgs = Bundle(arguments)
         loaderArgs.putBoolean(EXTRA_FROM_USER, true)

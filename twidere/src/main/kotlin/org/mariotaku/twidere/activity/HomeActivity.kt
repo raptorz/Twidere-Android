@@ -60,10 +60,9 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_home_content.*
-import kotlinx.android.synthetic.main.layout_empty_tab_hint.*
 import nl.komponents.kovenant.task
+import org.mariotaku.twidere.databinding.ActivityHomeBinding
+import org.mariotaku.twidere.databinding.ActivityHomeContentBinding
 import org.mariotaku.chameleon.ChameleonUtils
 import org.mariotaku.kpreferences.contains
 import org.mariotaku.kpreferences.get
@@ -120,6 +119,10 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     private lateinit var pagerAdapter: SupportTabsAdapter
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
+    private lateinit var binding: ActivityHomeBinding
+    private lateinit var contentBinding: ActivityHomeContentBinding
+    private lateinit var emptyTabHint: View
+
     private var propertiesInitialized = false
     private var actionsButtonBottomMargin: Int = 0
 
@@ -129,25 +132,25 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override val controlBarHeight: Int
         get() {
-            return mainTabs.height - mainTabs.stripHeight
+            return contentBinding.mainTabs.height - contentBinding.mainTabs.stripHeight
         }
 
     override val currentVisibleFragment: Fragment?
         get() {
-            val currentItem = mainPager.currentItem
+            val currentItem = contentBinding.mainPager.currentItem
             if (currentItem < 0 || currentItem >= pagerAdapter.count) return null
-            return pagerAdapter.instantiateItem(mainPager, currentItem)
+            return pagerAdapter.instantiateItem(contentBinding.mainPager, currentItem)
         }
 
     private val homeDrawerToggleDelegate = object : ActionBarDrawerToggle.Delegate {
         override fun setActionBarUpIndicator(upDrawable: Drawable, @StringRes contentDescRes: Int) {
-            drawerToggleButton.setImageDrawable(upDrawable)
-            drawerToggleButton.setColorFilter(ChameleonUtils.getColorDependent(overrideTheme.colorToolbar))
-            drawerToggleButton.contentDescription = getString(contentDescRes)
+            contentBinding.drawerToggleButton.setImageDrawable(upDrawable)
+            contentBinding.drawerToggleButton.setColorFilter(ChameleonUtils.getColorDependent(overrideTheme.colorToolbar))
+            contentBinding.drawerToggleButton.contentDescription = getString(contentDescRes)
         }
 
         override fun setActionBarDescription(@StringRes contentDescRes: Int) {
-            drawerToggleButton.contentDescription = getString(contentDescRes)
+            contentBinding.drawerToggleButton.contentDescription = getString(contentDescRes)
         }
 
         @SuppressLint("RestrictedApi")
@@ -160,7 +163,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         }
 
         override fun getActionBarThemedContext(): Context {
-            return toolbar.context
+            return contentBinding.toolbar.context
         }
 
         override fun isNavigationVisible(): Boolean {
@@ -170,8 +173,8 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     private val keyboardShortcutRecipient: Fragment?
         get() = when {
-            homeMenu.isDrawerOpen(GravityCompat.START) -> leftDrawerFragment
-            homeMenu.isDrawerOpen(GravityCompat.END) -> null
+            binding.homeMenu.isDrawerOpen(GravityCompat.START) -> leftDrawerFragment
+            binding.homeMenu.isDrawerOpen(GravityCompat.END) -> null
             else -> currentVisibleFragment
         }
 
@@ -183,8 +186,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     private val isDrawerOpen: Boolean
         get() {
-            val drawer = homeMenu ?: return false
-            return drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END)
+            return binding.homeMenu.isDrawerOpen(GravityCompat.START) || binding.homeMenu.isDrawerOpen(GravityCompat.END)
         }
 
     /**
@@ -209,12 +211,18 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
             notifyAccountsChanged()
         }
         supportRequestWindowFeature(AppCompatDelegate.FEATURE_ACTION_MODE_OVERLAY)
-        setContentView(R.layout.activity_home)
-        setSupportActionBar(toolbar)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        val homeContentView = binding.homeMenu.findViewById<View>(R.id.homeContent)
+        contentBinding = ActivityHomeContentBinding.bind(homeContentView)
+        emptyTabHint = binding.homeMenu.findViewById(R.id.emptyTabHint)
+        
+        setSupportActionBar(contentBinding.toolbar)
 
-        drawerToggle = ActionBarDrawerToggle(this, homeMenu, R.string.open_accounts_dashboard,
+        drawerToggle = ActionBarDrawerToggle(this, binding.homeMenu, R.string.open_accounts_dashboard,
                 R.string.close_accounts_dashboard)
-        pagerAdapter = SupportTabsAdapter(this, supportFragmentManager, mainTabs)
+        pagerAdapter = SupportTabsAdapter(this, supportFragmentManager, contentBinding.mainTabs)
         propertiesInitialized = true
 
         ThemeUtils.setCompatContentViewOverlay(window, EmptyDrawable())
@@ -222,34 +230,34 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         val refreshOnStart = preferences[refreshOnStartKey]
         var tabDisplayOptionInt = Utils.getTabDisplayOptionInt(this)
 
-        ViewCompat.setOnApplyWindowInsetsListener(homeContent, this)
-        homeMenu.fitsSystemWindows = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ||
+        ViewCompat.setOnApplyWindowInsetsListener(contentBinding.homeContent, this)
+        binding.homeMenu.fitsSystemWindows = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ||
                 preferences[navbarStyleKey] != NavbarStyle.TRANSPARENT
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !ViewCompat.getFitsSystemWindows(homeMenu)) {
-            ViewCompat.setOnApplyWindowInsetsListener(homeMenu, null)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !ViewCompat.getFitsSystemWindows(binding.homeMenu)) {
+            ViewCompat.setOnApplyWindowInsetsListener(binding.homeMenu, null)
         }
 
-        mainPager.adapter = pagerAdapter
-        mainTabs.setViewPager(mainPager)
-        mainTabs.setOnPageChangeListener(this)
+        contentBinding.mainPager.adapter = pagerAdapter
+        contentBinding.mainTabs.setViewPager(contentBinding.mainPager)
+        contentBinding.mainTabs.setOnPageChangeListener(this)
         if (tabDisplayOptionInt == 0) {
             tabDisplayOptionInt = TabPagerIndicator.DisplayOption.ICON
         }
-        mainTabs.setTabDisplayOption(tabDisplayOptionInt)
-        mainTabs.setTabExpandEnabled(TabPagerIndicator.DisplayOption.LABEL !in tabDisplayOptionInt)
-        mainTabs.setDisplayBadge(preferences[unreadCountKey])
-         mainTabs.updateAppearance()
+        contentBinding.mainTabs.setTabDisplayOption(tabDisplayOptionInt)
+        contentBinding.mainTabs.setTabExpandEnabled(TabPagerIndicator.DisplayOption.LABEL !in tabDisplayOptionInt)
+        contentBinding.mainTabs.setDisplayBadge(preferences[unreadCountKey])
+         contentBinding.mainTabs.updateAppearance()
 
-         drawerToggleButton.visibility = View.VISIBLE
+         contentBinding.drawerToggleButton.visibility = View.VISIBLE
 
          if (preferences[fabVisibleKey]) {
-             actionsButton.visibility = View.VISIBLE
+             contentBinding.actionsButton.visibility = View.VISIBLE
          } else {
-             actionsButton.visibility = View.GONE
+             contentBinding.actionsButton.visibility = View.GONE
          }
-        actionsButtonBottomMargin = (actionsButton.layoutParams as MarginLayoutParams).bottomMargin
+        actionsButtonBottomMargin = (contentBinding.actionsButton.layoutParams as MarginLayoutParams).bottomMargin
 
-        homeContent.addOnLayoutChangeListener { _, _, top, _, _, _, oldTop, _, _ ->
+        contentBinding.homeContent.addOnLayoutChangeListener { _, _, top, _, _, _, oldTop, _, _ ->
             if (top != oldTop) {
                 val fragment = leftDrawerFragment
                 if (fragment is AccountsDashboardFragment) {
@@ -258,9 +266,9 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
             }
         }
 
-        actionsButton.setOnClickListener(this)
-        actionsButton.setOnLongClickListener(this)
-        drawerToggleButton.setOnClickListener(this)
+        contentBinding.actionsButton.setOnClickListener(this)
+        contentBinding.actionsButton.setOnLongClickListener(this)
+        contentBinding.drawerToggleButton.setOnClickListener(this)
         emptyTabHint.setOnClickListener(this)
 
         setupSlidingMenu()
@@ -314,7 +322,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         readStateManager.unregisterOnSharedPreferenceChangeListener(readStateChangeListener)
         bus.unregister(this)
         AccountManager.get(this).removeOnAccountsUpdatedListenerSafe(accountUpdatedListener)
-        preferences.edit().putInt(KEY_SAVED_TAB_POSITION, mainPager.currentItem).apply()
+        preferences.edit().putInt(KEY_SAVED_TAB_POSITION, contentBinding.mainPager.currentItem).apply()
         timelineSyncManager?.commit()
         super.onStop()
     }
@@ -330,7 +338,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // Pass any configuration change to the drawer toggle
+        // Pass any configuration change to the binding.drawer toggle
         drawerToggle.onConfigurationChanged(newConfig)
     }
 
@@ -341,17 +349,17 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override fun onClick(v: View) {
         when (v) {
-            actionsButton -> {
+            contentBinding.actionsButton -> {
                 triggerActionsClick()
             }
             emptyTabHint -> {
                 startActivityForResult(IntentUtils.settings("tabs"), REQUEST_SETTINGS)
             }
-            drawerToggleButton -> {
-                if (homeMenu.isDrawerOpen(GravityCompat.START) || homeMenu.isDrawerOpen(GravityCompat.END)) {
-                    homeMenu.closeDrawers()
+            contentBinding.drawerToggleButton -> {
+                if (binding.homeMenu.isDrawerOpen(GravityCompat.START) || binding.homeMenu.isDrawerOpen(GravityCompat.END)) {
+                    binding.homeMenu.closeDrawers()
                 } else {
-                    homeMenu.openDrawer(GravityCompat.START)
+                    binding.homeMenu.openDrawer(GravityCompat.START)
                 }
             }
         }
@@ -359,7 +367,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override fun onLongClick(v: View): Boolean {
         when (v) {
-            actionsButton -> {
+            contentBinding.actionsButton -> {
                 Utils.showMenuItemToast(v, v.contentDescription, true)
                 return true
             }
@@ -371,9 +379,8 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     override fun onPageSelected(position: Int) {
-        //TODO handle secondary drawer
-        if (homeMenu.isDrawerOpen(GravityCompat.START)) {
-            homeMenu.closeDrawers()
+        if (binding.homeMenu.isDrawerOpen(GravityCompat.START)) {
+            binding.homeMenu.closeDrawers()
         }
         updateActionsButton()
     }
@@ -389,8 +396,8 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override fun getSystemWindowInsets(caller: Fragment, insets: Rect): Boolean {
         if (caller === leftDrawerFragment) return super.getSystemWindowInsets(caller, insets)
-        if (mainTabs == null || homeContent == null || toolbar == null || !toolbar.isVisible) return false
-        val height = mainTabs.height
+        if (contentBinding.mainTabs == null || contentBinding.homeContent == null || contentBinding.toolbar == null || !contentBinding.toolbar.isVisible) return false
+        val height = contentBinding.mainTabs.height
         if (preferences[tabPositionKey] == SharedPreferenceConstants.VALUE_TAB_POSITION_TOP) {
             if (height != 0) {
                 insets.top = height
@@ -415,12 +422,12 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         if (fragment is AccountsDashboardFragment) {
             fragment.requestApplyInsets()
         }
-        homeMenu.setChildInsets(insets.unwrapped, insets.systemWindowInsetTop > 0)
-        if (!ViewCompat.getFitsSystemWindows(homeMenu)) {
-            homeContent.setPadding(0, insets.systemWindowInsetTop, 0, 0)
+        binding.homeMenu.setChildInsets(insets.unwrapped, insets.systemWindowInsetTop > 0)
+        if (!ViewCompat.getFitsSystemWindows(binding.homeMenu)) {
+            contentBinding.homeContent.setPadding(0, insets.systemWindowInsetTop, 0, 0)
         }
-        (toolbar.layoutParams as? MarginLayoutParams)?.bottomMargin = insets.systemWindowInsetBottom
-        (actionsButton.layoutParams as? MarginLayoutParams)?.bottomMargin =
+        (contentBinding.toolbar.layoutParams as? MarginLayoutParams)?.bottomMargin = insets.systemWindowInsetBottom
+        (contentBinding.actionsButton.layoutParams as? MarginLayoutParams)?.bottomMargin =
                 actionsButtonBottomMargin + if (preferences[tabPositionKey] == SharedPreferenceConstants.VALUE_TAB_POSITION_TOP) {
                     insets.systemWindowInsetBottom
                 } else {
@@ -433,7 +440,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         super.onNewIntent(intent)
         val tabPosition = handleIntent(intent, false)
         if (tabPosition >= 0) {
-            mainPager.currentItem = tabPosition.coerceInOr(0 until pagerAdapter.count, 0)
+            contentBinding.mainPager.currentItem = tabPosition.coerceInOr(0 until pagerAdapter.count, 0)
         }
     }
 
@@ -450,11 +457,11 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
             android.R.id.home -> {
                 val fm = supportFragmentManager
                 val count = fm.backStackEntryCount
-                if (homeMenu.isDrawerOpen(GravityCompat.START) || homeMenu.isDrawerOpen(GravityCompat.END)) {
-                    homeMenu.closeDrawers()
+                if (binding.homeMenu.isDrawerOpen(GravityCompat.START) || binding.homeMenu.isDrawerOpen(GravityCompat.END)) {
+                    binding.homeMenu.closeDrawers()
                     return true
                 } else if (count == 0) {
-                    homeMenu.openDrawer(GravityCompat.START)
+                    binding.homeMenu.openDrawer(GravityCompat.START)
                     return true
                 }
                 return true
@@ -478,10 +485,10 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         if (action != null) {
             when (action) {
                 KeyboardShortcutConstants.ACTION_HOME_ACCOUNTS_DASHBOARD -> {
-                    if (homeMenu.isDrawerOpen(GravityCompat.START)) {
-                        homeMenu.closeDrawers()
+                    if (binding.homeMenu.isDrawerOpen(GravityCompat.START)) {
+                        binding.homeMenu.closeDrawers()
                     } else {
-                        homeMenu.openDrawer(GravityCompat.START)
+                        binding.homeMenu.openDrawer(GravityCompat.START)
                         setControlBarVisibleAnimate(true)
                     }
                     return true
@@ -492,29 +499,29 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         if (action != null) {
             when (action) {
                 KeyboardShortcutConstants.ACTION_NAVIGATION_PREVIOUS_TAB -> {
-                    val previous = mainPager.currentItem - 1
-                    if (previous < 0 && DrawerLayoutAccessor.findDrawerWithGravity(homeMenu, Gravity.START) != null) {
-                        homeMenu.openDrawer(GravityCompat.START)
+                    val previous = contentBinding.mainPager.currentItem - 1
+                    if (previous < 0 && DrawerLayoutAccessor.findDrawerWithGravity(binding.homeMenu, Gravity.START) != null) {
+                        binding.homeMenu.openDrawer(GravityCompat.START)
                         setControlBarVisibleAnimate(true)
                     } else if (previous < pagerAdapter.count) {
-                        if (homeMenu.isDrawerOpen(GravityCompat.END)) {
-                            homeMenu.closeDrawers()
+                        if (binding.homeMenu.isDrawerOpen(GravityCompat.END)) {
+                            binding.homeMenu.closeDrawers()
                         } else {
-                            mainPager.setCurrentItem(previous, true)
+                            contentBinding.mainPager.setCurrentItem(previous, true)
                         }
                     }
                     return true
                 }
                 KeyboardShortcutConstants.ACTION_NAVIGATION_NEXT_TAB -> {
-                    val next = mainPager.currentItem + 1
-                    if (next >= pagerAdapter.count && DrawerLayoutAccessor.findDrawerWithGravity(homeMenu, Gravity.END) != null) {
-                        homeMenu.openDrawer(GravityCompat.END)
+                    val next = contentBinding.mainPager.currentItem + 1
+                    if (next >= pagerAdapter.count && DrawerLayoutAccessor.findDrawerWithGravity(binding.homeMenu, Gravity.END) != null) {
+                        binding.homeMenu.openDrawer(GravityCompat.END)
                         setControlBarVisibleAnimate(true)
                     } else if (next >= 0) {
-                        if (homeMenu.isDrawerOpen(GravityCompat.START)) {
-                            homeMenu.closeDrawers()
+                        if (binding.homeMenu.isDrawerOpen(GravityCompat.START)) {
+                            binding.homeMenu.closeDrawers()
                         } else {
-                            mainPager.setCurrentItem(next, true)
+                            contentBinding.mainPager.setCurrentItem(next, true)
                         }
                     }
                     return true
@@ -542,9 +549,9 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
             KeyEvent.KEYCODE_MENU -> {
                 if (event.action != KeyEvent.ACTION_UP) return true
                 if (isDrawerOpen) {
-                    homeMenu.closeDrawers()
+                    binding.homeMenu.closeDrawers()
                 } else {
-                    homeMenu.openDrawer(GravityCompat.START)
+                    binding.homeMenu.openDrawer(GravityCompat.START)
                 }
                 return true
             }
@@ -556,7 +563,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
                 if (isDrawerOpen) {
-                    homeMenu.closeDrawers()
+                    binding.homeMenu.closeDrawers()
                     return true
                 }
             }
@@ -565,7 +572,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     override fun triggerRefresh(position: Int): Boolean {
-        val f = pagerAdapter.instantiateItem(mainPager, position)
+        val f = pagerAdapter.instantiateItem(contentBinding.mainPager, position)
         if (f.activity == null || f.isDetached) return false
         if (f !is RefreshScrollTopInterface) return false
         return f.triggerRefresh()
@@ -580,11 +587,11 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     fun updateUnreadCount() {
-        if (mainTabs == null || updateUnreadCountTask != null && updateUnreadCountTask!!.status == AsyncTask.Status.RUNNING)
+        if (contentBinding.mainTabs == null || updateUnreadCountTask != null && updateUnreadCountTask!!.status == AsyncTask.Status.RUNNING)
             return
-        updateUnreadCountTask = UpdateUnreadCountTask(this, preferences, readStateManager, mainTabs,
+        updateUnreadCountTask = UpdateUnreadCountTask(this, preferences, readStateManager, contentBinding.mainTabs,
                 pagerAdapter.tabs.toTypedArray()).apply { execute() }
-        mainTabs.setDisplayBadge(preferences.getBoolean(SharedPreferenceConstants.KEY_UNREAD_COUNT, true))
+        contentBinding.mainTabs.setDisplayBadge(preferences.getBoolean(SharedPreferenceConstants.KEY_UNREAD_COUNT, true))
     }
 
     val tabs: List<SupportTabSpec>
@@ -592,58 +599,58 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override var controlBarOffset: Float
         get() {
-            if (mainTabs.columns > 1 || !toolbar.isVisible) {
-                val lp = actionsButton.layoutParams
+            if (contentBinding.mainTabs.columns > 1 || !contentBinding.toolbar.isVisible) {
+                val lp = contentBinding.actionsButton.layoutParams
                 val total: Float
                 total = if (lp is MarginLayoutParams) {
-                    (lp.bottomMargin + actionsButton.height).toFloat()
+                    (lp.bottomMargin + contentBinding.actionsButton.height).toFloat()
                 } else {
-                    actionsButton.height.toFloat()
+                    contentBinding.actionsButton.height.toFloat()
                 }
-                return 1 - actionsButton.translationY / total
+                return 1 - contentBinding.actionsButton.translationY / total
             }
             val totalHeight = controlBarHeight.toFloat()
             return 1 + if (preferences[tabPositionKey] == SharedPreferenceConstants.VALUE_TAB_POSITION_TOP) {
-                toolbar.translationY
+                contentBinding.toolbar.translationY
             }  else {
-                -toolbar.translationY
+                -contentBinding.toolbar.translationY
             } / totalHeight
         }
         set(offset) {
             if (preferences[tabPositionKey] == SharedPreferenceConstants.VALUE_TAB_POSITION_TOP) {
-                val translationY = if (mainTabs.columns > 1 || !toolbar.isVisible) {
+                val translationY = if (contentBinding.mainTabs.columns > 1 || !contentBinding.toolbar.isVisible) {
                     0
                 } else {
                     (controlBarHeight * (offset - 1)).toInt()
                 }
-                toolbar.translationY = translationY.toFloat()
-                windowOverlay.translationY = translationY.toFloat()
-                val lp = actionsButton.layoutParams
+                contentBinding.toolbar.translationY = translationY.toFloat()
+                contentBinding.windowOverlay.translationY = translationY.toFloat()
+                val lp = contentBinding.actionsButton.layoutParams
                 if (lp is MarginLayoutParams) {
-                    actionsButton.translationY = (lp.bottomMargin + actionsButton.height) * (1 - offset)
+                    contentBinding.actionsButton.translationY = (lp.bottomMargin + contentBinding.actionsButton.height) * (1 - offset)
                 } else {
-                    actionsButton.translationY = actionsButton.height * (1 - offset)
+                    contentBinding.actionsButton.translationY = contentBinding.actionsButton.height * (1 - offset)
                 }
                 notifyControlBarOffsetChanged()
             } else {
-                val layoutparams = toolbar.layoutParams
+                val layoutparams = contentBinding.toolbar.layoutParams
                 val toolbarMarginBottom = if (layoutparams is MarginLayoutParams) {
                     layoutparams.bottomMargin
                 } else {
                     0
                 }
-                val translationY = if (mainTabs.columns > 1 || !toolbar.isVisible) {
+                val translationY = if (contentBinding.mainTabs.columns > 1 || !contentBinding.toolbar.isVisible) {
                     0
                 } else {
-                    ((toolbar.height + toolbarMarginBottom) * (offset - 1)).toInt()
+                    ((contentBinding.toolbar.height + toolbarMarginBottom) * (offset - 1)).toInt()
                 }
-                toolbar.translationY = -translationY.toFloat()
-                windowOverlay.translationY = -translationY.toFloat()
-                val lp = actionsButton.layoutParams
+                contentBinding.toolbar.translationY = -translationY.toFloat()
+                contentBinding.windowOverlay.translationY = -translationY.toFloat()
+                val lp = contentBinding.actionsButton.layoutParams
                 if (lp is MarginLayoutParams) {
-                    actionsButton.translationY = (lp.bottomMargin + toolbar.height + actionsButton.height + toolbarMarginBottom) * (1 - offset)
+                    contentBinding.actionsButton.translationY = (lp.bottomMargin + contentBinding.toolbar.height + contentBinding.actionsButton.height + toolbarMarginBottom) * (1 - offset)
                 } else {
-                    actionsButton.translationY = actionsButton.height * (1 - offset)
+                    contentBinding.actionsButton.translationY = contentBinding.actionsButton.height * (1 - offset)
                 }
                 notifyControlBarOffsetChanged()
             }
@@ -673,8 +680,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     fun closeAccountsDrawer() {
-        if (homeMenu == null) return
-        homeMenu.closeDrawers()
+        binding.homeMenu.closeDrawers()
     }
 
     private fun openSearchView(account: AccountDetails?) {
@@ -774,14 +780,13 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     private fun initUnreadCount() {
-        for (i in 0 until mainTabs.count) {
-            mainTabs.setBadge(i, 0)
+        for (i in 0 until contentBinding.mainTabs.count) {
+            contentBinding.mainTabs.setBadge(i, 0)
         }
     }
 
     private fun openAccountsDrawer() {
-        if (homeMenu == null) return
-        homeMenu.openDrawer(GravityCompat.START)
+        binding.homeMenu.openDrawer(GravityCompat.START)
     }
 
     private fun showDrawerTutorial(): Boolean {
@@ -790,8 +795,8 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         val height = resources.displayMetrics.heightPixels
         val listener: TapTargetView.Listener = object : TapTargetView.Listener() {
             override fun onTargetClick(view: TapTargetView?) {
-                if (!homeMenu.isDrawerOpen(GravityCompat.START)) {
-                    homeMenu.openDrawer(GravityCompat.START)
+                if (!binding.homeMenu.isDrawerOpen(GravityCompat.START)) {
+                    binding.homeMenu.openDrawer(GravityCompat.START)
                 }
                 super.onTargetClick(view)
             }
@@ -826,10 +831,10 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     private fun setTabPosition(initialTab: Int) {
         val rememberPosition = preferences.getBoolean(SharedPreferenceConstants.KEY_REMEMBER_POSITION, true)
         if (initialTab >= 0) {
-            mainPager.currentItem = initialTab.coerceInOr(0 until pagerAdapter.count, 0)
+            contentBinding.mainPager.currentItem = initialTab.coerceInOr(0 until pagerAdapter.count, 0)
         } else if (rememberPosition) {
             val position = preferences.getInt(SharedPreferenceConstants.KEY_SAVED_TAB_POSITION, 0)
-            mainPager.currentItem = position.coerceInOr(0 until pagerAdapter.count, 0)
+            contentBinding.mainPager.currentItem = position.coerceInOr(0 until pagerAdapter.count, 0)
         }
     }
 
@@ -841,7 +846,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         } else {
             0xFF
         }
-        actionsButton.alpha = actionBarAlpha / 255f
+        contentBinding.actionsButton.alpha = actionBarAlpha / 255f
     }
 
     private fun setupHomeTabs() {
@@ -849,53 +854,53 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         pagerAdapter.addAll(CustomTabUtils.getHomeTabs(this))
         val hasNoTab = pagerAdapter.count == 0
         emptyTabHint.visibility = if (hasNoTab) View.VISIBLE else View.GONE
-        mainPager.visibility = if (hasNoTab) View.GONE else View.VISIBLE
+        contentBinding.mainPager.visibility = if (hasNoTab) View.GONE else View.VISIBLE
         if (pagerAdapter.count > 1 && hasMultiColumns()) {
-            mainPager.pageMargin = resources.getDimensionPixelOffset(R.dimen.home_page_margin)
-            mainPager.setPageMarginDrawable(ThemeUtils.getDrawableFromThemeAttribute(this, R.attr.dividerVertical))
+            contentBinding.mainPager.pageMargin = resources.getDimensionPixelOffset(R.dimen.home_page_margin)
+            contentBinding.mainPager.setPageMarginDrawable(ThemeUtils.getDrawableFromThemeAttribute(this, R.attr.dividerVertical))
             pagerAdapter.hasMultipleColumns = true
             pagerAdapter.preferredColumnWidth = when (preferences[multiColumnWidthKey]) {
                 "narrow" -> resources.getDimension(R.dimen.preferred_tab_column_width_narrow)
                 "wide" -> resources.getDimension(R.dimen.preferred_tab_column_width_wide)
                 else -> resources.getDimension(R.dimen.preferred_tab_column_width_normal)
             }
-            mainTabs.columns = floor(1.0 / pagerAdapter.getPageWidth(0)).toInt()
+            contentBinding.mainTabs.columns = floor(1.0 / pagerAdapter.getPageWidth(0)).toInt()
         } else {
-            mainPager.pageMargin = 0
-            mainPager.setPageMarginDrawable(null)
+            contentBinding.mainPager.pageMargin = 0
+            contentBinding.mainPager.setPageMarginDrawable(null)
             pagerAdapter.hasMultipleColumns = false
-            mainTabs.columns = 1
+            contentBinding.mainTabs.columns = 1
         }
         if (pagerAdapter.count == 1 && preferences[autoHideTabs]) {
-            toolbar.isVisible = false
-            actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
+            contentBinding.toolbar.isVisible = false
+            contentBinding.actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
                 addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             }
         } else if (preferences[tabPositionKey] == SharedPreferenceConstants.VALUE_TAB_POSITION_TOP) {
-            toolbar.updateLayoutParams<RelativeLayout.LayoutParams> {
+            contentBinding.toolbar.updateLayoutParams<RelativeLayout.LayoutParams> {
                 addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
             }
-            actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
+            contentBinding.actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
                 addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             }
         } else {
-            toolbar.updateLayoutParams<RelativeLayout.LayoutParams> {
+            contentBinding.toolbar.updateLayoutParams<RelativeLayout.LayoutParams> {
                 addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             }
-            actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
-                addRule(RelativeLayout.ABOVE, toolbar.id)
+            contentBinding.actionsButton.updateLayoutParams<RelativeLayout.LayoutParams> {
+                addRule(RelativeLayout.ABOVE, contentBinding.toolbar.id)
             }
         }
     }
 
     private fun setupSlidingMenu() {
-        homeMenu.setDrawerShadow(R.drawable.drawer_shadow_start, GravityCompat.START)
-        homeMenu.addDrawerListener(drawerToggle)
-        homeMenu.addDrawerListener(this)
+        binding.homeMenu.setDrawerShadow(R.drawable.drawer_shadow_start, GravityCompat.START)
+        binding.homeMenu.addDrawerListener(drawerToggle)
+        binding.homeMenu.addDrawerListener(this)
         // Lock drawer gesture to prevent conflict with Android back gesture
         // Drawer can still be opened/closed via the hamburger button
-        homeMenu.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
-        homeMenu.setShouldDisableDecider(HomeDrawerLayout.ShouldDisableDecider { e ->
+        binding.homeMenu.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+        binding.homeMenu.setShouldDisableDecider(HomeDrawerLayout.ShouldDisableDecider { e ->
             val fragment = leftDrawerFragment
             if (fragment is AccountsDashboardFragment) {
                 return@ShouldDisableDecider fragment.shouldDisableDrawerSlide(e)
@@ -939,9 +944,9 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     private fun triggerActionsClick() {
-        val position = mainPager.currentItem
+        val position = contentBinding.mainPager.currentItem
         if (pagerAdapter.count == 0) return
-        val fragment = pagerAdapter.instantiateItem(mainPager, position) as? IFloatingActionButtonFragment
+        val fragment = pagerAdapter.instantiateItem(contentBinding.mainPager, position) as? IFloatingActionButtonFragment
         val handled = fragment?.onActionClick("home") ?: false
         if (!handled) {
             startActivity(Intent(INTENT_ACTION_COMPOSE))
@@ -952,21 +957,21 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         if (!propertiesInitialized) return
         val fragment = run {
             if (pagerAdapter.count == 0) return@run null
-            val position = mainPager.currentItem
-            val f = pagerAdapter.instantiateItem(mainPager, position) as? IFloatingActionButtonFragment
+            val position = contentBinding.mainPager.currentItem
+            val f = pagerAdapter.instantiateItem(contentBinding.mainPager, position) as? IFloatingActionButtonFragment
             if (f is Fragment && (f.isDetached || f.host == null)) {
                 return@run null
             }
             return@run f
         }
         val info = fragment?.getActionInfo("home") ?: run {
-            actionsButton.setImageResource(R.drawable.ic_action_status_compose)
-            actionsButton.contentDescription = getString(R.string.action_compose)
+            contentBinding.actionsButton.setImageResource(R.drawable.ic_action_status_compose)
+            contentBinding.actionsButton.contentDescription = getString(R.string.action_compose)
             return
         }
 
-        actionsButton.setImageResource(info.icon)
-        actionsButton.contentDescription = info.title
+        contentBinding.actionsButton.setImageResource(info.icon)
+        contentBinding.actionsButton.contentDescription = info.title
     }
 
 

@@ -31,14 +31,13 @@ import android.text.TextWatcher
 import android.view.*
 import android.widget.AbsListView.MultiChoiceModeListener
 import android.widget.AdapterView
+import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.CompoundButton.OnCheckedChangeListener
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.dialog_add_host_mapping.*
-import kotlinx.android.synthetic.main.dialog_user_list_detail_editor.*
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import org.mariotaku.ktextension.empty
 import org.mariotaku.ktextension.string
 import org.mariotaku.twidere.R
@@ -59,8 +58,8 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
         setHasOptionsMenu(true)
         hostMapping = requireActivity().getSharedPreferences(HOST_MAPPING_PREFERENCES_NAME, Context.MODE_PRIVATE)
         hostMapping.registerOnSharedPreferenceChangeListener(this)
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.setMultiChoiceModeListener(this)
+        binding.listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+        binding.listView.setMultiChoiceModeListener(this)
         reloadHostMappings()
     }
 
@@ -81,7 +80,7 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.delete -> {
-                val array = listView.checkedItemPositions ?: return false
+                val array = binding.listView.checkedItemPositions ?: return false
                 (dns as? TwidereDns)?.beginMappingTransaction {
                     (0 until array.size()).filter {
                         array.valueAt(it)
@@ -152,8 +151,8 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
     }
 
     private fun updateTitle(mode: ActionMode?) {
-        if (listView == null || mode == null || activity == null) return
-        val count = listView.checkedItemCount
+        if (binding.listView == null || mode == null || activity == null) return
+        val count = binding.listView.checkedItemCount
         mode.title = resources.getQuantityString(R.plurals.Nitems_selected, count, count)
     }
 
@@ -187,16 +186,19 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
             val dialog = builder.create()
             dialog.applyOnShow {
                 applyTheme()
-                editHost.addTextChangedListener(this@AddMappingDialogFragment)
-                editAddress.addTextChangedListener(this@AddMappingDialogFragment)
-                isExcluded.setOnCheckedChangeListener(this@AddMappingDialogFragment)
+                val editHostView = dialog.findViewById<EditText>(R.id.editHost)
+                val editAddressView = dialog.findViewById<EditText>(R.id.editAddress)
+                val isExcludedView = dialog.findViewById<CheckBox>(R.id.isExcluded)
+                editHostView?.addTextChangedListener(this@AddMappingDialogFragment)
+                editAddressView?.addTextChangedListener(this@AddMappingDialogFragment)
+                isExcludedView?.setOnCheckedChangeListener(this@AddMappingDialogFragment)
                 val args = arguments
                 if (args != null) {
-                    editHost.isEnabled = !args.getBoolean(EXTRA_EDIT_MODE, false)
+                    editHostView?.isEnabled = !args.getBoolean(EXTRA_EDIT_MODE, false)
                     if (savedInstanceState == null) {
-                        editHost.setText(args.getCharSequence(EXTRA_HOST))
-                        editAddress.setText(args.getCharSequence(EXTRA_ADDRESS))
-                        isExcluded.isChecked = args.getBoolean(EXTRA_EXCLUDED)
+                        editHostView?.setText(args.getCharSequence(EXTRA_HOST))
+                        editAddressView?.setText(args.getCharSequence(EXTRA_ADDRESS))
+                        isExcludedView?.isChecked = args.getBoolean(EXTRA_EXCLUDED)
                     }
                 }
                 updateButton()
@@ -205,34 +207,46 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
         }
 
         private fun onPositiveClick(dialog: Dialog) {
-            val host = dialog.editHost.string.takeUnless(String?::isNullOrEmpty) ?: return
-            val address = (if (dialog.isExcluded.isChecked) {
+            val alertDialog = dialog as AlertDialog
+            val editHostView = alertDialog.findViewById<EditText>(R.id.editHost)
+            val editAddressView = alertDialog.findViewById<EditText>(R.id.editAddress)
+            val isExcludedView = alertDialog.findViewById<CheckBox>(R.id.isExcluded)
+            val host = editHostView?.string.takeUnless(String?::isNullOrEmpty) ?: return
+            val address = (if (isExcludedView?.isChecked == true) {
                 host
             } else {
-                dialog.editAddress.string
+                editAddressView?.string
             }).takeUnless(String?::isNullOrEmpty) ?: return
             (dns as? TwidereDns)?.putMapping(host, address)
         }
 
         override fun onSaveInstanceState(outState: Bundle) {
-            (dialog as? AlertDialog)?.let {
-                outState.putCharSequence(EXTRA_HOST, it.editHost.text)
-                outState.putCharSequence(EXTRA_ADDRESS, it.editAddress.text)
-                outState.putCharSequence(EXTRA_EXCLUDED, it.isPublic.text)
+            (dialog as? AlertDialog)?.let { alertDialog ->
+                val editHostView = alertDialog.findViewById<EditText>(R.id.editHost)
+                val editAddressView = alertDialog.findViewById<EditText>(R.id.editAddress)
+                val isExcludedView = alertDialog.findViewById<CheckBox>(R.id.isExcluded)
+                outState.putCharSequence(EXTRA_HOST, editHostView?.text)
+                outState.putCharSequence(EXTRA_ADDRESS, editAddressView?.text)
+                outState.putCharSequence(EXTRA_EXCLUDED, if (isExcludedView?.isChecked == true) "true" else "false")
             }
             super.onSaveInstanceState(outState)
         }
 
         private fun updateAddressField() {
-            val dialog = dialog as AlertDialog
-            dialog.editAddress.visibility = if (dialog.isExcluded.isChecked) View.GONE else View.VISIBLE
+            val alertDialog = dialog as AlertDialog
+            val editAddressView = alertDialog.findViewById<EditText>(R.id.editAddress)
+            val isExcludedView = alertDialog.findViewById<CheckBox>(R.id.isExcluded)
+            editAddressView?.visibility = if (isExcludedView?.isChecked == true) View.GONE else View.VISIBLE
         }
 
         private fun updateButton() {
-            val dialog = dialog as AlertDialog
-            val hostValid = !dialog.editHost.empty
-            val addressValid = !dialog.editAddress.empty || dialog.isExcluded.isChecked
-            val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            val alertDialog = dialog as AlertDialog
+            val editHostView = alertDialog.findViewById<EditText>(R.id.editHost)
+            val editAddressView = alertDialog.findViewById<EditText>(R.id.editAddress)
+            val isExcludedView = alertDialog.findViewById<CheckBox>(R.id.isExcluded)
+            val hostValid = editHostView?.empty != true
+            val addressValid = editAddressView?.empty != true || (isExcludedView?.isChecked == true)
+            val positiveButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
             positiveButton.isEnabled = hostValid && addressValid
         }
     }

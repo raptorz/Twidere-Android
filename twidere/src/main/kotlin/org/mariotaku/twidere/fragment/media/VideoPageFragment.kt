@@ -32,13 +32,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.MediaController
 import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
+import com.commonsware.cwac.layouts.AspectLockedFrameLayout
 import com.commonsware.cwac.layouts.AspectLockedFrameLayout.AspectRatioSource
-import kotlinx.android.synthetic.main.layout_media_viewer_texture_video_view.*
-import kotlinx.android.synthetic.main.layout_media_viewer_video_overlay.*
 import org.mariotaku.mediaviewer.library.CacheDownloadLoader
 import org.mariotaku.mediaviewer.library.CacheDownloadMediaViewerFragment
 import org.mariotaku.mediaviewer.library.MediaViewerFragment
@@ -70,6 +70,18 @@ class VideoPageFragment : CacheDownloadMediaViewerFragment(), IBaseFragment<Vide
     @Inject
     lateinit var promotionService: PromotionService
 
+    private val videoView by lazy { requireView().findViewById<com.sprylab.android.widget.TextureVideoView>(R.id.videoView) }
+    private val videoViewOverlay by lazy { requireView().findViewById<View>(R.id.videoViewOverlay) }
+    private val videoControl by lazy { requireView().findViewById<View>(R.id.videoControl) }
+    private val playPauseButton by lazy { requireView().findViewById<ImageButton>(R.id.playPauseButton) }
+    private val positionLabel by lazy { requireView().findViewById<TextView>(R.id.positionLabel) }
+    private val videoViewProgress by lazy { requireView().findViewById<SeekBar>(R.id.videoViewProgress) }
+    private val durationLabel by lazy { requireView().findViewById<TextView>(R.id.durationLabel) }
+    private val volumeButton by lazy { requireView().findViewById<ImageButton>(R.id.volumeButton) }
+    private val adContainer by lazy { requireView().findViewById<ViewGroup>(R.id.adContainer) }
+
+    private val videoContainer by lazy { requireView().findViewById<AspectLockedFrameLayout>(R.id.videoContainer) }
+
     private var mediaPlayer: MediaPlayer? = null
     private var mediaPlayerError: Int = 0
 
@@ -84,7 +96,7 @@ class VideoPageFragment : CacheDownloadMediaViewerFragment(), IBaseFragment<Vide
         super.onActivityCreated(savedInstanceState)
         setHasOptionsMenu(true)
 
-        var handler: Handler? = videoViewProgress.handler
+        var handler: Handler? = videoViewProgress?.handler
         if (handler == null) {
             handler = Handler(requireActivity().mainLooper)
         }
@@ -336,7 +348,7 @@ class VideoPageFragment : CacheDownloadMediaViewerFragment(), IBaseFragment<Vide
 
     private fun resumeVideo(): Boolean {
         if (!pausedByUser) {
-            videoView.start()
+            videoView?.start()
             pausedByUser = false
         }
         updatePlayerState()

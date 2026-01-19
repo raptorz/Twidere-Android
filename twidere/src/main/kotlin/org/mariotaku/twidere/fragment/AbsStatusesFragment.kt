@@ -37,7 +37,6 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import android.view.*
 import androidx.loader.app.LoaderManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.*
 import org.mariotaku.sqliteqb.library.Expression
@@ -88,8 +87,8 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
     private val onScrollListener = object : OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                val layoutManager = layoutManager
-                saveReadPosition(layoutManager.findFirstVisibleItemPosition())
+                val lm = layoutManager
+                saveReadPosition(lm.findFirstVisibleItemPosition())
             }
         }
     }
@@ -146,8 +145,8 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
         statusesBusCallback = createMessageBusCallback()
         scrollListener.reversed = preferences[readFromBottomKey]
         adapter.statusClickListener = this
-        registerForContextMenu(recyclerView)
-        navigationHelper = RecyclerViewNavigationHelper(recyclerView, layoutManager, adapter, this)
+        registerForContextMenu(binding.recyclerView)
+        navigationHelper = RecyclerViewNavigationHelper(binding.recyclerView, layoutManager, adapter, this)
         pauseOnScrollListener = PauseRecyclerViewOnScrollListener(
             pauseOnScroll = false, pauseOnFling = false,
             requestManager = requestManager
@@ -161,15 +160,15 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
 
     override fun onStart() {
         super.onStart()
-        recyclerView.addOnScrollListener(onScrollListener)
-        pauseOnScrollListener?.let { recyclerView.addOnScrollListener(it) }
+        binding.recyclerView.addOnScrollListener(onScrollListener)
+        pauseOnScrollListener?.let { binding.recyclerView.addOnScrollListener(it) }
         bus.register(statusesBusCallback)
     }
 
     override fun onStop() {
         bus.unregister(statusesBusCallback)
-        pauseOnScrollListener?.let { recyclerView.removeOnScrollListener(it) }
-        recyclerView.removeOnScrollListener(onScrollListener)
+        pauseOnScrollListener?.let { binding.recyclerView.removeOnScrollListener(it) }
+        binding.recyclerView.removeOnScrollListener(onScrollListener)
         if (userVisibleHint) {
             saveReadPosition()
         }
@@ -197,11 +196,11 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
             triggerRefresh()
             return true
         }
-        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(recyclerView,
+        val focusedChild = RecyclerViewUtils.findRecyclerViewChild(binding.recyclerView,
                 layoutManager.focusedChild)
         var position = -1
-        if (focusedChild != null && focusedChild.parent === recyclerView) {
-            position = recyclerView.getChildLayoutPosition(focusedChild)
+        if (focusedChild != null && focusedChild.parent === binding.recyclerView) {
+            position = binding.recyclerView.getChildLayoutPosition(focusedChild)
         }
         if (position != -1) {
             val status = adapter.getStatus(position)
@@ -462,7 +461,7 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
     override fun onItemMenuClick(holder: RecyclerView.ViewHolder, menuView: View, position: Int) {
         if (activity == null) return
         val view = layoutManager.findViewByPosition(position) ?: return
-        recyclerView.showContextMenuForChild(view)
+        binding.recyclerView.showContextMenuForChild(view)
     }
 
     override fun onUserProfileClick(holder: IStatusViewHolder, position: Int) {
@@ -741,8 +740,9 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
                             fragment.twitterWrapper.destroyFavoriteAsync(status.account_key, status.id)
                         }
                         else -> {
-                            val holder = fragment.recyclerView.findViewHolderForLayoutPosition(position) as StatusViewHolder
-                            holder.playLikeAnimation(DefaultOnLikedListener(fragment.twitterWrapper, status))
+                            val recyclerView = (fragment as? AbsContentListRecyclerViewFragment<*>)?.view?.findViewById<RecyclerView>(R.id.recyclerView)
+                            val holder = recyclerView?.findViewHolderForLayoutPosition(position) as? StatusViewHolder
+                            holder?.playLikeAnimation(DefaultOnLikedListener(fragment.twitterWrapper, status))
                         }
                     }
                     return true

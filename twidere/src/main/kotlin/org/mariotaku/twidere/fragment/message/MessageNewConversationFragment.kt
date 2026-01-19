@@ -36,7 +36,7 @@ import androidx.loader.app.LoaderManager
 import androidx.loader.app.LoaderManager.LoaderCallbacks
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.fragment_messages_conversation_new.*
+import org.mariotaku.twidere.databinding.FragmentMessagesConversationNewBinding
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.*
 import org.mariotaku.library.objectcursor.ObjectCursor
@@ -76,14 +76,14 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
 
     private var selectedRecipients: List<ParcelableUser>
         get() {
-            val text = editParticipants.editableText ?: return emptyList()
+            val text = binding.editParticipants.editableText ?: return emptyList()
             return text.getSpans(0, text.length, ParticipantSpan::class.java).map(ParticipantSpan::user)
         }
         set(value) {
             val roundRadius = resources.getDimension(R.dimen.element_spacing_xsmall)
             val spanPadding = resources.getDimension(R.dimen.element_spacing_xsmall)
             val nameFirst = preferences[nameFirstKey]
-            editParticipants.text = SpannableStringBuilder().apply {
+            binding.editParticipants.text = SpannableStringBuilder().apply {
                 value.forEach { user ->
                     val displayName = userColorNameManager.getDisplayName(user, nameFirst)
                     val span = ParticipantSpan(user, displayName, roundRadius, spanPadding)
@@ -98,15 +98,17 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
 
     private lateinit var usersAdapter: SelectableUsersAdapter
 
+    protected lateinit var binding: FragmentMessagesConversationNewBinding
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val context = context ?: return
         setHasOptionsMenu(true)
         usersAdapter = SelectableUsersAdapter(context, requestManager)
-        recyclerView.adapter = usersAdapter
-        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.adapter = usersAdapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
-        editParticipants.addTextChangedListener(object : SimpleTextWatcher {
+        binding.editParticipants.addTextChangedListener(object : SimpleTextWatcher {
             override fun afterTextChanged(s: Editable) {
                 s.getSpans(0, s.length, MarkForDeleteSpan::class.java).forEach { span ->
                     val deleteStart = s.getSpanStart(span)
@@ -153,7 +155,7 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
         val roundRadius = resources.getDimension(R.dimen.element_spacing_xsmall)
         val spanPadding = resources.getDimension(R.dimen.element_spacing_xsmall)
         usersAdapter.itemCheckedListener = itemChecked@ { pos, checked ->
-            val text: Editable = editParticipants.editableText ?: return@itemChecked false
+            val text: Editable = binding.editParticipants.editableText ?: return@itemChecked false
             val user = usersAdapter.getUser(pos)
             if (checked) {
                 text.getSpans(0, text.length, PendingQuerySpan::class.java).forEach { pending ->
@@ -175,34 +177,21 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
                     val start = text.getSpanStart(span)
                     var end = text.getSpanEnd(span)
                     text.removeSpan(span)
-                    // Also remove last whitespace
                     if (end <= text.lastIndex && text[end].isWhitespace()) {
                         end += 1
                     }
                     text.delete(start, end)
                 }
             }
-            editParticipants.clearComposingText()
+            binding.editParticipants.clearComposingText()
             updateCheckState()
             return@itemChecked true
-        }
-
-        if (savedInstanceState == null) {
-            arguments?.let {
-                val users = it.getNullableTypedArray<ParcelableUser>(EXTRA_USERS)
-                if (users != null && users.isNotEmpty()) {
-                    selectedRecipients = users.toList()
-                    editParticipants.setSelection(editParticipants.length())
-                    if (it.getBoolean(EXTRA_OPEN_CONVERSATION)) {
-                        createOrOpenConversation()
-                    }
-                }
-            }
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_messages_conversation_new, container, false)
+        binding = FragmentMessagesConversationNewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<List<ParcelableUser>?> {
@@ -251,7 +240,7 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
             1
         }
         if (selected.size > maxParticipants) {
-            editParticipants.error = getString(R.string.error_message_message_too_many_participants)
+            binding.editParticipants.error = getString(R.string.error_message_message_too_many_participants)
             return
         }
         val conversation = ParcelableMessageConversation()
@@ -312,11 +301,11 @@ class MessageNewConversationFragment : BaseFragment(), LoaderCallbacks<List<Parc
             LoaderManager.getInstance(this).restartLoader(0, args, this)
         }
         if (performSearchRequestRunnable != null) {
-            editParticipants.removeCallbacks(performSearchRequestRunnable)
+            binding.editParticipants.removeCallbacks(performSearchRequestRunnable)
         }
         if (fromType) {
             performSearchRequestRunnable = PerformSearchRequestRunnable(query, this)
-            editParticipants.postDelayed(performSearchRequestRunnable, 1000L)
+            binding.editParticipants.postDelayed(performSearchRequestRunnable, 1000L)
         }
     }
 

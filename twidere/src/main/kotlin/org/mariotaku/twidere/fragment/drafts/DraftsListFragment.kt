@@ -43,7 +43,6 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.fragment_content_listview.*
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.isEmpty
 import org.mariotaku.ktextension.setItemAvailability
@@ -80,10 +79,10 @@ class DraftsListFragment : AbsContentListViewFragment<DraftsAdapter>(), LoaderCa
         super.onActivityCreated(savedInstanceState)
         setHasOptionsMenu(true)
 
-        listView.adapter = adapter
-        listView.onItemClickListener = this
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.setMultiChoiceModeListener(this)
+        binding.listView.adapter = adapter
+        binding.listView.onItemClickListener = this
+        binding.listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+        binding.listView.setMultiChoiceModeListener(this)
         refreshEnabled = false
         LoaderManager.getInstance(this).initLoader(0, null, this)
         showProgress()
@@ -166,13 +165,13 @@ class DraftsListFragment : AbsContentListViewFragment<DraftsAdapter>(), LoaderCa
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
         actionMode = mode
         mode.menuInflater.inflate(R.menu.action_multi_select_drafts, menu)
-        listView.updateSelectionItems(menu)
+        binding.listView.updateSelectionItems(menu)
         return true
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         updateTitle(mode)
-        listView.updateSelectionItems(menu)
+        binding.listView.updateSelectionItems(menu)
         return true
     }
 
@@ -181,23 +180,23 @@ class DraftsListFragment : AbsContentListViewFragment<DraftsAdapter>(), LoaderCa
             R.id.delete -> {
                 val f = DeleteDraftsConfirmDialogFragment()
                 val args = Bundle()
-                args.putLongArray(EXTRA_IDS, listView.checkedItemIds)
+                args.putLongArray(EXTRA_IDS, binding.listView.checkedItemIds)
                 f.arguments = args
                 f.show(childFragmentManager, "delete_drafts_confirm")
                 mode.finish()
             }
             R.id.send -> {
-                sendDrafts(listView.checkedItemIds)
+                sendDrafts(binding.listView.checkedItemIds)
                 mode.finish()
             }
             R.id.select_all -> {
-                listView.selectAll()
+                binding.listView.selectAll()
             }
             R.id.select_none -> {
-                listView.selectNone()
+                binding.listView.selectNone()
             }
             R.id.invert_selection -> {
-                listView.invertSelection()
+                binding.listView.invertSelection()
             }
             else -> {
                 return false
@@ -213,7 +212,7 @@ class DraftsListFragment : AbsContentListViewFragment<DraftsAdapter>(), LoaderCa
     override fun onItemCheckedStateChanged(mode: ActionMode, position: Int, id: Long,
             checked: Boolean) {
         updateTitle(mode)
-        listView.updateSelectionItems(mode.menu)
+        binding.listView.updateSelectionItems(mode.menu)
     }
 
     override fun onItemClick(view: AdapterView<*>, child: View, position: Int, id: Long) {
@@ -272,8 +271,8 @@ class DraftsListFragment : AbsContentListViewFragment<DraftsAdapter>(), LoaderCa
     }
 
     private fun updateTitle(mode: ActionMode?) {
-        if (listView == null || mode == null) return
-        val count = listView.checkedItemCount
+        if (binding.listView == null || mode == null) return
+        val count = binding.listView.checkedItemCount
         mode.title = resources.getQuantityString(R.plurals.Nitems_selected, count, count)
     }
 

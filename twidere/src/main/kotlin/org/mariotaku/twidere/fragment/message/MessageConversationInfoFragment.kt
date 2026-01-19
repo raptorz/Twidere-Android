@@ -43,10 +43,10 @@ import androidx.recyclerview.widget.FixedLinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
-import kotlinx.android.synthetic.main.activity_home_content.view.*
-import kotlinx.android.synthetic.main.fragment_messages_conversation_info.*
-import kotlinx.android.synthetic.main.header_message_conversation_info.view.*
-import kotlinx.android.synthetic.main.layout_toolbar_message_conversation_title.*
+import org.mariotaku.twidere.databinding.ActivityHomeContentBinding
+import org.mariotaku.twidere.databinding.FragmentMessagesConversationInfoBinding
+import org.mariotaku.twidere.databinding.HeaderMessageConversationInfoBinding
+import org.mariotaku.twidere.databinding.LayoutToolbarMessageConversationTitleBinding
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.alwaysUi
@@ -112,11 +112,13 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
     private lateinit var adapter: ConversationInfoAdapter
     private lateinit var itemDecoration: ConversationInfoDecoration
 
-    override val controlBarHeight: Int get() = toolbar.measuredHeight
+    protected lateinit var binding: FragmentMessagesConversationInfoBinding
+
+    override val controlBarHeight: Int get() = binding.root.findViewById<Toolbar>(R.id.toolbar).measuredHeight
     override var controlBarOffset: Float = 0f
 
     override val toolbar: Toolbar
-        get() = toolbarLayout.toolbar
+        get() = binding.root.findViewById<Toolbar>(R.id.toolbar)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -153,28 +155,27 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
                 resources.getDimensionPixelSize(R.dimen.element_spacing_large)
         )
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LayoutManager(context)
-        recyclerView.addItemDecoration(itemDecoration)
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LayoutManager(context)
+        binding.recyclerView.addItemDecoration(itemDecoration)
 
 
         val profileImageStyle = preferences[profileImageStyleKey]
+        val appBarIcon = binding.root.findViewById<org.mariotaku.twidere.view.ProfileImageView>(R.id.appBarIcon)
         appBarIcon.style = profileImageStyle
-        conversationAvatar.style = profileImageStyle
 
+        val toolbarLayout = binding.root.findViewById<com.google.android.material.appbar.CollapsingToolbarLayout>(R.id.toolbarLayout)
         toolbarLayout.setStatusBarScrimColor(theme.statusBarColor)
-        coordinatorLayout.setStatusBarBackgroundColor(theme.statusBarColor)
+        binding.coordinatorLayout.setStatusBarBackgroundColor(theme.statusBarColor)
 
         val avatarBackground = ChameleonUtils.getColorDependent(theme.colorToolbar)
         appBarIcon.setShapeBackground(avatarBackground)
+        val appBarTitle = binding.root.findViewById<org.mariotaku.twidere.view.FixedTextView>(R.id.appBarTitle)
         appBarTitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
+        val appBarSubtitle = binding.root.findViewById<org.mariotaku.twidere.view.FixedTextView>(R.id.appBarSubtitle)
         appBarSubtitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
 
-        conversationAvatar.setShapeBackground(avatarBackground)
-        conversationTitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
-        conversationSubtitle.setTextColor(ChameleonUtils.getColorDependent(theme.colorToolbar))
-
-        editButton.setOnClickListener {
+        binding.editButton.setOnClickListener {
             executeAfterFragmentResumed { fragment ->
                 val df = EditInfoDialogFragment()
                 df.show(fragment.childFragmentManager, "edit_info")
@@ -208,7 +209,8 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_messages_conversation_info, container, false)
+        binding = FragmentMessagesConversationInfoBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -267,27 +269,25 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
         val summary = data.getSubtitle(context)
 
         @ImageShapeStyle val profileImageStyle = preferences[profileImageStyleKey]
-        requestManager.loadProfileImage(context, data, profileImageStyle).into(conversationAvatar)
+        val appBarIcon = binding.root.findViewById<org.mariotaku.twidere.view.ProfileImageView>(R.id.appBarIcon)
         requestManager.loadProfileImage(context, data, profileImageStyle, 0f,
                 0f, ProfileImageSize.REASONABLY_SMALL).into(appBarIcon)
+        val appBarTitle = binding.root.findViewById<org.mariotaku.twidere.view.FixedTextView>(R.id.appBarTitle)
         appBarTitle.spannable = name
-        conversationTitle.spannable = name
+        val appBarSubtitle = binding.root.findViewById<org.mariotaku.twidere.view.FixedTextView>(R.id.appBarSubtitle)
         if (summary != null) {
             appBarSubtitle.visibility = View.VISIBLE
-            conversationSubtitle.visibility = View.VISIBLE
 
             appBarSubtitle.spannable = summary
-            conversationSubtitle.spannable = summary
         } else {
             appBarSubtitle.visibility = View.GONE
-            conversationSubtitle.visibility = View.GONE
         }
         if (data.conversation_extras_type == ExtrasType.TWITTER_OFFICIAL
                 && data.conversation_type == ConversationType.GROUP) {
-            editButton.visibility = View.VISIBLE
+            binding.editButton.visibility = View.VISIBLE
             adapter.showButtonSpace = true
         } else {
-            editButton.visibility = View.GONE
+            binding.editButton.visibility = View.GONE
             adapter.showButtonSpace = false
         }
 
@@ -695,7 +695,7 @@ class MessageConversationInfoFragment : BaseFragment(), IToolBarSupportFragment,
 
     internal class HeaderViewHolder(itemView: View, adapter: ConversationInfoAdapter) : RecyclerView.ViewHolder(itemView) {
 
-        private val muteSwitch = itemView.muteNotifications
+        private val muteSwitch = itemView.findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.muteNotifications)
 
         private val listener = CompoundButton.OnCheckedChangeListener { _, checked ->
             adapter.listener?.onDisableNotificationChanged(checked)

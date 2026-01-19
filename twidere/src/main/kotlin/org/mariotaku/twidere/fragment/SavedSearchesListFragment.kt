@@ -44,8 +44,6 @@ class SavedSearchesListFragment : AbsContentListViewFragment<SavedSearchesAdapte
         LoaderCallbacks<ResponseList<SavedSearch>?>, AdapterView.OnItemClickListener,
         AdapterView.OnItemLongClickListener {
 
-    private var binding: FragmentContentListviewBinding? = null
-
     override var refreshing: Boolean
         get() = LoaderManager.getInstance(this).hasRunningLoadersSafe()
         set(value) {
@@ -57,8 +55,8 @@ class SavedSearchesListFragment : AbsContentListViewFragment<SavedSearchesAdapte
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        binding?.listView?.onItemClickListener = this
-        binding?.listView?.onItemLongClickListener = this
+        binding.listView.onItemClickListener = this
+        binding.listView.onItemLongClickListener = this
         LoaderManager.getInstance(this).initLoader(0, null, this)
         showProgress()
     }

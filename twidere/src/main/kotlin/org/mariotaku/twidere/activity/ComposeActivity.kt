@@ -58,8 +58,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.twitter.twittertext.Extractor
-import kotlinx.android.synthetic.main.activity_compose.*
 import nl.komponents.kovenant.task
+import org.mariotaku.twidere.databinding.ActivityComposeBinding
 import org.mariotaku.abstask.library.AbstractTask
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.kpreferences.get
@@ -130,6 +130,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
     private lateinit var itemTouchHelper: ItemTouchHelper
     private lateinit var bottomMenuAnimator: ViewAnimator
+    private lateinit var binding: ActivityComposeBinding
 
     private val supportMenuInflater by lazy { SupportMenuInflater(this) }
 
@@ -189,9 +190,9 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         get() = mediaPreviewAdapter.asList()
 
     private var isAccountSelectorVisible: Boolean
-        get() = bottomMenuAnimator.currentChild == accountSelector
+        get() = bottomMenuAnimator.currentChild == binding.accountSelector
         set(visible) {
-            bottomMenuAnimator.showView(if (visible) accountSelector else composeMenu, true)
+            bottomMenuAnimator.showView(if (visible) binding.accountSelector else binding.composeMenu, true)
             displaySelectedAccountsIcon()
         }
 
@@ -212,7 +213,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         super.onCreate(savedInstanceState)
         GeneralComponent.get(this).inject(this)
         nameFirst = preferences[nameFirstKey]
-        setContentView(R.layout.activity_compose)
+        binding = ActivityComposeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         bottomMenuAnimator = ViewAnimator()
         bottomMenuAnimator.setupViews()
@@ -220,7 +222,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         mediaPreviewAdapter = MediaPreviewAdapter(this, requestManager)
         mediaPreviewAdapter.listener = object : MediaPreviewAdapter.Listener {
             override fun onEditClick(position: Int, holder: MediaPreviewViewHolder) {
-                attachedMediaPreview.showContextMenuForChild(holder.itemView)
+                binding.attachedMediaPreview.showContextMenuForChild(holder.itemView)
             }
 
             override fun onRemoveClick(position: Int, holder: MediaPreviewViewHolder) {
@@ -247,12 +249,12 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         }
         val accountDetails = AccountUtils.getAllAccountDetails(am, accounts, true)
         val defaultAccountKeys = accountDetails.mapToArray(AccountDetails::key)
-        menuBar.setOnMenuItemClickListener(this)
+        binding.menuBar.setOnMenuItemClickListener(this)
         setupEditText()
-        accountSelectorButton.setOnClickListener(this)
-        replyLabel.setOnClickListener(this)
+        binding.accountSelectorButton.setOnClickListener(this)
+        binding.replyLabel.setOnClickListener(this)
 
-        hintLabel.spannable = HtmlSpanBuilder.fromHtml(getString(R.string.hint_status_reply_to_user_removed)).apply {
+        binding.hintLabel.spannable = HtmlSpanBuilder.fromHtml(getString(R.string.hint_status_reply_to_user_removed)).apply {
             val dialogSpan = getSpans(0, length, URLSpan::class.java).firstOrNull {
                 "#dialog" == it.url
             }
@@ -269,10 +271,10 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 }, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
-        hintLabel.movementMethod = LinkMovementMethod.getInstance()
-        hintLabel.linksClickable = true
+        binding.hintLabel.movementMethod = LinkMovementMethod.getInstance()
+        binding.hintLabel.linksClickable = true
 
-        accountSelector.layoutManager = FixedLinearLayoutManager(this).apply {
+        binding.accountSelector.layoutManager = FixedLinearLayoutManager(this).apply {
             orientation = LinearLayoutManager.HORIZONTAL
             reverseLayout = false
             stackFromEnd = false
@@ -280,14 +282,14 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         accountsAdapter = AccountIconsAdapter(this).apply {
             setAccounts(accountDetails)
         }
-        accountSelector.adapter = accountsAdapter
+        binding.accountSelector.adapter = accountsAdapter
 
 
-        attachedMediaPreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        attachedMediaPreview.adapter = mediaPreviewAdapter
-        registerForContextMenu(attachedMediaPreview)
-        itemTouchHelper.attachToRecyclerView(attachedMediaPreview)
-        attachedMediaPreview.addItemDecoration(PreviewGridItemDecoration(resources.getDimensionPixelSize(R.dimen.element_spacing_small)))
+        binding.attachedMediaPreview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.attachedMediaPreview.adapter = mediaPreviewAdapter
+        registerForContextMenu(binding.attachedMediaPreview)
+        itemTouchHelper.attachToRecyclerView(binding.attachedMediaPreview)
+        binding.attachedMediaPreview.addItemDecoration(PreviewGridItemDecoration(resources.getDimensionPixelSize(R.dimen.element_spacing_small)))
 
         if (savedInstanceState == null) {
             // The context was first created
@@ -314,15 +316,15 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             if (statusVisibility == null) {
                 statusVisibility = preferences[composeStatusVisibilityKey]
             }
-            originalText = ParseUtils.parseString(editText.text)
+            originalText = ParseUtils.parseString(binding.editText.text)
         }
 
-        val menu = menuBar.menu
+        val menu = binding.menuBar.menu
         supportMenuInflater.inflate(R.menu.menu_compose, menu)
-        ThemeUtils.wrapMenuIcon(menuBar)
+        ThemeUtils.wrapMenuIcon(binding.menuBar)
 
-        updateStatus.setOnClickListener(this)
-        updateStatus.setOnLongClickListener(this)
+        binding.updateStatus.setOnClickListener(this)
+        binding.updateStatus.setOnLongClickListener(this)
 
 
         val composeExtensionsIntent = Intent(INTENT_ACTION_EXTENSION_COMPOSE)
@@ -336,7 +338,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                     MENU_GROUP_IMAGE_EXTENSION)
         }
         updateViewStyle()
-        bottomMenuAnimator.showView(composeMenu, false)
+        bottomMenuAnimator.showView(binding.composeMenu, false)
         textChanged = false
 
         resetButtonsStates()
@@ -373,7 +375,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         setMenu()
         updateTextCount()
         val textSize = preferences[textSizeKey]
-        editText.textSize = textSize * 1.25f
+        binding.editText.textSize = textSize * 1.25f
     }
 
     override fun onStop() {
@@ -424,11 +426,11 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                     val isReplaceMode = data.getBooleanExtra(EXTRA_IS_REPLACE_MODE,
                             data.getStringExtra(EXTRA_APPEND_TEXT) == null)
                     if (text != null) {
-                        val editable = editText.editableText
+                        val editable = binding.editText.editableText
                         if (editable == null || isReplaceMode) {
-                            editText.setText(text)
+                            binding.editText.setText(text)
                         } else {
-                            editable.replace(editText.selectionStart, editText.selectionEnd, text)
+                            editable.replace(binding.editText.selectionStart, binding.editText.selectionEnd, text)
                         }
                         setMenu()
                         updateTextCount()
@@ -510,15 +512,15 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
     override fun onClick(view: View) {
         when (view) {
-            updateStatus -> {
+            binding.updateStatus -> {
                 confirmAndUpdateStatus()
             }
-            accountSelectorButton -> {
+            binding.accountSelectorButton -> {
                 isAccountSelectorVisible = !isAccountSelectorVisible
             }
-            replyLabel -> {
-                if (replyLabel.visibility != View.VISIBLE) return
-                replyLabel.isSingleLine = replyLabel.lineCount > 1
+            binding.replyLabel -> {
+                if (binding.replyLabel.visibility != View.VISIBLE) return
+                binding.replyLabel.isSingleLine = binding.replyLabel.lineCount > 1
             }
         }
     }
@@ -544,7 +546,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
     override fun onLongClick(v: View): Boolean {
         when (v) {
-            updateStatus -> {
+            binding.updateStatus -> {
                 Utils.showMenuItemToast(v, getString(R.string.action_send), true)
                 return true
             }
@@ -618,8 +620,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                if (isAccountSelectorVisible && !TwidereViewUtils.hitView(ev, accountSelectorButton)) {
-                    val layoutManager = accountSelector.layoutManager
+                if (isAccountSelectorVisible && !TwidereViewUtils.hitView(ev, binding.accountSelectorButton)) {
+                    val layoutManager = binding.accountSelector.layoutManager
                             ?: return super.dispatchTouchEvent(ev)
                     val clickedItem = (0 until layoutManager.childCount).any {
                         val child = layoutManager.getChildAt(it)
@@ -698,11 +700,11 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     override fun handleKeyboardShortcutSingle(handler: KeyboardShortcutsHandler, keyCode: Int, event: KeyEvent, metaState: Int): Boolean {
         val action = handler.getKeyAction(KeyboardShortcutConstants.CONTEXT_TAG_NAVIGATION, keyCode, event, metaState)
         if (KeyboardShortcutConstants.ACTION_NAVIGATION_BACK == action) {
-            if (editText.length() == 0 && !textChanged) {
+            if (binding.editText.length() == 0 && !textChanged) {
                 if (!navigateBackPressed) {
                     Toast.makeText(this, getString(R.string.message_toast_press_again_to_close), Toast.LENGTH_SHORT).show()
-                    editText.removeCallbacks(backTimeoutRunnable)
-                    editText.postDelayed(backTimeoutRunnable, 2000)
+                    binding.editText.removeCallbacks(backTimeoutRunnable)
+                    binding.editText.postDelayed(backTimeoutRunnable, 2000)
                 } else {
                     onBackPressed()
                 }
@@ -773,7 +775,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             R.id.location_precise -> {
                 attachLocationChecked = true
                 attachPreciseLocationChecked = true
-                locationLabel.tag = null
+                binding.locationLabel.tag = null
             }
             R.id.location_coarse -> {
                 attachLocationChecked = true
@@ -822,7 +824,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             when (intent.action) {
                 INTENT_ACTION_EXTENSION_COMPOSE -> {
                     val accountKeys = accountsAdapter.selectedAccountKeys
-                    intent.putExtra(EXTRA_TEXT, ParseUtils.parseString(editText.text))
+                    intent.putExtra(EXTRA_TEXT, ParseUtils.parseString(binding.editText.text))
                     intent.putExtra(EXTRA_ACCOUNT_KEYS, accountKeys)
                     if (accountKeys.isNotEmpty()) {
                         val accountKey = accountKeys.first()
@@ -867,49 +869,49 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         val displayDoneIcon = isAccountSelectorVisible
 
         if (single != null) {
-            accountsCount.setText(null)
+            binding.accountsCount.setText(null)
 
             if (displayDoneIcon) {
-                Glide.with(this).clear(accountProfileImage)
-                accountProfileImage.setColorFilter(ThemeUtils.getColorFromAttribute(this,
+                Glide.with(this).clear(binding.accountProfileImage)
+                binding.accountProfileImage.setColorFilter(ThemeUtils.getColorFromAttribute(this,
                         android.R.attr.colorForeground))
-                accountProfileImage.scaleType = ImageView.ScaleType.CENTER_INSIDE
-                accountProfileImage.setImageResource(R.drawable.ic_action_confirm)
+                binding.accountProfileImage.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                binding.accountProfileImage.setImageResource(R.drawable.ic_action_confirm)
             } else {
-                accountProfileImage.clearColorFilter()
-                accountProfileImage.scaleType = ImageView.ScaleType.CENTER_CROP
-                requestManager.loadProfileImage(this, single, accountProfileImage.style)
-                        .into(accountProfileImage)
+                binding.accountProfileImage.clearColorFilter()
+                binding.accountProfileImage.scaleType = ImageView.ScaleType.CENTER_CROP
+                requestManager.loadProfileImage(this, single, binding.accountProfileImage.style)
+                        .into(binding.accountProfileImage)
             }
 
-            accountProfileImage.setBorderColor(single.color)
+            binding.accountProfileImage.setBorderColor(single.color)
         } else {
-            accountsCount.setText(accounts.size.toString())
+            binding.accountsCount.setText(accounts.size.toString())
 
-            Glide.with(this).clear(accountProfileImage)
+            Glide.with(this).clear(binding.accountProfileImage)
             if (displayDoneIcon) {
-                accountProfileImage.setColorFilter(ThemeUtils.getColorFromAttribute(this,
+                binding.accountProfileImage.setColorFilter(ThemeUtils.getColorFromAttribute(this,
                         android.R.attr.colorForeground))
-                accountProfileImage.setImageResource(R.drawable.ic_action_confirm)
-                accountProfileImage.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                binding.accountProfileImage.setImageResource(R.drawable.ic_action_confirm)
+                binding.accountProfileImage.scaleType = ImageView.ScaleType.CENTER_INSIDE
             } else {
-                accountProfileImage.clearColorFilter()
-                accountProfileImage.scaleType = ImageView.ScaleType.CENTER_CROP
-                accountProfileImage.setImageDrawable(null)
+                binding.accountProfileImage.clearColorFilter()
+                binding.accountProfileImage.scaleType = ImageView.ScaleType.CENTER_CROP
+                binding.accountProfileImage.setImageDrawable(null)
             }
 
-            accountProfileImage.setBorderColors(*IntArray(accounts.size) { accounts[it].color })
+            binding.accountProfileImage.setBorderColors(*IntArray(accounts.size) { accounts[it].color })
         }
 
         if (displayDoneIcon) {
-            accountsCount.visibility = View.GONE
+            binding.accountsCount.visibility = View.GONE
         } else {
-            accountsCount.visibility = View.VISIBLE
+            binding.accountsCount.visibility = View.VISIBLE
         }
     }
 
     private fun updateMediaState() {
-        attachedMediaPreview.visibility = if (hasMedia) View.VISIBLE else View.GONE
+        binding.attachedMediaPreview.visibility = if (hasMedia) View.VISIBLE else View.GONE
     }
 
     private fun resetButtonsStates() {
@@ -969,17 +971,17 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         val accountKey = user.account_key ?: return false
         val accountScreenName = DataStoreUtils.getAccountScreenName(this, accountKey)
         if (TextUtils.isEmpty(accountScreenName)) return false
-        editText.setText("@${user.acct} ")
-        val selectionEnd = editText.length()
-        editText.setSelection(selectionEnd)
+        binding.editText.setText("@${user.acct} ")
+        val selectionEnd = binding.editText.length()
+        binding.editText.setSelection(selectionEnd)
         accountsAdapter.selectedAccountKeys = arrayOf(accountKey)
         return true
     }
 
     private fun handleQuoteIntent(status: ParcelableStatus?): Boolean {
         if (status == null) return false
-        editText.setText(Utils.getQuoteStatus(this, status))
-        editText.setSelection(0)
+        binding.editText.setText(Utils.getQuoteStatus(this, status))
+        binding.editText.setSelection(0)
         accountsAdapter.selectedAccountKeys = arrayOf(status.account_key)
         showQuoteLabelAndHint(status)
         return true
@@ -994,9 +996,9 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         val mentions = ArrayList<String>()
         val userAcct = status.user_acct
         if (accountUser.key != status.user_key) {
-            editText.append("@$userAcct ")
+            binding.editText.append("@$userAcct ")
         }
-        var selectionStart = editText.length()
+        var selectionStart = binding.editText.length()
         if (status.is_retweet && !TextUtils.isEmpty(status.retweeted_by_user_screen_name)) {
             status.retweeted_by_user_acct?.addTo(mentions)
         }
@@ -1029,32 +1031,32 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
         mentions.distinctBy { it.lowercase(Locale.US) }.filterNot {
             return@filterNot it.equals(userAcct, ignoreCase = true)
-        }.forEach { editText.append("@$it ") }
+        }.forEach { binding.editText.append("@$it ") }
 
         // For non-Twitter instances, put current user mention at last
         if (statusAccount.type != AccountType.TWITTER && accountUser.key == status.user_key) {
-            selectionStart = editText.length()
-            editText.append("@$userAcct ")
+            selectionStart = binding.editText.length()
+            binding.editText.append("@$userAcct ")
         }
 
         val text = intent.getStringExtra(EXTRA_TEXT)
         if (text != null) {
-            editText.append(text)
+            binding.editText.append(text)
         } else {
-            val selectionEnd = editText.length()
-            editText.setSelection(selectionStart, selectionEnd)
+            val selectionEnd = binding.editText.length()
+            binding.editText.setSelection(selectionStart, selectionEnd)
         }
 
-        editSummary.string = status.extras?.summary_text
+        binding.editSummary.string = status.extras?.summary_text
 
-        editSummaryEnabled = !editSummary.empty
+        editSummaryEnabled = !binding.editSummary.empty
         statusVisibility = intent.getStringExtra(EXTRA_VISIBILITY) ?: status.extras?.visibility
         possiblySensitive = intent.getBooleanExtra(EXTRA_IS_POSSIBLY_SENSITIVE,
                 statusAccount.type == AccountType.MASTODON && status.is_possibly_sensitive)
         accountsAdapter.selectedAccountKeys = arrayOf(status.account_key)
         showReplyLabelAndHint(status)
 
-        editText.requestFocus()
+        binding.editText.requestFocus()
         return true
     }
 
@@ -1074,16 +1076,16 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             if (extras.summaryText?.isNotEmpty() == true) {
                 editSummaryEnabled = true
             }
-            editSummary.setText(extras.summaryText)
+            binding.editSummary.setText(extras.summaryText)
             statusVisibility = extras.visibility
             possiblySensitive = extras.isPossiblySensitive
             inReplyToStatus = extras.inReplyToStatus
 
-            editText.setText(extras.editingText ?: draft.text)
+            binding.editText.setText(extras.editingText ?: draft.text)
         } else {
-            editText.setText(draft.text)
+            binding.editText.setText(draft.text)
         }
-        editText.setSelection(editText.length())
+        binding.editText.setSelection(binding.editText.length())
 
         val tag = Uri.withAppendedPath(Drafts.CONTENT_URI, draft._id.toString()).toString()
         notificationManager.cancel(tag, NOTIFICATION_ID_DRAFTS)
@@ -1138,7 +1140,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         }
         val extraSubject = intent.getCharSequenceExtra(Intent.EXTRA_SUBJECT)
         val extraText = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)
-        editText.charSequence = when {
+        binding.editText.charSequence = when {
             extraSubject != null && extraText != null -> "$extraSubject - $extraText"
             extraSubject != null -> extraSubject
             else -> extraText
@@ -1146,17 +1148,17 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
         val selection = intent.getIntExtra(EXTRA_SELECTION, -1)
         if (selection < 0) {
-            editText.setSelection(editText.length())
+            binding.editText.setSelection(binding.editText.length())
         } else {
-            editText.setSelection(selection.coerceIn(0..editText.length()))
+            binding.editText.setSelection(selection.coerceIn(0..binding.editText.length()))
         }
         if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             val charSequences = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)
             charSequences?.let {
-                editText.setText(it.toString())
+                binding.editText.setText(it.toString())
             }
         }
-        editText.requestFocus()
+        binding.editText.requestFocus()
         return true
     }
 
@@ -1200,9 +1202,9 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             return false
         }
         val replyToName = userColorNameManager.getDisplayName(status, nameFirst)
-        replyLabel.spannable = getString(R.string.label_quote_name_text, replyToName, status.text_unescaped ?: "")
-        replyLabel.visibility = View.VISIBLE
-        editText.hint = getString(R.string.label_quote_name, replyToName)
+        binding.replyLabel.spannable = getString(R.string.label_quote_name_text, replyToName, status.text_unescaped ?: "")
+        binding.replyLabel.visibility = View.VISIBLE
+        binding.editText.hint = getString(R.string.label_quote_name, replyToName)
         return true
     }
 
@@ -1212,15 +1214,15 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             return false
         }
         val replyToName = userColorNameManager.getDisplayName(status, nameFirst)
-        replyLabel.spannable = getString(R.string.label_reply_name_text, replyToName, status.text_unescaped ?: "")
-        replyLabel.visibility = View.VISIBLE
-        editText.hint = getString(R.string.label_reply_name, replyToName)
+        binding.replyLabel.spannable = getString(R.string.label_reply_name_text, replyToName, status.text_unescaped ?: "")
+        binding.replyLabel.visibility = View.VISIBLE
+        binding.editText.hint = getString(R.string.label_reply_name, replyToName)
         return true
     }
 
     private fun showDefaultLabelAndHint() {
-        replyLabel.visibility = View.GONE
-        editText.setHint(R.string.label_status_hint)
+        binding.replyLabel.visibility = View.GONE
+        binding.editText.setHint(R.string.label_status_hint)
     }
 
     // MARK: End label and hint handling
@@ -1255,8 +1257,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 inReplyToStatus == null) return false
         val myScreenName = DataStoreUtils.getAccountScreenName(this, accountKey) ?: return false
         screenNames.filterNot { it.equals(myScreenName, ignoreCase = true) }
-                .forEach { editText.append("@$it ") }
-        editText.setSelection(editText.length())
+                .forEach { binding.editText.append("@$it ") }
+        binding.editText.setSelection(binding.editText.length())
         accountsAdapter.selectedAccountKeys = arrayOf(accountKey)
         this.inReplyToStatus = inReplyToStatus
         return true
@@ -1265,8 +1267,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     private fun updateAccountSelectionState() {
         displaySelectedAccountsIcon()
         val accounts = accountsAdapter.selectedAccounts
-        editText.account = accounts.firstOrNull()
-        statusTextCount.maxLength = accounts.textLimit
+        binding.editText.account = accounts.firstOrNull()
+        binding.statusTextCount.maxLength = accounts.textLimit
         val singleAccount = accounts.singleOrNull()
         val allMastodon = accounts.isNotEmpty() && accounts.all { it.type == AccountType.MASTODON }
         val anyMastodon = accounts.any { it.type == AccountType.MASTODON }
@@ -1341,8 +1343,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     }
 
     private fun setMenu() {
-        if (menuBar == null) return
-        val menu = menuBar.menu
+        if (binding.menuBar == null) return
+        val menu = binding.menuBar.menu
         val hasMedia = this.hasMedia
         menu.setItemAvailability(R.id.edit_summary, hasEditSummary)
         menu.setItemAvailability(R.id.schedule, extraFeaturesService.isSupported(
@@ -1398,22 +1400,22 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         menu.setItemAvailability(R.id.attachment_visibility_submenu, hasAttachmentStatusVisibility)
         menu.setItemAvailability(R.id.location_submenu, hasLocationOption)
 
-        ThemeUtils.wrapMenuIcon(menuBar, excludeGroups = *intArrayOf(MENU_GROUP_IMAGE_EXTENSION))
-        ThemeUtils.resetCheatSheet(menuBar)
+        ThemeUtils.wrapMenuIcon(binding.menuBar, excludeGroups = *intArrayOf(MENU_GROUP_IMAGE_EXTENSION))
+        ThemeUtils.resetCheatSheet(binding.menuBar)
     }
 
     private fun setProgressVisible(visible: Boolean) {
         if (isFinishing) return
-        composeProgress.visibility = if (visible) View.VISIBLE else View.GONE
+        binding.composeProgress.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private fun setRecentLocation(location: ParcelableLocation?) {
         if (location != null) {
             val attachPreciseLocation = kPreferences[attachPreciseLocationKey]
             if (attachPreciseLocation) {
-                locationLabel.spannable = ParcelableLocationUtils.getHumanReadableString(location, 3)
+                binding.locationLabel.spannable = ParcelableLocationUtils.getHumanReadableString(location, 3)
             } else {
-                if (locationLabel.tag == null || location != recentLocation) {
+                if (binding.locationLabel.tag == null || location != recentLocation) {
                     val task = DisplayPlaceNameTask()
                     task.params = location
                     task.callback = this
@@ -1421,7 +1423,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 }
             }
         } else {
-            locationLabel.setText(R.string.unknown_location)
+            binding.locationLabel.setText(R.string.unknown_location)
         }
         recentLocation = location
     }
@@ -1447,7 +1449,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         }
         val provider = locationManager.getBestProvider(criteria, true)
         if (provider != null) {
-            locationLabel.setText(R.string.getting_location)
+            binding.locationLabel.setText(R.string.getting_location)
             locationListener = ComposeLocationListener(this).also {
                 locationManager.requestLocationUpdates(provider, 0, 0f, it)
             }
@@ -1479,7 +1481,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     private fun hasComposingStatus(): Boolean {
         if (intent.action == INTENT_ACTION_EDIT_DRAFT) return true
         if (hasMedia) return true
-        val text = editText.text?.toString().orEmpty()
+        val text = binding.editText.text?.toString().orEmpty()
         if (text == originalText) return false
         val replyTextAndMentions = getTwitterReplyTextAndMentions(text)
         if (replyTextAndMentions != null) {
@@ -1489,7 +1491,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     }
 
     private fun confirmAndUpdateStatus() {
-        val matchResult = Regex("[DM] +([a-z0-9_]{1,20}) +[^ ]+").matchEntire(editText.text)
+        val matchResult = Regex("[DM] +([a-z0-9_]{1,20}) +[^ ]+").matchEntire(binding.editText.text)
         if (matchResult != null) {
             val screenName = matchResult.groupValues[1]
             val df = DirectMessageConfirmFragment()
@@ -1511,28 +1513,28 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     }
 
     private fun updateStatus() {
-        if (isFinishing || editText == null) return
+        if (isFinishing || binding.editText == null) return
 
         val update = try {
             getStatusUpdate(true)
         } catch (e: NoAccountException) {
-            editText.error = getString(R.string.message_toast_no_account_selected)
-            editText.requestFocus()
+            binding.editText.error = getString(R.string.message_toast_no_account_selected)
+            binding.editText.requestFocus()
             return
         } catch (e: NoContentException) {
-            editText.error = getString(R.string.error_message_no_content)
-            editText.requestFocus()
+            binding.editText.error = getString(R.string.error_message_no_content)
+            binding.editText.requestFocus()
             return
         } catch (e: StatusTooLongException) {
-            editText.error = getString(R.string.error_message_status_too_long)
-            editSummary.string = e.summary
-            editText.string = e.text
+            binding.editText.error = getString(R.string.error_message_status_too_long)
+            binding.editSummary.string = e.summary
+            binding.editText.string = e.text
             if (e.textExceededStartIndex >= 0) {
-                editText.setSelection(e.textExceededStartIndex, editText.length())
-                editText.requestFocus()
+                binding.editText.setSelection(e.textExceededStartIndex, binding.editText.length())
+                binding.editText.requestFocus()
             } else if (e.summaryExceededStartIndex >= 0) {
-                editSummary.setSelection(e.summaryExceededStartIndex, editSummary.length())
-                editSummary.requestFocus()
+                binding.editSummary.setSelection(e.summaryExceededStartIndex, binding.editSummary.length())
+                binding.editSummary.requestFocus()
             }
             return
         }
@@ -1551,7 +1553,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             mentionUser = null
             draft = null
             originalText = null
-            editText.text = null
+            binding.editText.text = null
             clearMedia()
             val intent = Intent(INTENT_ACTION_COMPOSE)
             setIntent(intent)
@@ -1578,9 +1580,9 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         if (accounts.isEmpty()) throw NoAccountException()
         val update = ParcelableStatusUpdate()
         val media = this.media
-        val summary = editSummary.textIfVisible?.normalized(Normalizer.Form.NFC)
-        val text = editText.text?.normalized(Normalizer.Form.NFC).orEmpty()
-        val maxLength = statusTextCount.maxLength
+        val summary = binding.editSummary.textIfVisible?.normalized(Normalizer.Form.NFC)
+        val text = binding.editText.text?.normalized(Normalizer.Form.NFC).orEmpty()
+        val maxLength = binding.statusTextCount.maxLength
         val inReplyTo = inReplyToStatus
         val replyTextAndMentions = getTwitterReplyTextAndMentions(text, accounts)
         if (inReplyTo != null && replyTextAndMentions != null) {
@@ -1641,86 +1643,86 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     }
 
     private fun updateTextCount() {
-        val editable = editText.editableText ?: return
-        val summary = editSummary.textIfVisible?.toString()
+        val editable = binding.editText.editableText ?: return
+        val summary = binding.editSummary.textIfVisible?.toString()
         val accounts = accountsAdapter.selectedAccounts
         val text = editable.toString()
         val textAndMentions = getTwitterReplyTextAndMentions(text)
         if (textAndMentions == null) {
-            hintLabel.visibility = View.GONE
+            binding.hintLabel.visibility = View.GONE
             editable.clearSpans(MentionColorSpan::class.java)
-            statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary, text,
+            binding.statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary, text,
                     false, null)
         } else if (textAndMentions.replyToOriginalUser || replyToSelf) {
-            hintLabel.visibility = View.GONE
+            binding.hintLabel.visibility = View.GONE
             val mentionColor = ThemeUtils.getTextColorSecondary(this)
             editable.clearSpans(MentionColorSpan::class.java)
             editable.setSpan(MentionColorSpan(mentionColor), 0, textAndMentions.replyStartIndex,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary,
+            binding.statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary,
                     textAndMentions.replyText, false, null)
         } else {
-            hintLabel.visibility = View.VISIBLE
+            binding.hintLabel.visibility = View.VISIBLE
             editable.clearSpans(MentionColorSpan::class.java)
-            statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary,
+            binding.statusTextCount.textCount = StatusTextValidator.calculateLength(accounts, summary,
                     textAndMentions.replyText, false, null)
         }
     }
 
     private fun updateUpdateStatusIcon() {
         if (scheduleInfo != null) {
-            updateStatusIcon.setImageResource(R.drawable.ic_action_time)
+            binding.updateStatusIcon.setImageResource(R.drawable.ic_action_time)
         } else {
-            updateStatusIcon.setImageResource(R.drawable.ic_action_send)
+            binding.updateStatusIcon.setImageResource(R.drawable.ic_action_send)
         }
     }
 
     private fun updateLocationState() {
         if (kPreferences[attachLocationKey]) {
-            locationLabel.visibility = View.VISIBLE
+            binding.locationLabel.visibility = View.VISIBLE
             if (recentLocation != null) {
                 setRecentLocation(recentLocation)
             } else {
-                locationLabel.setText(R.string.getting_location)
+                binding.locationLabel.setText(R.string.getting_location)
             }
         } else {
-            locationLabel.visibility = View.GONE
+            binding.locationLabel.visibility = View.GONE
         }
     }
 
     private fun updateVisibilityState() {
         val hasVisibility = hasStatusVisibility || hasAttachmentStatusVisibility
-        visibilityLabel.visibility = if (hasVisibility) View.VISIBLE else View.GONE
+        binding.visibilityLabel.visibility = if (hasVisibility) View.VISIBLE else View.GONE
         when (statusVisibility) {
             StatusVisibility.UNLISTED -> {
-                visibilityLabel.setText(R.string.label_status_visibility_unlisted)
-                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(visibilityLabel,
+                binding.visibilityLabel.setText(R.string.label_status_visibility_unlisted)
+                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(binding.visibilityLabel,
                         R.drawable.ic_action_web_lock, 0, 0, 0)
             }
             StatusVisibility.PRIVATE -> {
-                visibilityLabel.setText(R.string.label_status_visibility_private)
-                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(visibilityLabel,
+                binding.visibilityLabel.setText(R.string.label_status_visibility_private)
+                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(binding.visibilityLabel,
                         R.drawable.ic_action_lock, 0, 0, 0)
             }
             StatusVisibility.DIRECT -> {
-                visibilityLabel.setText(R.string.label_status_visibility_direct)
-                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(visibilityLabel,
+                binding.visibilityLabel.setText(R.string.label_status_visibility_direct)
+                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(binding.visibilityLabel,
                         R.drawable.ic_action_message, 0, 0, 0)
             }
             else -> { // Default to public
-                visibilityLabel.setText(R.string.label_status_visibility_public)
-                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(visibilityLabel,
+                binding.visibilityLabel.setText(R.string.label_status_visibility_public)
+                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(binding.visibilityLabel,
                         R.drawable.ic_action_web, 0, 0, 0)
             }
         }
-        visibilityLabel.refreshDrawableState()
+        binding.visibilityLabel.refreshDrawableState()
     }
 
     private fun updateSummaryTextState() {
-        editSummary.visibility = if (editSummaryEnabled && hasEditSummary) View.VISIBLE else View.GONE
+        binding.editSummary.visibility = if (editSummaryEnabled && hasEditSummary) View.VISIBLE else View.GONE
     }
 
-    private fun getTwitterReplyTextAndMentions(text: String = editText.text?.toString().orEmpty(),
+    private fun getTwitterReplyTextAndMentions(text: String = binding.editText.text?.toString().orEmpty(),
                                                accounts: Array<AccountDetails> = accountsAdapter.selectedAccounts): ReplyTextAndMentions? {
         val inReplyTo = inReplyToStatus ?: return null
         if (!ignoreMentions) return null
@@ -1754,7 +1756,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             duration = 250
         }
 
-        addView(accountSelector) { view ->
+        addView(binding.accountSelector) { view ->
             inAnimator = AnimatorSet().also { set ->
                 set.playTogether(
                         ObjectAnimator.ofFloat(view, ViewProperties.TRANSLATION_X_RELATIVE, -1f, 0f),
@@ -1770,7 +1772,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 set.setup()
             }
         }
-        addView(composeMenu) { view ->
+        addView(binding.composeMenu) { view ->
             inAnimator = AnimatorSet().also { set ->
                 set.playTogether(
                         ObjectAnimator.ofFloat(view, ViewProperties.TRANSLATION_X_RELATIVE, 1f, 0f),
@@ -1789,19 +1791,19 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
     }
 
     private fun updateViewStyle() {
-        accountProfileImage.style = preferences[profileImageStyleKey]
+        binding.accountProfileImage.style = preferences[profileImageStyleKey]
     }
 
     private fun setupEditText() {
         val sendByEnter = preferences[quickSendKey]
-        EditTextEnterHandler.attach(editText, ComposeEnterListener(this), sendByEnter)
-        editSummary.addTextChangedListener(object : SimpleTextWatcher {
+        EditTextEnterHandler.attach(binding.editText, ComposeEnterListener(this), sendByEnter)
+        binding.editSummary.addTextChangedListener(object : SimpleTextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 setMenu()
                 updateTextCount()
             }
         })
-        editText.addTextChangedListener(object : SimpleTextWatcher {
+        binding.editText.addTextChangedListener(object : SimpleTextWatcher {
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 setMenu()
@@ -1843,8 +1845,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 }
             }
         })
-        editText.customSelectionActionModeCallback = this
-        editText.imageInputListener = { contentInfo ->
+        binding.editText.customSelectionActionModeCallback = this
+        binding.editText.imageInputListener = { contentInfo ->
             val task = AddMediaTask(this, arrayOf(contentInfo.contentUri), null,
                     copySrc = true,
                     deleteSrc = false
@@ -1854,7 +1856,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             }
             TaskStarter.execute(task)
         }
-        editTextContainer.touchDelegate = ComposeEditTextTouchDelegate(editTextContainer, editText)
+        binding.editTextContainer.touchDelegate = ComposeEditTextTouchDelegate(binding.editTextContainer, binding.editText)
     }
 
     class RetweetProtectedStatusWarnFragment : BaseDialogFragment(), DialogInterface.OnClickListener {
@@ -1897,7 +1899,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 DialogInterface.BUTTON_NEUTRAL -> {
                     if (activity is ComposeActivity) {
                         // Insert a ZWSP into status text
-                        activity.editText.text.insert(1, "\u200b")
+                        activity.binding.editText.text.insert(1, "\u200b")
                         activity.updateStatus()
                     }
                 }
@@ -2141,7 +2143,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         override fun beforeExecute() {
             val location = params
             val activity = callback ?: return
-            val textView = activity.locationLabel ?: return
+            val textView = activity.binding.locationLabel ?: return
 
             val preferences = activity.preferences
             val attachLocation = preferences[attachLocationKey]
@@ -2170,7 +2172,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
         override fun afterExecute(activity: ComposeActivity?, addresses: List<Address>?) {
             if (activity == null) return
-            val textView = activity.locationLabel ?: return
+            val textView = activity.binding.locationLabel ?: return
             val preferences = activity.preferences
             val attachLocation = preferences[attachLocationKey]
             val attachPreciseLocation = preferences[attachPreciseLocationKey]

@@ -38,8 +38,8 @@ import androidx.appcompat.app.WindowDecorActionBar
 import androidx.appcompat.app.decorToolbar
 import android.view.*
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_media_viewer.*
 import nl.komponents.kovenant.combine.and
+import org.mariotaku.twidere.databinding.ActivityMediaViewerBinding
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.alwaysUi
 import nl.komponents.kovenant.ui.successUi
@@ -92,6 +92,7 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
     private var hideOffsetNotSupported = false
     private lateinit var mediaViewerHelper: IMediaViewerActivity.Helper
     private lateinit var controlBarShowHideHelper: ControlBarShowHideHelper
+    private lateinit var binding: ActivityMediaViewerBinding
 
     private val status: ParcelableStatus?
         get() = intent.getParcelableExtra<ParcelableStatus>(EXTRA_STATUS)
@@ -144,7 +145,7 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
                 if (actionBar is WindowDecorActionBar) {
                     val toolbar = actionBar.decorToolbar.viewGroup
                     toolbar.alpha = offset
-                    activityLayout.statusBarAlpha = offset
+                    binding.activityLayout.statusBarAlpha = offset
                 }
                 try {
                     actionBar.hideOffset = (controlBarHeight * (1f - offset)).roundToInt()
@@ -161,23 +162,25 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         }
         super.onCreate(savedInstanceState)
+        binding = ActivityMediaViewerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         GeneralComponent.get(this).inject(this)
         mediaViewerHelper = IMediaViewerActivity.Helper(this)
         controlBarShowHideHelper = ControlBarShowHideHelper(this)
         mediaViewerHelper.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.elevation = 0f
-        swipeContainer.listener = this
-        swipeContainer.backgroundAlpha = 1f
+        binding.swipeContainer.listener = this
+        binding.swipeContainer.backgroundAlpha = 1f
         WindowSupport.setStatusBarColor(window, Color.TRANSPARENT)
-        activityLayout.statusBarColor = overrideTheme.colorToolbar
-        ViewCompat.setOnApplyWindowInsetsListener(activityLayout) { view, insets ->
+        binding.activityLayout.statusBarColor = overrideTheme.colorToolbar
+        ViewCompat.setOnApplyWindowInsetsListener(binding.activityLayout) { view, insets ->
             val statusBarHeight = insets.systemWindowInsetTop - ThemeUtils.getActionBarHeight(this)
-            activityLayout.statusBarHeight = statusBarHeight
+            binding.activityLayout.statusBarHeight = statusBarHeight
             onApplyWindowInsets(view, insets)
         }
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            activityLayout.statusBarAlpha = if (View.SYSTEM_UI_FLAG_FULLSCREEN in visibility) 0f else 1f
+            binding.activityLayout.statusBarAlpha = if (View.SYSTEM_UI_FLAG_FULLSCREEN in visibility) 0f else 1f
         }
     }
 
@@ -326,7 +329,7 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
     }
 
     override fun findViewPager(): ViewPager {
-        return viewPager
+        return binding.viewPager
     }
 
     override fun isBarShowing(): Boolean {
@@ -410,11 +413,11 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
     }
 
     override fun onSwipeOffsetChanged(offset: Int) {
-        val offsetFactor = 1 - (abs(offset).toFloat() / swipeContainer.height)
-        swipeContainer.backgroundAlpha = offsetFactor
+        val offsetFactor = 1 - (abs(offset).toFloat() / binding.swipeContainer.height)
+        binding.swipeContainer.backgroundAlpha = offsetFactor
         val colorToolbar = overrideTheme.colorToolbar
         val alpha = (Color.alpha(colorToolbar) * offsetFactor).roundToInt().coerceIn(0..255)
-        activityLayout.statusBarAlpha = alpha / 255f
+        binding.activityLayout.statusBarAlpha = alpha / 255f
     }
 
     override fun onSwipeStateChanged(state: Int) {
@@ -442,9 +445,9 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
 
     override fun onApplyWindowInsets(v: View, insets: WindowInsetsCompat): WindowInsetsCompat {
         val result = super.onApplyWindowInsets(v, insets)
-        val adapter = viewPager.adapter ?: return insets
+        val adapter = binding.viewPager.adapter ?: return insets
         if (adapter.count == 0) return insets
-        val fragment = adapter.instantiateItem(viewPager, viewPager.currentItem)
+        val fragment = adapter.instantiateItem(binding.viewPager, binding.viewPager.currentItem)
         if (fragment is IBaseFragment<*>) {
             fragment.requestApplyInsets()
         }
@@ -530,7 +533,7 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
 
     private fun openSaveToDocumentChooser() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return
-        val fileInfo = getCurrentCacheFileInfo(viewPager.currentItem) ?: return
+        val fileInfo = getCurrentCacheFileInfo(binding.viewPager.currentItem) ?: return
         thread {
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
             intent.type = fileInfo.mimeType ?: "*/*"
@@ -547,7 +550,7 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
     }
 
     private fun saveMediaToContentUri(data: Uri) {
-        val fileInfo = getCurrentCacheFileInfo(viewPager.currentItem) ?: return
+        val fileInfo = getCurrentCacheFileInfo(binding.viewPager.currentItem) ?: return
         val weakThis = weak()
         (showProgressDialog("save_media_to_progress") and task {
             val a = weakThis.get() ?: throw InterruptedException()

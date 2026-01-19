@@ -31,7 +31,6 @@ import android.widget.Toast
 import androidx.loader.app.LoaderManager
 import com.bumptech.glide.RequestManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.ktextension.*
 import org.mariotaku.sqliteqb.library.Columns.Column
 import org.mariotaku.sqliteqb.library.Expression
@@ -62,7 +61,7 @@ import org.mariotaku.twidere.util.Utils
 abstract class CursorStatusesFragment : AbsStatusesFragment() {
 
     override var refreshing: Boolean
-        get() = swipeLayout.isRefreshing
+        get() = binding.swipeLayout.isRefreshing
         set(value) {
             super.refreshing = value
         }

@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'imgenie'
 
 buildscript {
@@ -22,7 +21,6 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath "org.jetbrains.kotlin:kotlin-android-extensions:${kotlinVersion}"
         classpath 'com.github.mariotaku:imgenie-plugin:0.2.6'
 
         if (enableGoogleVariant) {

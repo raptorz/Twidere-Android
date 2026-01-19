@@ -41,10 +41,9 @@ import android.widget.AbsListView.MultiChoiceModeListener
 import android.widget.AdapterView.OnItemClickListener
 import androidx.loader.app.LoaderManager
 import com.mobeta.android.dslv.SimpleDragSortCursorAdapter
-import kotlinx.android.synthetic.main.dialog_custom_tab_editor.*
-import kotlinx.android.synthetic.main.layout_draggable_list_with_empty_view.*
-import kotlinx.android.synthetic.main.list_item_section_header.view.*
 import org.mariotaku.chameleon.Chameleon
+import org.mariotaku.twidere.databinding.LayoutDraggableListWithEmptyViewBinding
+import org.mariotaku.twidere.databinding.ListItemSectionHeaderBinding
 import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.contains
 import org.mariotaku.ktextension.set
@@ -76,12 +75,15 @@ import java.lang.ref.WeakReference
 
 class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoiceModeListener {
 
+    protected lateinit var binding: LayoutDraggableListWithEmptyViewBinding
+        private set
+    
     private lateinit var adapter: CustomTabsAdapter
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.delete -> {
-                val itemIds = listView.checkedItemIds
+                val itemIds = binding.listView.checkedItemIds
                 val where = Expression.`in`(Column(Tabs._ID), RawItemArray(itemIds))
                 context?.contentResolver?.delete(Tabs.CONTENT_URI, where.sql, null)
                 activity?.let { SettingsActivity.setShouldRestart(it) }
@@ -95,9 +97,9 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
         super.onActivityCreated(savedInstanceState)
         setHasOptionsMenu(true)
         adapter = CustomTabsAdapter(requireContext())
-        listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-        listView.setMultiChoiceModeListener(this)
-        listView.onItemClickListener = OnItemClickListener { _, _, position, _ ->
+        binding.listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+        binding.listView.setMultiChoiceModeListener(this)
+        binding.listView.onItemClickListener = OnItemClickListener { _, _, position, _ ->
             val tab = adapter.getTab(position)
             val df = TabEditorDialogFragment()
             df.arguments = Bundle {
@@ -105,24 +107,24 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
             }
             parentFragmentManager.let { df.show(it, TabEditorDialogFragment.TAG_EDIT_TAB) }
         }
-        listView.adapter = adapter
-        listView.emptyView = emptyView
-        listView.setDropListener { from, to ->
+        binding.listView.adapter = adapter
+        binding.listView.emptyView = binding.emptyView
+        binding.listView.setDropListener { from, to ->
             adapter.drop(from, to)
-            if (listView.choiceMode != AbsListView.CHOICE_MODE_NONE) {
-                listView.moveCheckState(from, to)
+            if (binding.listView.choiceMode != AbsListView.CHOICE_MODE_NONE) {
+                binding.listView.moveCheckState(from, to)
             }
             saveTabPositions()
         }
-        emptyText.setText(R.string.no_tab)
-        emptyIcon.setImageResource(R.drawable.ic_info_tab)
+        binding.emptyText.setText(R.string.no_tab)
+        binding.emptyIcon.setImageResource(R.drawable.ic_info_tab)
         LoaderManager.getInstance(this).initLoader(0, null, this)
         setListShown(false)
     }
 
     private fun setListShown(shown: Boolean) {
-        listContainer.visibility = if (shown) View.VISIBLE else View.GONE
-        progressContainer.visibility = if (shown) View.GONE else View.VISIBLE
+        binding.listContainer.visibility = if (shown) View.VISIBLE else View.GONE
+        binding.progressContainer.visibility = if (shown) View.GONE else View.VISIBLE
     }
 
     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -176,7 +178,8 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.layout_draggable_list_with_empty_view, container, false)
+        binding = LayoutDraggableListWithEmptyViewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onDestroyActionMode(mode: ActionMode) {
@@ -221,8 +224,8 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
     }
 
     private fun updateTitle(mode: ActionMode?) {
-        if (listView == null || mode == null || activity == null) return
-        val count = listView.checkedItemCount
+        if (binding.listView == null || mode == null || activity == null) return
+        val count = binding.listView.checkedItemCount
         mode.title = resources.getQuantityString(R.plurals.Nitems_selected, count, count)
     }
 
@@ -261,31 +264,31 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
                 }
             }
 
-            val tabName = dialog.tabName
-            val iconSpinner = dialog.tabIconSpinner
-            val accountSpinner = dialog.accountSpinner
-            val accountContainer = dialog.accountContainer
-            val extraConfigContainer = dialog.extraConfigContainer
+            val tabName = dialog.findViewById<EditText>(R.id.tabName)
+            val iconSpinner = dialog.findViewById<Spinner>(R.id.tabIconSpinner)
+            val accountSpinner = dialog.findViewById<Spinner>(R.id.accountSpinner)
+            val accountContainer = dialog.findViewById<View>(R.id.accountContainer)
+            val extraConfigContainer = dialog.findViewById<ViewGroup>(R.id.extraConfigContainer)
 
             val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
 
             val iconsAdapter = TabIconsAdapter(currentContext)
             val accountsAdapter = AccountsSpinnerAdapter(currentContext, requestManager = requestManager)
-            iconSpinner.adapter = iconsAdapter
-            accountSpinner.adapter = accountsAdapter
+            iconSpinner?.adapter = iconsAdapter
+            accountSpinner?.adapter = accountsAdapter
 
             iconsAdapter.setData(DrawableHolder.builtins())
 
-            tabName.hint = conf.name.createString(currentContext)
-            tabName.setText(tab.name)
-            iconSpinner.setSelection(iconsAdapter.findPositionByKey(tab.icon))
+            tabName?.hint = conf.name.createString(currentContext)
+            tabName?.setText(tab.name)
+            iconSpinner?.setSelection(iconsAdapter.findPositionByKey(tab.icon))
 
             val editMode = tag == TAG_EDIT_TAB
 
             val hasAccount = TabAccountFlags.FLAG_HAS_ACCOUNT in conf.accountFlags
             val accountMutable = TabAccountFlags.FLAG_ACCOUNT_MUTABLE in conf.accountFlags
             if (hasAccount && (accountMutable || !editMode)) {
-                accountContainer.visibility = View.VISIBLE
+                accountContainer?.visibility = View.VISIBLE
                 val accountRequired = TabAccountFlags.FLAG_ACCOUNT_REQUIRED in conf.accountFlags
                 accountsAdapter.clear()
                 if (!accountRequired) {
@@ -301,19 +304,19 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
                 accountsAdapter.setDummyItemText(R.string.activated_accounts)
 
                 tab.arguments?.accountKeys?.firstOrNull()?.let { key ->
-                    accountSpinner.setSelection(accountsAdapter.findPositionByKey(key))
+                    accountSpinner?.setSelection(accountsAdapter.findPositionByKey(key))
                 }
             } else {
-                accountContainer.visibility = View.GONE
+                accountContainer!!.visibility = View.GONE
             }
 
             val extraConfigurations = conf.getExtraConfigurations(currentContext).orEmpty()
 
             fun inflateHeader(title: String): View {
-                val headerView = LayoutInflater.from(currentContext).inflate(R.layout.list_item_section_header,
+                val binding = ListItemSectionHeaderBinding.inflate(LayoutInflater.from(currentContext),
                         extraConfigContainer, false)
-                headerView.sectionHeader.text = title
-                return headerView
+                binding.sectionHeader.text = title
+                return binding.root
             }
 
             extraConfigurations.forEachIndexed { idx, extraConf ->
@@ -323,15 +326,15 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
                 if (editMode && !extraConf.isMutable) return@forEachIndexed
                 extraConf.headerTitle?.let {
                     // Inflate header with headerTitle
-                    extraConfigContainer.addView(inflateHeader(it.createString(currentContext)))
+                    extraConfigContainer!!.addView(inflateHeader(it.createString(currentContext)))
                 }
-                val view = extraConf.onCreateView(currentContext, extraConfigContainer)
+                val view = extraConf.onCreateView(currentContext, extraConfigContainer!!)
                 extraConf.onViewCreated(currentContext, view, this)
                 conf.readExtraConfigurationFrom(tab, extraConf)
-                extraConfigContainer.addView(view)
+                extraConfigContainer!!.addView(view)
             }
 
-            accountSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            accountSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
                 private fun updateExtraTabs(account: AccountDetails?) {
                     extraConfigurations.forEach {
@@ -339,7 +342,7 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
                     }
                 }
 
-                override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
                     val account = parent.selectedItem as? AccountDetails
                     updateExtraTabs(account)
                 }
@@ -350,8 +353,8 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
             }
 
             positiveButton.setOnClickListener {
-                tab.name = tabName.text.toString()
-                tab.icon = (iconSpinner.selectedItem as DrawableHolder).persistentKey
+                tab.name = tabName?.text?.toString() ?: ""
+                tab.icon = (iconSpinner?.selectedItem as? DrawableHolder)?.persistentKey ?: ""
                 if (tab.arguments == null) {
                     tab.arguments = CustomTabUtils.newTabArguments(tabType)
                 }
@@ -359,7 +362,7 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
                     tab.extras = CustomTabUtils.newTabExtras(tabType)
                 }
                 if (hasAccount && (!editMode || TabAccountFlags.FLAG_ACCOUNT_MUTABLE in conf.accountFlags)) {
-                    val account = accountSpinner.selectedItem as? AccountDetails ?: return@setOnClickListener
+                    val account = accountSpinner?.selectedItem as? AccountDetails ?: return@setOnClickListener
                     if (!account.dummy) {
                         tab.arguments?.accountKeys = arrayOf(account.key)
                     } else {

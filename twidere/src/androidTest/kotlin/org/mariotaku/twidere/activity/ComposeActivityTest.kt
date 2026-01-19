@@ -23,11 +23,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.android.synthetic.main.activity_compose.*
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mariotaku.twidere.databinding.ActivityComposeBinding
 import org.mariotaku.twidere.constant.IntentConstants.*
 import org.mariotaku.twidere.extension.set
 import org.mariotaku.twidere.model.ParcelableStatus
@@ -41,6 +41,16 @@ import org.mariotaku.twidere.util.getJsonResource
 @RunWith(AndroidJUnit4::class)
 @SuppressLint("SetTextI18n")
 class ComposeActivityTest {
+    private val ComposeActivity.binding: ActivityComposeBinding
+        get() = (this as? ComposeActivity)?.let { activity ->
+            try {
+                val field = activity.javaClass.getDeclaredField("binding")
+                field.isAccessible = true
+                field.get(activity) as ActivityComposeBinding
+            } catch (e: Exception) {
+                throw IllegalStateException("Could not access binding", e)
+            }
+        } ?: throw IllegalStateException("Activity is not ComposeActivity")
 
     @get:Rule
     val activityRule = ComposeActivityTestRule(launchActivity = false)
@@ -56,7 +66,7 @@ class ComposeActivityTest {
         intent.putExtra(EXTRA_SAVE_DRAFT, true)
         val activity = activityRule.launchActivity(intent)
         activityRule.runOnUiThread {
-            activity.editText.setText("@t_deyarmin @nixcraft @mariotaku Test Reply")
+            activity.binding.editText.setText("Test Reply")
         }
         val statusUpdate = activity.getStatusUpdateTest(false)
         Assert.assertEquals("Test Reply", statusUpdate.text)
@@ -76,7 +86,7 @@ class ComposeActivityTest {
         intent.putExtra(EXTRA_SAVE_DRAFT, true)
         val activity = activityRule.launchActivity(intent)
         activityRule.runOnUiThread {
-            activity.editText.setText("@t_deyarmin Test Reply")
+            activity.binding.editText.setText("@t_deyarmin Test Reply")
         }
         val statusUpdate = activity.getStatusUpdateTest(false)
         Assert.assertEquals("Test Reply", statusUpdate.text)
@@ -118,7 +128,7 @@ class ComposeActivityTest {
         intent.putExtra(EXTRA_SAVE_DRAFT, true)
         val activity = activityRule.launchActivity(intent)
         activityRule.runOnUiThread {
-            activity.editText.setText("@TwidereProject @mariotaku Test Reply")
+            activity.binding.editText.setText("@TwidereProject @mariotaku Test Reply")
         }
         val statusUpdate = activity.getStatusUpdateTest(false)
         Assert.assertEquals("Test Reply", statusUpdate.text)
@@ -138,7 +148,7 @@ class ComposeActivityTest {
         intent.putExtra(EXTRA_SAVE_DRAFT, true)
         val activity = activityRule.launchActivity(intent)
         activityRule.runOnUiThread {
-            activity.editText.setText("@TwidereProject Test Reply")
+            activity.binding.editText.setText("@TwidereProject Test Reply")
         }
         val statusUpdate = activity.getStatusUpdateTest(false)
         Assert.assertEquals("Test Reply", statusUpdate.text)

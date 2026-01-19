@@ -26,7 +26,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_content_recyclerview.*
 import org.mariotaku.kpreferences.get
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.constant.IntentConstants.*
@@ -57,7 +56,7 @@ class UserListMembersFragment : ParcelableUsersFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        registerForContextMenu(recyclerView)
+        registerForContextMenu(binding.recyclerView)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -87,7 +86,7 @@ class UserListMembersFragment : ParcelableUsersFragment() {
     }
 
     override fun onUserLongClick(holder: UserViewHolder, position: Int): Boolean {
-        return recyclerView.showContextMenuForChild(holder.itemView)
+        return binding.recyclerView.showContextMenuForChild(holder.itemView)
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

@@ -13,9 +13,8 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_toolbar_tab_pages.*
-import kotlinx.android.synthetic.main.fragment_toolbar_tab_pages.view.*
 import org.mariotaku.twidere.R
+import org.mariotaku.twidere.databinding.FragmentToolbarTabPagesBinding
 import org.mariotaku.twidere.activity.LinkHandlerActivity
 import org.mariotaku.twidere.activity.LinkHandlerActivity.HideUiOnScroll
 import org.mariotaku.twidere.activity.iface.IControlBarActivity
@@ -40,36 +39,39 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
         SupportFragmentCallback, IBaseFragment.SystemWindowInsetsCallback, ControlBarOffsetListener,
         HideUiOnScroll, OnPageChangeListener, IToolBarSupportFragment, KeyboardShortcutCallback {
 
+    protected lateinit var binding: FragmentToolbarTabPagesBinding
+        private set
+    
     protected lateinit var pagerAdapter: SupportTabsAdapter
     override val toolbar: Toolbar
-        get() = toolbarContainer.toolbar
+        get() = binding.toolbar
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val activity = activity
         pagerAdapter = SupportTabsAdapter(requireActivity(), childFragmentManager, null)
-        viewPager.adapter = pagerAdapter
-        viewPager.offscreenPageLimit = 2
-        viewPager.addOnPageChangeListener(this)
-        toolbarTabs.setViewPager(viewPager)
-        toolbarTabs.setTabDisplayOption(TabPagerIndicator.DisplayOption.LABEL)
+        binding.viewPager.adapter = pagerAdapter
+        binding.viewPager.offscreenPageLimit = 2
+        binding.viewPager.addOnPageChangeListener(this)
+        binding.toolbarTabs.setViewPager(binding.viewPager)
+        binding.toolbarTabs.setTabDisplayOption(TabPagerIndicator.DisplayOption.LABEL)
 
-        tabPagesFragmentView.applyWindowInsetsListener = OnApplyWindowInsetsListener listener@ { _, insets ->
+        binding.tabPagesFragmentView.applyWindowInsetsListener = OnApplyWindowInsetsListener listener@ { _, insets ->
             val top = insets.systemWindowInsetTop
-            tabPagesFragmentView.setPadding(0, top, 0, 0)
+            binding.tabPagesFragmentView.setPadding(0, top, 0, 0)
             return@listener insets
         }
 
         addTabs(pagerAdapter)
-        toolbarTabs.notifyDataSetChanged()
-        toolbarContainer.onSizeChangedListener = object : IExtendedView.OnSizeChangedListener {
+        binding.toolbarTabs.notifyDataSetChanged()
+        binding.toolbarContainer.onSizeChangedListener = object : IExtendedView.OnSizeChangedListener {
             override fun onSizeChanged(view: View, w: Int, h: Int, oldw: Int, oldh: Int) {
-                val pageLimit = viewPager.offscreenPageLimit
-                val currentItem = viewPager.currentItem
+                val pageLimit = binding.viewPager.offscreenPageLimit
+                val currentItem = binding.viewPager.currentItem
                 val count = pagerAdapter.count
                 for (i in 0 until count) {
                     if (i > currentItem - pageLimit - 1 || i < currentItem + pageLimit) {
-                        val obj = pagerAdapter.instantiateItem(viewPager, i)
+                        val obj = pagerAdapter.instantiateItem(binding.viewPager, i)
                         if (obj is IBaseFragment<*>) {
                             obj.requestApplyInsets()
                         }
@@ -84,7 +86,7 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
             if (initialTab != null) {
                 for (i in 0 until pagerAdapter.count) {
                     if (initialTab == pagerAdapter.get(i).tag) {
-                        viewPager.currentItem = i
+                        binding.viewPager.currentItem = i
                         break
                     }
                 }
@@ -110,11 +112,12 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_toolbar_tab_pages, container, false)
+        binding = FragmentToolbarTabPagesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val o = pagerAdapter.instantiateItem(viewPager, viewPager.currentItem)
+        val o = pagerAdapter.instantiateItem(binding.viewPager, binding.viewPager.currentItem)
         o.onActivityResult(requestCode, resultCode, data)
     }
 
@@ -130,9 +133,9 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
 
     override val currentVisibleFragment: Fragment?
         get() {
-            val currentItem = viewPager.currentItem
+            val currentItem = binding.viewPager.currentItem
             if (currentItem < 0 || currentItem >= pagerAdapter.count) return null
-            return pagerAdapter.instantiateItem(viewPager, currentItem)
+            return pagerAdapter.instantiateItem(binding.viewPager, currentItem)
         }
 
     override fun triggerRefresh(position: Int): Boolean {
@@ -145,7 +148,7 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
 
     override fun getSystemWindowInsets(caller: Fragment, insets: Rect): Boolean {
         insetsCallback?.getSystemWindowInsets(this, insets)
-        val height = toolbarContainer.height
+        val height = binding.toolbarContainer.height
         if (height != 0) {
             insets.top = height
         } else {
@@ -174,18 +177,18 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
 
     override var controlBarOffset: Float
         get() {
-            if (toolbarContainer == null) return 0f
-            return 1 + toolbarContainer.translationY / controlBarHeight
+            if (binding.toolbarContainer == null) return 0f
+            return 1 + binding.toolbarContainer.translationY / controlBarHeight
         }
         set(offset) {
-            if (toolbarContainer == null) return
+            if (binding.toolbarContainer == null) return
             val translationY = (offset - 1) * controlBarHeight
-            toolbarContainer.translationY = translationY
-            windowOverlay!!.translationY = translationY
+            binding.toolbarContainer.translationY = translationY
+            binding.windowOverlay?.translationY = translationY
         }
 
     override val controlBarHeight: Int
-        get() = toolbar.measuredHeight
+        get() = binding.toolbar.measuredHeight
 
     override fun setupWindow(activity: FragmentActivity): Boolean {
         return false
@@ -197,16 +200,16 @@ abstract class AbsToolbarTabPagesFragment : BaseFragment(), RefreshScrollTopInte
         if (action != null) {
             when (action) {
                 ACTION_NAVIGATION_PREVIOUS_TAB -> {
-                    val previous = viewPager.currentItem - 1
+                    val previous = binding.viewPager.currentItem - 1
                     if (previous >= 0 && previous < pagerAdapter.count) {
-                        viewPager.setCurrentItem(previous, true)
+                        binding.viewPager.setCurrentItem(previous, true)
                     }
                     return true
                 }
                 ACTION_NAVIGATION_NEXT_TAB -> {
-                    val next = viewPager.currentItem + 1
+                    val next = binding.viewPager.currentItem + 1
                     if (next >= 0 && next < pagerAdapter.count) {
-                        viewPager.setCurrentItem(next, true)
+                        binding.viewPager.setCurrentItem(next, true)
                     }
                     return true
                 }

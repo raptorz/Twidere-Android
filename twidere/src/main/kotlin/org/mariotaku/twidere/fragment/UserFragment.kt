@@ -71,16 +71,15 @@ import android.view.*
 import android.view.View.OnClickListener
 import android.view.View.OnTouchListener
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.loader.app.LoaderManager
 import com.squareup.otto.Subscribe
-import kotlinx.android.synthetic.main.fragment_user.*
-import kotlinx.android.synthetic.main.fragment_user.view.*
-import kotlinx.android.synthetic.main.header_user.*
-import kotlinx.android.synthetic.main.header_user.view.*
-import kotlinx.android.synthetic.main.layout_content_fragment_common.*
-import kotlinx.android.synthetic.main.layout_content_pages_common.*
+import org.mariotaku.twidere.databinding.FragmentUserBinding
+import org.mariotaku.twidere.databinding.HeaderUserBinding
+import org.mariotaku.twidere.databinding.LayoutContentFragmentCommonBinding
+import org.mariotaku.twidere.databinding.LayoutContentPagesCommonBinding
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.alwaysUi
@@ -146,7 +145,15 @@ import org.mariotaku.twidere.util.support.ActivitySupport
 import org.mariotaku.twidere.util.support.ActivitySupport.TaskDescriptionCompat
 import org.mariotaku.twidere.util.support.ViewSupport
 import org.mariotaku.twidere.util.support.WindowSupport
+import org.mariotaku.twidere.view.BoundsImageView
+import org.mariotaku.twidere.view.ColorLabelRelativeLayout
 import org.mariotaku.twidere.view.HeaderDrawerLayout.DrawerCallback
+import org.mariotaku.twidere.view.HeaderDrawerLayout
+import org.mariotaku.twidere.view.ProfileBannerImageView
+import org.mariotaku.twidere.view.ProfileBannerSpace
+import org.mariotaku.twidere.view.ProfileImageView
+import org.mariotaku.twidere.view.TintedStatusFrameLayout
+import org.mariotaku.twidere.view.FixedTextView
 import org.mariotaku.twidere.view.TabPagerIndicator
 import org.mariotaku.twidere.view.iface.IExtendedView.OnSizeChangedListener
 import java.lang.ref.WeakReference
@@ -162,11 +169,49 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         AbsContentRecyclerViewFragment.RefreshCompleteListener {
 
     override val toolbar: Toolbar
-        get() = profileContentContainer.toolbar
+        get() = binding.root.findViewById(R.id.toolbar)
 
     private lateinit var profileBirthdayBanner: View
+
+    protected lateinit var binding: FragmentUserBinding
     private lateinit var actionBarBackground: ActionBarDrawable
     private lateinit var pagerAdapter: SupportTabsAdapter
+
+    // Fragment User Binding Views
+    private val cardContent by lazy { binding.root.findViewById<View>(R.id.cardContent) }
+    private val profileContentContainer by lazy { binding.root.findViewById<View>(R.id.profileContentContainer) }
+    private val profileBanner by lazy { binding.root.findViewById<ProfileBannerImageView>(R.id.profileBanner) }
+    private val profileBannerSpace by lazy { binding.root.findViewById<ProfileBannerSpace>(R.id.profileBannerSpace) }
+    private val profileImage by lazy { binding.root.findViewById<ProfileImageView>(R.id.profileImage) }
+    private val profileType by lazy { binding.root.findViewById<BoundsImageView>(R.id.profileType) }
+    private val descriptionContainer by lazy { binding.root.findViewById<View>(R.id.descriptionContainer) }
+    private val locationContainer by lazy { binding.root.findViewById<View>(R.id.locationContainer) }
+    private val urlContainer by lazy { binding.root.findViewById<View>(R.id.urlContainer) }
+    private val createdAtContainer by lazy { binding.root.findViewById<View>(R.id.createdAtContainer) }
+    private val listedContainer by lazy { binding.root.findViewById<View>(R.id.listedContainer) }
+    private val followersContainer by lazy { binding.root.findViewById<View>(R.id.followersContainer) }
+    private val friendsContainer by lazy { binding.root.findViewById<View>(R.id.friendsContainer) }
+    private val groupsContainer by lazy { binding.root.findViewById<View>(R.id.groupsContainer) }
+
+    // Header User Binding Views
+    private val headerUserProfile by lazy { binding.root.findViewById<View>(R.id.headerUserProfile) }
+    private val userProfileDrawer by lazy { binding.root.findViewById<HeaderDrawerLayout>(R.id.userProfileDrawer) }
+    private val followContainer by lazy { binding.root.findViewById<View>(R.id.followContainer) }
+    private val profileNameBackground by lazy { binding.root.findViewById<View>(R.id.profileNameBackground) }
+    private val profileNameContainer by lazy { binding.root.findViewById<ColorLabelRelativeLayout>(R.id.profileNameContainer) }
+    private val profileDetailsContainer by lazy { binding.root.findViewById<View>(R.id.profileDetailsContainer) }
+    private val profileBirthdayStub by lazy { binding.root.findViewById<ViewStub>(R.id.profileBirthdayStub) }
+    private val viewPager by lazy { binding.root.findViewById<ViewPager>(R.id.viewPager) }
+    private val toolbarTabs by lazy { binding.root.findViewById<TabPagerIndicator>(R.id.toolbarTabs) }
+    private val userProfileSwipeLayout by lazy { binding.root.findViewById<View>(R.id.userProfileSwipeLayout) }
+
+    // Common Fragment Views
+    private val errorContainer by lazy { binding.root.findViewById<View>(R.id.errorContainer) }
+    private val errorText by lazy { binding.root.findViewById<FixedTextView>(R.id.errorText) }
+    private val progressContainer by lazy { binding.root.findViewById<View>(R.id.progressContainer) }
+    private val profileBannerContainer by lazy { binding.root.findViewById<View>(R.id.profileBannerContainer) }
+    private val windowOverlay by lazy { binding.root.findViewById<View>(R.id.windowOverlay) }
+    private val userFragmentView by lazy { binding.root.findViewById<TintedStatusFrameLayout>(R.id.userFragmentView) }
 
     // Data fields
     var user: ParcelableUser? = null
@@ -194,13 +239,18 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             activity!!.invalidateOptionsMenu()
             val accountKey = args?.getParcelable<UserKey>(EXTRA_ACCOUNT_KEY)
             val user = args?.getParcelable<ParcelableUser>(EXTRA_USER)
+            val followContainer = binding.root.findViewById<View>(R.id.followContainer)
             if (user != null && user.key == accountKey) {
+                val followingYouIndicator = binding.root.findViewById<View>(R.id.followingYouIndicator)
                 followingYouIndicator.visibility = View.GONE
-                followContainer.follow.visibility = View.VISIBLE
+                followContainer.findViewById<View>(R.id.follow).visibility = View.VISIBLE
+                val followProgress = binding.root.findViewById<View>(R.id.followProgress)
                 followProgress.visibility = View.VISIBLE
             } else {
+                val followingYouIndicator = binding.root.findViewById<View>(R.id.followingYouIndicator)
                 followingYouIndicator.visibility = View.GONE
-                followContainer.follow.visibility = View.GONE
+                followContainer.findViewById<View>(R.id.follow).visibility = View.GONE
+                val followProgress = binding.root.findViewById<View>(R.id.followProgress)
                 followProgress.visibility = View.VISIBLE
             }
             return UserRelationshipLoader(activity!!, accountKey, user)
@@ -212,6 +262,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
 
         override fun onLoadFinished(loader: Loader<SingleResponse<ParcelableRelationship>>,
                                     data: SingleResponse<ParcelableRelationship>) {
+            val followProgress = binding.root.findViewById<View>(R.id.followProgress)
             followProgress.visibility = View.GONE
             displayRelationship(data.data)
             updateOptionsMenuVisibility()
@@ -226,8 +277,11 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             val userKey = args.getParcelable<UserKey?>(EXTRA_USER_KEY)
             val screenName = args.getString(EXTRA_SCREEN_NAME)
             if (user == null && (!omitIntentExtra || !args.containsKey(EXTRA_USER))) {
+                val cardContent = binding.root.findViewById<View>(R.id.cardContent)
                 cardContent.visibility = View.GONE
+                val errorContainer = binding.root.findViewById<View>(R.id.errorContainer)
                 errorContainer.visibility = View.GONE
+                val progressContainer = binding.root.findViewById<View>(R.id.progressContainer)
                 progressContainer.visibility = View.VISIBLE
                 errorText.text = null
                 errorText.visibility = View.GONE
@@ -245,6 +299,10 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         override fun onLoadFinished(loader: Loader<SingleResponse<ParcelableUser>>,
                                     data: SingleResponse<ParcelableUser>) {
             val activity = activity ?: return
+            val cardContent = binding.root.findViewById<View>(R.id.cardContent)
+            val errorContainer = binding.root.findViewById<View>(R.id.errorContainer)
+            val progressContainer = binding.root.findViewById<View>(R.id.progressContainer)
+            val errorTextView = binding.root.findViewById<TextView>(R.id.errorText)
             when {
                 data.data != null -> {
                     val user = data.data
@@ -272,8 +330,8 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
                 }
                 else -> {
                     if (data.hasException()) {
-                        errorText.text = data.exception?.getErrorMessage(activity)
-                        errorText.visibility = View.VISIBLE
+                        errorTextView.text = data.exception?.getErrorMessage(activity)
+                        errorTextView.visibility = View.VISIBLE
                     }
                     cardContent.visibility = View.GONE
                     errorContainer.visibility = View.VISIBLE
@@ -298,7 +356,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         if (user.key.maybeEquals(user.account_key)) {
             setFollowEditButton(R.drawable.ic_action_edit, R.color.material_light_blue,
                     R.string.action_edit)
-            followContainer.follow.visibility = View.VISIBLE
+            followContainer.findViewById<View>(R.id.follow).visibility = View.VISIBLE
             this.relationship = relationship
             return
         }
@@ -310,20 +368,30 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         }
         activity?.invalidateOptionsMenu()
         when {
-            relationship.blocked_by -> {
+            relationship.blocking -> {
+                val pagesErrorContainer = binding.root.findViewById<View>(R.id.pagesErrorContainer)
                 pagesErrorContainer.visibility = View.GONE
+                val pagesErrorText = binding.root.findViewById<TextView>(R.id.pagesErrorText)
                 pagesErrorText.text = null
+                val pagesContent = binding.root.findViewById<View>(R.id.pagesContent)
                 pagesContent.visibility = View.VISIBLE
             }
             !relationship.following && user.hide_protected_contents -> {
+                val pagesErrorContainer = binding.root.findViewById<View>(R.id.pagesErrorContainer)
                 pagesErrorContainer.visibility = View.VISIBLE
+                val pagesErrorText = binding.root.findViewById<TextView>(R.id.pagesErrorText)
                 pagesErrorText.setText(R.string.user_protected_summary)
+                val pagesErrorIcon = binding.root.findViewById<ImageView>(R.id.pagesErrorIcon)
                 pagesErrorIcon.setImageResource(R.drawable.ic_info_locked)
+                val pagesContent = binding.root.findViewById<View>(R.id.pagesContent)
                 pagesContent.visibility = View.GONE
             }
             else -> {
+                val pagesErrorContainer = binding.root.findViewById<View>(R.id.pagesErrorContainer)
                 pagesErrorContainer.visibility = View.GONE
+                val pagesErrorText = binding.root.findViewById<TextView>(R.id.pagesErrorText)
                 pagesErrorText.text = null
+                val pagesContent = binding.root.findViewById<View>(R.id.pagesContent)
                 pagesContent.visibility = View.VISIBLE
             }
         }
@@ -339,6 +407,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             else -> setFollowEditButton(R.drawable.ic_action_add, android.R.color.white,
                     R.string.action_follow)
         }
+        val followingYouIndicator = binding.root.findViewById<View>(R.id.followingYouIndicator)
         followingYouIndicator.visibility = if (relationship.followed_by) View.VISIBLE else View.GONE
 
         context?.applicationContext?.contentResolver?.let { resolver ->
@@ -347,7 +416,8 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
                 resolver.insert(CachedRelationships.CONTENT_URI, relationship, ParcelableRelationship::class.java)
             }
         }
-        followContainer.follow.visibility = View.VISIBLE
+        val followContainer = binding.root.findViewById<View>(R.id.followContainer)
+        followContainer.findViewById<View>(R.id.follow).visibility = View.VISIBLE
     }
 
     override fun canScroll(dy: Float): Boolean {
@@ -398,6 +468,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
 
     override fun shouldLayoutHeaderBottom(): Boolean {
         val drawer = userProfileDrawer
+        val profileDetailsContainer = binding.root.findViewById<View>(R.id.profileDetailsContainer)
         val card = profileDetailsContainer
         if (drawer == null || card == null) return false
         return card.top + drawer.headerTop - drawer.paddingTop <= 0
@@ -420,7 +491,9 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         this.user = user
         this.account = account
         if (user?.key == null) {
+            val profileImage = binding.root.findViewById<View>(R.id.profileImage)
             profileImage.visibility = View.GONE
+            val profileType = binding.root.findViewById<View>(R.id.profileType)
             profileType.visibility = View.GONE
             val theme = Chameleon.getOverrideTheme(activity, activity)
             setUiColor(theme.colorPrimary)
@@ -431,6 +504,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             val sf = adapter.instantiateItem(viewPager, i) as? AbsStatusesFragment
             sf?.initLoaderIfNeeded()
         }
+        val profileImage = binding.root.findViewById<ProfileImageView>(R.id.profileImage)
         profileImage.visibility = View.VISIBLE
         val resources = resources
         val lm = LoaderManager.getInstance(this)
@@ -442,7 +516,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         this.user = user
         profileImage.setBorderColor(if (user.color != 0) user.color else Color.WHITE)
         profileNameContainer.drawEnd(user.account_color)
-        profileNameContainer.name.setText(bidiFormatter.unicodeWrap(when {
+        profileNameContainer.findViewById<TextView>(R.id.name).setText(bidiFormatter.unicodeWrap(when {
             user.nickname.isNullOrEmpty() -> user.name
             else -> getString(R.string.name_with_nickname, user.name, user.nickname)
         }), TextView.BufferType.SPANNABLE)
@@ -455,7 +529,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             profileType.visibility = View.GONE
         }
         @SuppressLint("SetTextI18n")
-        profileNameContainer.screenName.spannable = "@${user.acct}"
+        profileNameContainer.findViewById<TextView>(R.id.screenName).spannable = "@${user.acct}"
         val linkHighlightOption = preferences[linkHighlightOptionKey]
         val linkify = TwidereLinkify(this, linkHighlightOption)
         if (user.description_unescaped != null) {
@@ -463,39 +537,39 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
                 user.description_spans?.applyTo(this)
                 linkify.applyAllLinks(this, user.account_key, false, false)
             }
-            descriptionContainer.description.spannable = text
+            descriptionContainer.findViewById<TextView>(R.id.description).spannable = text
         } else {
-            descriptionContainer.description.spannable = user.description_plain
-            Linkify.addLinks(descriptionContainer.description, Linkify.WEB_URLS)
+            descriptionContainer.findViewById<TextView>(R.id.description).spannable = user.description_plain
+            Linkify.addLinks(descriptionContainer.findViewById<TextView>(R.id.description), Linkify.WEB_URLS)
         }
-        descriptionContainer.hideIfEmpty(descriptionContainer.description)
+        descriptionContainer.hideIfEmpty(descriptionContainer.findViewById<TextView>(R.id.description))
 
-        locationContainer.location.spannable = user.location
-        locationContainer.visibility = if (locationContainer.location.empty) View.GONE else View.VISIBLE
-        urlContainer.url.spannable = user.urlPreferred?.let {
+        locationContainer.findViewById<TextView>(R.id.location).spannable = user.location
+        locationContainer.visibility = if (locationContainer.findViewById<TextView>(R.id.location).empty) View.GONE else View.VISIBLE
+        urlContainer.findViewById<TextView>(R.id.url).spannable = user.urlPreferred?.let {
             val ssb = SpannableStringBuilder(it)
             ssb.setSpan(TwidereURLSpan(it, highlightStyle = linkHighlightOption), 0, ssb.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             return@let ssb
         }
-        urlContainer.hideIfEmpty(urlContainer.url)
+        urlContainer.hideIfEmpty(urlContainer.findViewById<TextView>(R.id.url))
         if (user.created_at >= 0) {
             val createdAt = Utils.formatToLongTimeString(activity, user.created_at)
             val daysSinceCreation = (System.currentTimeMillis() - user.created_at) / 1000 / 60 / 60 / 24.toFloat()
             val dailyTweets = (user.statuses_count / max(1f, daysSinceCreation)).roundToInt()
 
             createdAtContainer.visibility = View.VISIBLE
-            createdAtContainer.createdAt.text = resources.getQuantityString(R.plurals.created_at_with_N_tweets_per_day, dailyTweets,
+            createdAtContainer.findViewById<TextView>(R.id.createdAt).text = resources.getQuantityString(R.plurals.created_at_with_N_tweets_per_day, dailyTweets,
                     createdAt, dailyTweets)
         } else {
             createdAtContainer.visibility = View.GONE
         }
         val locale = Locale.getDefault()
 
-        listedContainer.listedCount.text = Utils.getLocalizedNumber(locale, user.listed_count)
-        groupsContainer.groupsCount.text = Utils.getLocalizedNumber(locale, user.groups_count)
-        followersContainer.followersCount.text = Utils.getLocalizedNumber(locale, user.followers_count)
-        friendsContainer.friendsCount.text = Utils.getLocalizedNumber(locale, user.friends_count)
+        listedContainer.findViewById<TextView>(R.id.listedCount).text = Utils.getLocalizedNumber(locale, user.listed_count)
+        groupsContainer.findViewById<TextView>(R.id.groupsCount).text = Utils.getLocalizedNumber(locale, user.groups_count)
+        followersContainer.findViewById<TextView>(R.id.followersCount).text = Utils.getLocalizedNumber(locale, user.followers_count)
+        friendsContainer.findViewById<TextView>(R.id.friendsCount).text = Utils.getLocalizedNumber(locale, user.friends_count)
 
         listedContainer.visibility = if (user.listed_count < 0) View.GONE else View.VISIBLE
         groupsContainer.visibility = if (user.groups_count < 0) View.GONE else View.VISIBLE
@@ -552,7 +626,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             profileBirthdayBanner.visibility = View.GONE
         }
 
-        urlContainer.url.movementMethod = null
+        urlContainer.findViewById<TextView>(R.id.url).movementMethod = null
 
         updateTitleAlpha()
         activity.invalidateOptionsMenu()
@@ -666,7 +740,8 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_user, container, false)
+        binding = FragmentUserBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -690,6 +765,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         })
 
 
+        val userFragmentView = binding.root.findViewById<TintedStatusFrameLayout>(R.id.userFragmentView)
         userFragmentView.windowInsetsListener = OnApplyWindowInsetsListener listener@ { _, insets ->
             insets.getSystemWindowInsets(systemWindowsInsets)
             val top = insets.systemWindowInsetTop
@@ -707,7 +783,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             return@listener insets
         }
 
-        profileContentContainer.onSizeChangedListener = object : OnSizeChangedListener {
+        (profileContentContainer as? org.mariotaku.twidere.view.iface.IExtendedView)?.onSizeChangedListener = object : org.mariotaku.twidere.view.iface.IExtendedView.OnSizeChangedListener {
             override fun onSizeChanged(view: View, w: Int, h: Int, oldw: Int, oldh: Int) {
                 val toolbarHeight = toolbar.measuredHeight
                 userProfileDrawer.setPadding(0, toolbarHeight, 0, 0)
@@ -722,29 +798,42 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
 
         viewPager.offscreenPageLimit = 3
         viewPager.adapter = pagerAdapter
+        val toolbarTabs = binding.root.findViewById<TabPagerIndicator>(R.id.toolbarTabs)
         toolbarTabs.setViewPager(viewPager)
         toolbarTabs.setTabDisplayOption(TabPagerIndicator.DisplayOption.LABEL)
         toolbarTabs.setOnPageChangeListener(this)
 
-        followContainer.follow.setOnClickListener(this)
+        val followContainer = binding.root.findViewById<View>(R.id.followContainer)
+        followContainer.findViewById<View>(R.id.follow).setOnClickListener(this)
+        val profileImage = binding.root.findViewById<View>(R.id.profileImage)
         profileImage.setOnClickListener(this)
+        val profileBanner = binding.root.findViewById<View>(R.id.profileBanner)
         profileBanner.setOnClickListener(this)
+        val listedContainer = binding.root.findViewById<View>(R.id.listedContainer)
         listedContainer.setOnClickListener(this)
+        val groupsContainer = binding.root.findViewById<View>(R.id.groupsContainer)
         groupsContainer.setOnClickListener(this)
+        val followersContainer = binding.root.findViewById<View>(R.id.followersContainer)
         followersContainer.setOnClickListener(this)
+        val friendsContainer = binding.root.findViewById<View>(R.id.friendsContainer)
         friendsContainer.setOnClickListener(this)
+        val errorIcon = binding.root.findViewById<View>(R.id.errorIcon)
         errorIcon.setOnClickListener(this)
+        val urlContainer = binding.root.findViewById<View>(R.id.urlContainer)
         urlContainer.setOnClickListener(this)
-        profileBanner.onSizeChangedListener = this
+        (profileBanner as? org.mariotaku.twidere.view.iface.IExtendedView)?.onSizeChangedListener = this
         profileBannerSpace.setOnTouchListener(this)
 
-        userProfileSwipeLayout.setOnRefreshListener {
+        val swipeRefreshLayout = userProfileSwipeLayout as? androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        swipeRefreshLayout?.setOnRefreshListener {
             if (!triggerRefresh()) {
-                userProfileSwipeLayout.isRefreshing = false
+                swipeRefreshLayout.isRefreshing = false
             }
         }
 
+        val profileNameBackground = binding.root.findViewById<View>(R.id.profileNameBackground)
         profileNameBackground.setBackgroundColor(cardBackgroundColor)
+        val profileDetailsContainer = binding.root.findViewById<View>(R.id.profileDetailsContainer)
         profileDetailsContainer.setBackgroundColor(cardBackgroundColor)
         toolbarTabs.setBackgroundColor(cardBackgroundColor)
 
@@ -892,7 +981,7 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
         activity?.let { MenuUtils.addIntentToMenu(it, menu, intent, MENU_GROUP_USER_EXTENSION) }
         val drawer = userProfileDrawer
         if (drawer != null) {
-            val offset = drawer.paddingTop - drawer.headerTop
+            val offset = drawer.paddingTop - userProfileDrawer.headerTop
             previousActionBarItemIsDark = 0
             previousTabItemIsDark = 0
             updateScrollOffset(offset)
@@ -1377,19 +1466,23 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
     }
 
     override fun onRefreshComplete(fragment: AbsContentRecyclerViewFragment<*, *>) {
-        userProfileSwipeLayout.isRefreshing = false
+        (userProfileSwipeLayout as? androidx.swiperefreshlayout.widget.SwipeRefreshLayout)?.isRefreshing = false
     }
 
     private fun updateRefreshProgressOffset() {
         val insets = this.systemWindowsInsets
-        if (insets.top == 0 || userProfileSwipeLayout == null || userProfileSwipeLayout.isRefreshing) {
+        if (insets.top == 0 || userProfileSwipeLayout == null) {
             return
         }
-        val progressCircleDiameter = userProfileSwipeLayout.progressCircleDiameter
+        val swipeLayout = userProfileSwipeLayout as? androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        if (swipeLayout?.isRefreshing == true) {
+            return
+        }
+        val progressCircleDiameter = swipeLayout?.progressCircleDiameter ?: 0
         if (progressCircleDiameter == 0) return
         val progressViewStart = 0 - progressCircleDiameter
         val progressViewEnd = profileBannerSpace.toolbarHeight + resources.getDimensionPixelSize(R.dimen.element_spacing_normal)
-        userProfileSwipeLayout.setProgressViewOffset(false, progressViewStart, progressViewEnd)
+        swipeLayout?.setProgressViewOffset(false, progressViewStart, progressViewEnd)
     }
 
     private fun getFriendship() {
@@ -1442,17 +1535,17 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
             ActivitySupport.setTaskDescription(activity, TaskDescriptionCompat(null, null, taskColor))
         }
         val optimalAccentColor = ThemeUtils.getOptimalAccentColor(color,
-                descriptionContainer.description.currentTextColor)
-        descriptionContainer.description.setLinkTextColor(optimalAccentColor)
-        locationContainer.location.setLinkTextColor(optimalAccentColor)
-        urlContainer.url.setLinkTextColor(optimalAccentColor)
+                descriptionContainer.findViewById<TextView>(R.id.description).currentTextColor)
+        descriptionContainer.findViewById<TextView>(R.id.description).setLinkTextColor(optimalAccentColor)
+        locationContainer.findViewById<TextView>(R.id.location).setLinkTextColor(optimalAccentColor)
+        urlContainer.findViewById<TextView>(R.id.url).setLinkTextColor(optimalAccentColor)
         profileBanner.setBackgroundColor(color)
 
         toolbarTabs.setBackgroundColor(primaryColor)
 
         val drawer = userProfileDrawer
         if (drawer != null) {
-            val offset = drawer.paddingTop - drawer.headerTop
+            val offset = drawer.paddingTop - userProfileDrawer.headerTop
             updateScrollOffset(offset)
         }
     }
@@ -1472,13 +1565,13 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
 
         val lightFont = preferences[lightFontKey]
 
-        profileNameContainer.name.applyFontFamily(lightFont)
-        profileNameContainer.screenName.applyFontFamily(lightFont)
-        profileNameContainer.followingYouIndicator.applyFontFamily(lightFont)
-        descriptionContainer.description.applyFontFamily(lightFont)
-        urlContainer.url.applyFontFamily(lightFont)
-        locationContainer.location.applyFontFamily(lightFont)
-        createdAtContainer.createdAt.applyFontFamily(lightFont)
+        profileNameContainer.findViewById<TextView>(R.id.name).applyFontFamily(lightFont)
+        profileNameContainer.findViewById<TextView>(R.id.screenName).applyFontFamily(lightFont)
+        profileNameContainer.findViewById<TextView>(R.id.followingYouIndicator).applyFontFamily(lightFont)
+        descriptionContainer.findViewById<TextView>(R.id.description).applyFontFamily(lightFont)
+        urlContainer.findViewById<TextView>(R.id.url).applyFontFamily(lightFont)
+        locationContainer.findViewById<TextView>(R.id.location).applyFontFamily(lightFont)
+        createdAtContainer.findViewById<TextView>(R.id.createdAt).applyFontFamily(lightFont)
     }
 
     private fun setupUserPages() {
@@ -1601,8 +1694,8 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
 
     private fun updateTitleAlpha() {
         val location = IntArray(2)
-        profileNameContainer.name.getLocationInWindow(location)
-        val nameShowingRatio = (userProfileDrawer.paddingTop - location[1]) / profileNameContainer.name.height.toFloat()
+        profileNameContainer.findViewById<TextView>(R.id.name).getLocationInWindow(location)
+        val nameShowingRatio = (userProfileDrawer.paddingTop - location[1]) / profileNameContainer.findViewById<TextView>(R.id.name).height.toFloat()
         val textAlpha = nameShowingRatio.coerceIn(0f, 1f)
         val titleView = ViewSupport.findViewByText(toolbar, toolbar.title)
         if (titleView != null) {
@@ -1622,8 +1715,8 @@ class UserFragment : BaseFragment(), OnClickListener, OnLinkClickListener,
     }
 
     private fun setFollowEditButton(@DrawableRes icon: Int, @ColorRes color: Int, @StringRes label: Int) {
-        val followButton = followContainer.follow
-        followButton.setImageResource(icon)
+        val followButton = followContainer.findViewById<View>(R.id.follow)
+        followButton.setBackgroundResource(icon)
         ViewCompat.setBackgroundTintMode(followButton, PorterDuff.Mode.SRC_ATOP)
         ViewCompat.setBackgroundTintList(followButton, context?.let { ContextCompat.getColorStateList(it, color) })
         followButton.contentDescription = getString(label)

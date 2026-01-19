@@ -32,8 +32,10 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.extractor.ExtractorsFactory
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
@@ -41,8 +43,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
-import kotlinx.android.synthetic.main.layout_media_viewer_exo_player_view.*
-import kotlinx.android.synthetic.main.layout_media_viewer_video_overlay.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -105,6 +105,11 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
     private var positionBackup: Long = -1L
     private var playerHasError: Boolean = false
 
+    private val playerView by lazy { view?.findViewById<com.google.android.exoplayer2.ui.PlayerView>(R.id.playerView) }
+    private val adContainer by lazy { view?.findViewById<ViewGroup>(R.id.adContainer) }
+    private val videoControl by lazy { playerView?.findViewById<View>(R.id.videoControl) }
+    private val volumeButton by lazy { playerView?.findViewById<ImageButton>(R.id.volumeButton) }
+
     private val account by lazy {
         AccountUtils.getAccountDetails(AccountManager.get(context), accountKey, true)
     }
@@ -122,16 +127,16 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 ExoPlayer.STATE_BUFFERING -> {
-                    playerView.keepScreenOn = true
+                    playerView?.keepScreenOn = true
                     showProgress(true, 0f)
                 }
                 ExoPlayer.STATE_ENDED -> {
                     playbackCompleted = true
                     positionBackup = -1L
-                    playerView.keepScreenOn = false
+                    playerView?.keepScreenOn = false
 
                     // Reset position
-                    playerView.player?.let { player ->
+                    playerView?.player?.let { player ->
                         player.seekTo(0)
                         player.playWhenReady = false
                     }
@@ -140,21 +145,21 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
                     val activity = activity as? MediaViewerActivity
                     activity?.setBarVisibility(true)
 
-                    adContainer.setVisible(true)
+                    adContainer?.setVisible(true)
                 }
                 ExoPlayer.STATE_READY -> {
                     playbackCompleted = playWhenReady
                     playerHasError = false
-                    playerView.keepScreenOn = playWhenReady
+                    playerView?.keepScreenOn = playWhenReady
                     hideProgress()
 
-                    adContainer.setVisible(!playWhenReady)
+                    adContainer?.setVisible(!playWhenReady)
                 }
                 ExoPlayer.STATE_IDLE -> {
-                    playerView.keepScreenOn = false
+                    playerView?.keepScreenOn = false
                     hideProgress()
 
-                    adContainer.setVisible(true)
+                    adContainer?.setVisible(true)
                 }
             }
         }
@@ -192,41 +197,63 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
             pausedByUser = savedInstanceState.getBoolean(EXTRA_PAUSED_BY_USER)
             playAudio = savedInstanceState.getBoolean(EXTRA_PLAY_AUDIO)
         } else {
-            val am = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val am = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
             // Play audio by default if ringer mode on
-            playAudio = !isMutedByDefault && am.ringerMode == AudioManager.RINGER_MODE_NORMAL
+            playAudio = !isMutedByDefault && (am?.ringerMode == AudioManager.RINGER_MODE_NORMAL)
         }
 
-        volumeButton.setOnClickListener {
+        volumeButton?.setOnClickListener {
             this.playAudio = !this.playAudio
             updateVolume()
         }
-        playerView.useController = !isControlDisabled
-        playerView.controllerShowTimeoutMs = 0
-        playerView.setOnSystemUiVisibilityChangeListener {
+        playerView?.useController = !isControlDisabled
+        playerView?.controllerShowTimeoutMs = 0
+        playerView?.setOnSystemUiVisibilityChangeListener { visibility ->
             val visible = MediaViewerActivity.FLAG_SYSTEM_UI_HIDE_BARS !in
                     requireActivity().window.decorView.systemUiVisibility
             if (visible) {
-                playerView.showController()
+                playerView?.showController()
             } else {
-                playerView.hideController()
+                playerView?.hideController()
             }
         }
-        playerView.setOnTouchListener { _, event ->
+        playerView?.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    playerView?.showController()
+                }
+                MotionEvent.ACTION_UP -> {
+                    playerView?.hideController()
+                }
+            }
+            return@setOnTouchListener true
+        }
+        playerView?.useController = !isControlDisabled
+        playerView?.controllerShowTimeoutMs = 0
+        playerView?.setOnSystemUiVisibilityChangeListener {
+            val visible = MediaViewerActivity.FLAG_SYSTEM_UI_HIDE_BARS !in
+                    requireActivity().window.decorView.systemUiVisibility
+            if (visible) {
+                playerView?.showController()
+            } else {
+                playerView?.hideController()
+            }
+        }
+        playerView?.setOnTouchListener { _, event ->
             if (event.action != MotionEvent.ACTION_DOWN) return@setOnTouchListener false
             val activity = activity as? MediaViewerActivity ?: return@setOnTouchListener false
             val visible = !activity.isBarShowing
             activity.setBarVisibility(visible)
             if (visible) {
-                playerView.showController()
+                playerView?.showController()
             } else {
-                playerView.hideController()
+                playerView?.hideController()
             }
             return@setOnTouchListener true
         }
         updateVolume()
 
-        promotionService.loadBanner(adContainer, media?.bannerExtras)
+        adContainer?.let { promotionService.loadBanner(it, media?.bannerExtras) }
     }
 
     override fun onAttach(context: Context) {
@@ -279,12 +306,12 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        promotionService.setupBanner(adContainer, PromotionService.BannerType.MEDIA_PAUSE)
+        adContainer?.let { promotionService.setupBanner(it, PromotionService.BannerType.MEDIA_PAUSE) }
     }
 
     override fun onApplySystemWindowInsets(insets: Rect) {
         // HACK: Apply maximum reported system inset to avoid drawing under systum UI
-        (videoControl.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
+        (videoControl?.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
           bottomMargin = maxOf(insets.bottom, bottomMargin)
           leftMargin = maxOf(insets.left, leftMargin)
           rightMargin = maxOf(insets.right, rightMargin)
@@ -314,17 +341,17 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
     }
 
     private fun releasePlayer() {
-        val player = playerView.player ?: return
+        val player = playerView?.player ?: return
         positionBackup = player.currentPosition
         pausedByUser = !player.playWhenReady
         player.removeListener(playerListener)
         player.release()
-        playerView.player = null
+        playerView?.player = null
     }
 
     private fun initializePlayer() {
-        if (playerView.player != null) return
-        playerView.player = run {
+        if (playerView?.player != null) return
+        playerView?.player = run {
             val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory()
             val trackSelector = DefaultTrackSelector(requireContext(), videoTrackSelectionFactory)
             val player = SimpleExoPlayer.Builder(requireContext())
@@ -342,7 +369,7 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
         val uri = media?.getDownloadUri() ?: return
         val factory = AuthDelegatingDataSourceFactory(uri, account, dataSourceFactory)
         val uriSource = ProgressiveMediaSource.Factory(factory, extractorsFactory).createMediaSource(uri)
-        (playerView.player as? SimpleExoPlayer)?.apply {
+        (playerView?.player as? SimpleExoPlayer)?.apply {
           repeatMode = if (isLoopEnabled) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
           prepare(uriSource)
         }
@@ -350,9 +377,9 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
     }
 
     private fun updateVolume() {
-        volumeButton.setImageResource(if (playAudio) R.drawable.ic_action_speaker_max else R.drawable.ic_action_speaker_muted)
-        (playerView.player as? SimpleExoPlayer)?.apply {
-          volume = if (playAudio) 1f else 0f
+        volumeButton?.setImageResource(if (playAudio) R.drawable.ic_action_speaker_max else R.drawable.ic_action_speaker_muted)
+        (playerView?.player as? SimpleExoPlayer)?.apply {
+            volume = if (playAudio) 1f else 0f
         }
     }
 
