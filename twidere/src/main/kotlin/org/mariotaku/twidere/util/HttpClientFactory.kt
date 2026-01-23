@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Base64
 import android.util.Log
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.mariotaku.kpreferences.get
 import org.mariotaku.ktextension.toIntOr
 import org.mariotaku.restfu.http.RestHttpClient
@@ -41,7 +42,7 @@ object HttpClientFactory {
         updateHttpClientConfiguration(builder, conf, dns, connectionPool, cache)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             val tlsTocketFactory = TLSSocketFactory()
-            builder.sslSocketFactory(tlsTocketFactory, tlsTocketFactory.trustManager)
+            builder.sslSocketFactory(tlsTocketFactory, tlsTocketFactory.trustManager ?: systemDefaultTrustManager())
         }
         updateTLSConnectionSpecs(builder)
         DebugModeUtils.initForOkHttpClient(builder)
@@ -99,19 +100,19 @@ object HttpClientFactory {
             val find = format.findAnyOf(urlSupportedPatterns, startIndex) ?: break
             sb.append(format, startIndex, find.first)
             sb.append(when (find.second) {
-                "[SCHEME]" -> url.scheme()
-                "[HOST]" -> url.host()
-                "[PORT]" -> url.port()
+                "[SCHEME]" -> url.scheme
+                "[HOST]" -> url.host
+                "[PORT]" -> url.port
                 "[AUTHORITY]" -> url.authority()
-                "[PATH]" -> url.encodedPath().removePrefix("/")
-                "[/PATH]" -> url.encodedPath().orEmpty()
-                "[PATH_ENCODED]" -> url.encodedPath().removePrefix("/").urlEncoded()
-                "[QUERY]" -> url.encodedQuery().orEmpty()
-                "[?QUERY]" -> url.encodedQuery()?.prefix("?").orEmpty()
-                "[QUERY_ENCODED]" -> url.encodedQuery()?.urlEncoded()
-                "[FRAGMENT]" -> url.encodedFragment().orEmpty()
-                "[#FRAGMENT]" -> url.encodedFragment()?.prefix("#").orEmpty()
-                "[FRAGMENT_ENCODED]" -> url.encodedFragment()?.urlEncoded()
+                "[PATH]" -> url.encodedPath.removePrefix("/")
+                "[/PATH]" -> url.encodedPath.orEmpty()
+                "[PATH_ENCODED]" -> url.encodedPath.removePrefix("/").urlEncoded()
+                "[QUERY]" -> url.encodedQuery.orEmpty()
+                "[?QUERY]" -> url.encodedQuery?.prefix("?").orEmpty()
+                "[QUERY_ENCODED]" -> url.encodedQuery?.urlEncoded()
+                "[FRAGMENT]" -> url.encodedFragment.orEmpty()
+                "[#FRAGMENT]" -> url.encodedFragment?.prefix("#").orEmpty()
+                "[FRAGMENT_ENCODED]" -> url.encodedFragment?.urlEncoded()
                 "[URL_ENCODED]" -> url.toString().urlEncoded()
                 "[URL_BASE64]" -> Base64.encodeToString(url.toString().toByteArray(Charsets.UTF_8),
                         Base64.URL_SAFE)
@@ -163,9 +164,9 @@ object HttpClientFactory {
     }
 
     private fun HttpUrl.authority(): String {
-        val host = host()
-        val port = port()
-        if (port == HttpUrl.defaultPort(scheme())) return host
+        val host = this.host
+        val port = this.port
+        if (port == HttpUrl.defaultPort(this.scheme)) return host
         return "$host%3A$port"
     }
 
@@ -224,8 +225,8 @@ object HttpClientFactory {
                     val address = InetSocketAddress.createUnresolved(proxyHost, proxyPort)
                     builder.proxy(Proxy(Proxy.Type.HTTP, address))
                     builder.proxyAuthenticator { _, response ->
-                        val b = response.request().newBuilder()
-                        if (response.code() == 407) {
+                        val b = response.request.newBuilder()
+                        if (response.code == 407) {
                         if (username != null && password != null) {
                             val credential = Credentials.basic(username, password)
                             b.header("Proxy-Authorization", credential)
@@ -234,8 +235,8 @@ object HttpClientFactory {
                         b.build()
                     }
                     builder.authenticator { _, response ->
-                        val b = response.request().newBuilder()
-                        if (response.code() == 407) {
+                        val b = response.request.newBuilder()
+                        if (response.code == 407) {
                             if (username != null && password != null) {
                                 val credential = Credentials.basic(username, password)
                                 b.header("Proxy-Authorization", credential)
@@ -261,12 +262,12 @@ object HttpClientFactory {
 
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            val url = request.url()
+            val url = request.url
             val builder = request.newBuilder()
-            val replacedUrl = HttpUrl.parse(replaceUrl(url, proxyFormat)) ?: run {
+            val replacedUrl = replaceUrl(url, proxyFormat).toHttpUrlOrNull() ?: run {
                 throw IOException("Invalid reverse proxy format")
             }
-            builder.url(replacedUrl)
+            builder.url(replacedUrl as HttpUrl)
             if (proxyUsername != null && proxyPassword != null) {
                 val headerValue = Base64.encodeToString("$proxyUsername:$proxyPassword".toByteArray(Charsets.UTF_8),
                         Base64.URL_SAFE)

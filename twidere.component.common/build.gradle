@@ -58,8 +58,6 @@ android {
     defaultConfig {
         minSdkVersion globalMinSdkVersion
         targetSdkVersion globalTargetSdkVersion
-        versionCode projectVersionCode
-        versionName projectVersionName
     }
 
     buildTypes {
@@ -74,6 +72,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        aidl true
+    }
+    namespace 'org.mariotaku.twidere.common'
 }
 
 dependencies {

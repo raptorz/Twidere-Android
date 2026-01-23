@@ -23,6 +23,7 @@ import android.content.Context
 import androidx.annotation.WorkerThread
 import android.text.TextUtils
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.attoparser.ParseException
 import org.attoparser.config.ParseConfiguration
 import org.attoparser.simple.AbstractSimpleMarkupHandler
@@ -201,7 +202,7 @@ class UserTimelineLoader(
             if (atomLink != null || elementName != "link" || attributes == null) return
             if (attributes["rel"] == "alternate" && attributes["type"] == "application/atom+xml") {
                 val href = attributes["href"] ?: return
-                atomLink = HttpUrl.parse(profileUrl)?.resolve(href)?.toString()
+                atomLink = profileUrl.toHttpUrlOrNull()?.resolve(href)?.toString()
             }
         }
     }

@@ -80,7 +80,7 @@ class TwidereGlideModule : AppGlideModule() {
                 builder.removeHeader(HEADER_NO_THUMBOR)
                 return false
             }
-            builder.url(thumbor.buildUri(original.url().toString()))
+            builder.url(thumbor.buildUri(original.url.toString()))
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 builder.header("Accept", "image/webp, */*")
             }
@@ -100,4 +100,3 @@ class TwidereGlideModule : AppGlideModule() {
 
     }
 }
-

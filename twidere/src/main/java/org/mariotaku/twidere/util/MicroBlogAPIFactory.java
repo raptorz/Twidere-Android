@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import kotlin.Pair;
 import okhttp3.HttpUrl;
-import okhttp3.internal.Version;
 
 /**
  * Created by mariotaku on 15/5/7.
@@ -192,8 +191,10 @@ public class MicroBlogAPIFactory implements TwidereConstants {
         final PackageManager pm = context.getPackageManager();
         try {
             final PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-            return String.format(Locale.US, "%s/%s %s Android/%s", TWIDERE_APP_NAME,
-                    pi.versionName, Version.userAgent(), Build.VERSION.RELEASE);
+            // okhttp3.internal.Version was removed in OkHttp 4.x
+            // Build user agent manually: okhttp/x.y.z
+            return String.format(Locale.US, "%s/%s okhttp/4.9.2 Android/%s", TWIDERE_APP_NAME,
+                    pi.versionName, Build.VERSION.RELEASE);
         } catch (final PackageManager.NameNotFoundException e) {
             throw new AssertionError(e);
         }

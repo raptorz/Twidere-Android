@@ -18,6 +18,7 @@ import android.widget.ListView
 import android.widget.TextView
 import com.rengwuxian.materialedittext.MaterialEditText
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.mariotaku.twidere.databinding.LayoutListWithEmptyViewBinding
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.ktextension.*
@@ -312,7 +313,7 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
 
                 fun updateEnableState() {
                     val nameValid = !editName.empty
-                    val urlValid = HttpUrl.parse(editUrl.text.toString()) != null
+                    val urlValid = editUrl.text.toString().toHttpUrlOrNull() != null
                     positiveButton.isEnabled = nameValid && urlValid
                 }
 
@@ -344,5 +345,3 @@ class FiltersSubscriptionsFragment : BaseFragment(), LoaderManager.LoaderCallbac
         private const val FRAGMENT_TAG_REFRESH_FILTERS = "refresh_filters"
     }
 }
-
-

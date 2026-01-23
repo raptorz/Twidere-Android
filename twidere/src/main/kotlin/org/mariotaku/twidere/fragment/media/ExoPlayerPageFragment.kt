@@ -432,12 +432,12 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
         override val fileName: String? = uri.lastPathSegment
 
         override val mimeType: String?
-            get() = request().body()?.contentType()?.toString()
+            get() = request().body?.contentType()?.toString()
 
         override val specialCharacter: Char = '_'
 
         override fun inputStream(): InputStream {
-            return request().body()!!.byteStream()
+            return request().body!!.byteStream()
         }
 
         override fun close() {

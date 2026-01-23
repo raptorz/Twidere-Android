@@ -1,3 +1,4 @@
 include ':twidere'
 include ':twidere.component.common'
 include ':twidere.component.nyan'
+include ':imgenie-plugin'

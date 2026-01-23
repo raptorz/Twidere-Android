@@ -41,3 +41,5 @@ hs_err_*.log
 .externalNativeBuild/
 twidere/fdroid
 *.backup
+.vscode
+imgenie-plugin

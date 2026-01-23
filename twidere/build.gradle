@@ -21,7 +21,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath 'com.github.mariotaku:imgenie-plugin:0.2.6'
+        classpath 'com.github.mariotaku:imgenie-plugin:0.2.7'
 
         if (enableGoogleVariant) {
             // START Non-FOSS component
@@ -145,6 +145,7 @@ android {
         exclude 'sdk-version.txt'
         exclude 'build-data.properties'
     }
+    namespace 'org.mariotaku.twidere'
 }
 
 task buildTranslationArray {
@@ -167,6 +168,31 @@ task buildTranslationArray {
 
 preBuild.dependsOn buildTranslationArray
 
+// Fix Gradle task dependency validation for imgenie plugin
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        def generateImage = "generate${variant.name.capitalize()}ImageAssets"
+        def mapSourceSetPaths = "map${variant.name.capitalize()}SourceSetPaths"
+        def extractDeepLinks = "extractDeepLinks${variant.name.capitalize()}"
+        def generateResources = "generate${variant.name.capitalize()}Resources"
+        def generateImageAssetsTask = tasks.findByName(generateImage)
+        def mapSourceSetPathsTask = tasks.findByName(mapSourceSetPaths)
+        def extractDeepLinksTask = tasks.findByName(extractDeepLinks)
+        def generateResourcesTask = tasks.findByName(generateResources)
+        if (generateImageAssetsTask != null) {
+            if (mapSourceSetPathsTask != null) {
+                mapSourceSetPathsTask.dependsOn generateImageAssetsTask
+            }
+            if (extractDeepLinksTask != null) {
+                extractDeepLinksTask.dependsOn generateImageAssetsTask
+            }
+            if (generateResourcesTask != null) {
+                generateResourcesTask.dependsOn generateImageAssetsTask
+            }
+        }
+    }
+}
+
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
@@ -177,10 +203,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 kapt {
     correctErrorTypes = true
     useBuildCache = true
-    arguments {
-        arg("kapt.processing.incremental", "true")
-        arg("kapt.kotlin.generated", "build/generated/source/kapt")
-    }
 }
 
 ext {
@@ -232,7 +254,7 @@ dependencies {
     implementation 'com.commonsware.cwac:layouts:0.4.5'
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
     implementation 'com.pnikosis:materialish-progress:1.7'
-    implementation 'com.github.uucky:ColorPicker-Android:0.9.7@aar'
+    implementation 'com.github.uucky:ColorPicker-Android:0.9.6@aar'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
     implementation 'com.sprylab.android.texturevideoview:texturevideoview:1.2.1'
     implementation 'com.squareup:pollexor:2.0.4'
@@ -245,7 +267,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:${sharedVersions['Jackson']}"
     implementation "com.hannesdorfmann.parcelableplease:annotation:${sharedVersions['ParcelablePlease']}"
     kapt "com.hannesdorfmann.parcelableplease:processor:${sharedVersions['ParcelablePlease']}"
-    implementation 'com.squareup.okhttp3:okhttp:3.12.12'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
     implementation 'com.squareup.okio:okio:2.9.0'
 //    implementation 'com.lnikkila:extendedtouchview:0.1.1'
     implementation "com.google.dagger:dagger:${libVersions['Dagger']}"

@@ -27,6 +27,7 @@ import android.net.Uri
 import android.os.BadParcelableException
 import androidx.core.content.ContextCompat
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.mariotaku.kpreferences.get
 import org.mariotaku.twidere.TwidereConstants.USER_TYPE_TWITTER_COM
 import org.mariotaku.twidere.activity.WebLinkHandlerActivity
@@ -134,8 +135,15 @@ open class OnLinkClickHandler(
         if (manager != null && manager.isActive) return
         val uri = Uri.parse(link)
         if (uri.isRelative && accountKey != null && accountKey.host != null) {
-            val absUri = HttpUrl.parse("http://${accountKey.host}/")?.resolve(link)?.toUri()!!
-            openLink(context, preferences, absUri)
+            val hostString = accountKey.host.toString()
+            val baseUrl = "http://$hostString/".toHttpUrlOrNull()
+            val absUrlString = if (baseUrl != null) {
+                baseUrl.resolve(link)?.toString()
+            } else {
+                link
+            }
+            val finalUri = Uri.parse(absUrlString)
+            openLink(context, preferences, finalUri)
             return
         }
         openLink(context, preferences, uri)
@@ -207,4 +215,3 @@ open class OnLinkClickHandler(
         }
     }
 }
-

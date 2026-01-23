@@ -21,6 +21,7 @@ package org.mariotaku.twidere.util
 
 import android.text.TextUtils
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.attoparser.ParseException
@@ -406,22 +407,20 @@ class OAuthPasswordAuthenticator(
             val location = response.header("Location")
             val builder = response.newBuilder()
             if (!TextUtils.isEmpty(location) && !endpoint.checkEndpoint(location)) {
-                val originalLocation = HttpUrl.parse("https://api.twitter.com/")?.resolve(location)!!
-                val locationBuilder = HttpUrl.parse(endpoint.url)!!.newBuilder()
-                for (pathSegments in originalLocation.pathSegments()) {
-                    locationBuilder.addPathSegment(pathSegments)
-                }
-                for (i in 0 until originalLocation.querySize()) {
-                    val name = originalLocation.queryParameterName(i)
-                    val value = originalLocation.queryParameterValue(i)
-                    locationBuilder.addQueryParameter(name, value)
-                }
-                val encodedFragment = originalLocation.encodedFragment()
-                if (encodedFragment != null) {
-                    locationBuilder.encodedFragment(encodedFragment)
-                }
-                val newLocation = locationBuilder.build()
-                builder.header("Location", newLocation.toString())
+                // Rewrite location URL to use custom endpoint
+                val baseUrl = "https://api.twitter.com/".toHttpUrlOrNull() ?: return@intercept response
+                val originalLocation = baseUrl.resolve(location!!) ?: return@intercept response
+                
+                // Get custom endpoint URL
+                val customEndpointUrlStr = endpoint.url ?: return@intercept response
+                val customEndpointUrl = customEndpointUrlStr.toHttpUrlOrNull() ?: return@intercept response
+                
+                // Build new URL with custom endpoint scheme and host
+                val newUrl = originalLocation.newBuilder()
+                        .scheme(customEndpointUrl.scheme)
+                        .host(customEndpointUrl.host)
+                        .build()
+                builder.header("Location", newUrl.toString())
             }
             return builder.build()
         }

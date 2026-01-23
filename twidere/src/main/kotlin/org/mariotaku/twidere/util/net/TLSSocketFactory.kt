@@ -20,7 +20,6 @@
 package org.mariotaku.twidere.util.net
 
 import okhttp3.ConnectionSpec
-import okhttp3.internal.Internal
 import java.io.IOException
 import java.net.InetAddress
 import java.net.Socket
@@ -79,7 +78,8 @@ class TLSSocketFactory : SSLSocketFactory() {
         if (this !is SSLSocket) return this
         this.enabledProtocols = this.supportedProtocols
         this.enabledCipherSuites = this.enabledCipherSuites
-        Internal.instance.apply(ConnectionSpec.MODERN_TLS, this, false)
+        // Internal API has been removed in newer OkHttp versions
+        // ConnectionSpec is applied automatically by OkHttp
         return this
     }
 
