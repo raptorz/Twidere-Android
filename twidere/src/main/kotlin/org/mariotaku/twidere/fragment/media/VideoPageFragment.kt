@@ -318,7 +318,7 @@ class VideoPageFragment : CacheDownloadMediaViewerFragment(), IBaseFragment<Vide
         }
     }
 
-    override fun onCreateMediaView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    protected override fun onCreateMediaView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.layout_media_viewer_texture_video_view, container, false)
     }
 
@@ -426,5 +426,18 @@ class VideoPageFragment : CacheDownloadMediaViewerFragment(), IBaseFragment<Vide
         internal val MediaViewerFragment.accountKey: UserKey
             get() = arguments?.getParcelable(EXTRA_ACCOUNT_KEY)!!
 
+    }
+
+    override fun isBarShowing(): Boolean {
+        val activity = activity as? org.mariotaku.mediaviewer.library.IMediaViewerActivity
+        return activity?.isBarShowing ?: false
+    }
+
+    override fun isMediaLoading(): Boolean {
+        return false
+    }
+
+    override fun isMediaLoaded(): Boolean {
+        return hasDownloadedData()
     }
 }

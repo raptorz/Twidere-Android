@@ -39,7 +39,7 @@ import pl.droidsonroids.gif.InputSource
 class GifPageFragment : CacheDownloadMediaViewerFragment() {
 
     private var _binding: LayoutMediaViewerGifBinding? = null
-    private val binding get() = _binding!!
+    private val gifBinding get() = _binding!!
 
     private val media: ParcelableMedia
         get() = arguments?.getParcelable(EXTRA_MEDIA)!!
@@ -49,7 +49,7 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        binding.gifView.setOnClickListener { (activity as MediaViewerActivity).toggleBar() }
+        gifBinding.gifView.setOnClickListener { (activity as MediaViewerActivity).toggleBar() }
         startLoading(false)
     }
 
@@ -65,9 +65,9 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
         val context = context ?: return
         val cacheUri = result.cacheUri
         if (cacheUri != null) {
-            binding.gifView.setInputSource(InputSource.UriSource(context.contentResolver, cacheUri))
+            gifBinding.gifView.setInputSource(InputSource.UriSource(context.contentResolver, cacheUri))
         } else {
-            binding.gifView.setInputSource(null)
+            gifBinding.gifView.setInputSource(null)
         }
     }
 
@@ -77,11 +77,11 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
 
     override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup, savedInstanceState: Bundle?): View {
         _binding = LayoutMediaViewerGifBinding.inflate(inflater, parent, false)
-        return binding.root
+        return gifBinding.root
     }
 
     override fun releaseMediaResources() {
-        binding.gifView.setInputSource(null)
+        gifBinding.gifView.setInputSource(null)
     }
 
     override fun onDestroyView() {
@@ -89,4 +89,16 @@ class GifPageFragment : CacheDownloadMediaViewerFragment() {
         _binding = null
     }
 
+    override fun isBarShowing(): Boolean {
+        val activity = activity as? org.mariotaku.mediaviewer.library.IMediaViewerActivity
+        return activity?.isBarShowing ?: false
+    }
+
+    override fun isMediaLoading(): Boolean {
+        return false
+    }
+
+    override fun isMediaLoaded(): Boolean {
+        return hasDownloadedData()
+    }
 }

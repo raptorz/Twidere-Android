@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'imgenie'
 
+// Disable google services plugin to avoid build issues
 buildscript {
     ext {
         enableGoogleVariant = project.file('google-services.json').exists()
@@ -21,7 +22,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath 'com.github.mariotaku:imgenie-plugin:0.2.7'
+        classpath 'com.github.mariotaku:imgenie-plugin:0.2.8'
 
         if (enableGoogleVariant) {
             // START Non-FOSS component
@@ -37,11 +38,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion globalCompileSdkVersion
+    compileSdk globalCompileSdkVersion
     buildToolsVersion globalBuildToolsVersion
     
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     defaultConfig {
@@ -168,32 +170,6 @@ task buildTranslationArray {
 
 preBuild.dependsOn buildTranslationArray
 
-// Fix Gradle task dependency validation for imgenie plugin
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        def generateImage = "generate${variant.name.capitalize()}ImageAssets"
-        def mapSourceSetPaths = "map${variant.name.capitalize()}SourceSetPaths"
-        def extractDeepLinks = "extractDeepLinks${variant.name.capitalize()}"
-        def generateResources = "generate${variant.name.capitalize()}Resources"
-        def generateImageAssetsTask = tasks.findByName(generateImage)
-        def mapSourceSetPathsTask = tasks.findByName(mapSourceSetPaths)
-        def extractDeepLinksTask = tasks.findByName(extractDeepLinks)
-        def generateResourcesTask = tasks.findByName(generateResources)
-        if (generateImageAssetsTask != null) {
-            if (mapSourceSetPathsTask != null) {
-                mapSourceSetPathsTask.dependsOn generateImageAssetsTask
-            }
-            if (extractDeepLinksTask != null) {
-                extractDeepLinksTask.dependsOn generateImageAssetsTask
-            }
-            if (generateResourcesTask != null) {
-                generateResourcesTask.dependsOn generateImageAssetsTask
-            }
-        }
-    }
-}
-
-
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
         jvmTarget = "1.8"
@@ -212,7 +188,6 @@ ext {
             Dagger            : '2.40.5',
             Exoplayer         : '2.13.2',
             Glide             : '4.11.0',
-            MediaViewerLibrary: '0.9.23',
             Stetho            : '1.5.1',
     ]
 }
@@ -301,8 +276,8 @@ dependencies {
     implementation "com.github.mariotaku.CommonsLibrary:text:${sharedVersions['MariotakuCommons']}"
     implementation "com.github.mariotaku.CommonsLibrary:text-kotlin:${sharedVersions['MariotakuCommons']}"
     implementation 'com.github.mariotaku:KPreferences:0.9.8'
-    implementation "com.github.mariotaku.MediaViewerLibrary:base:${libVersions['MediaViewerLibrary']}"
-    implementation "com.github.mariotaku.MediaViewerLibrary:subsample-image-view:${libVersions['MediaViewerLibrary']}"
+    implementation project(':MediaViewerLibrary:base')
+    implementation project(':MediaViewerLibrary:subsample-image-view')
     implementation 'com.github.mariotaku:MessageBubbleView:3.5'
     implementation "com.github.mariotaku.ObjectCursor:core:${sharedVersions['ObjectCursor']}"
     kapt "com.github.mariotaku.ObjectCursor:processor:${sharedVersions['ObjectCursor']}"
@@ -362,4 +337,42 @@ if (enableGoogleVariant) {
 // START Non-FOSS component
     apply plugin: 'com.google.gms.google-services'
 // END Non-FOSS component
+}
+
+imageAssets {
+    outputFormat = org.mariotaku.imgenie.model.OutputFormat.PNG
+    outputDensities = [
+        org.mariotaku.imgenie.android.resources.Density.MEDIUM,
+        org.mariotaku.imgenie.android.resources.Density.HIGH,
+        org.mariotaku.imgenie.android.resources.Density.XHIGH,
+        org.mariotaku.imgenie.android.resources.Density.XXHIGH,
+        org.mariotaku.imgenie.android.resources.Density.XXXHIGH
+    ]
+    allowOverride = true
+}
+
+// Fix Gradle task dependency validation for imgenie plugin
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        def generateImageAssetsTask = tasks.findByName("generate${variant.name.capitalize()}ImageAssets")
+        def generateResourcesTask = tasks.findByName("generate${variant.name.capitalize()}Resources")
+        def mapSourceSetPathsTask = tasks.findByName("map${variant.name.capitalize()}SourceSetPaths")
+        def extractDeepLinksTask = tasks.findByName("extractDeepLinks${variant.name.capitalize()}")
+        def mergeResourcesTask = tasks.findByName("merge${variant.name.capitalize()}Resources")
+        
+        if (generateImageAssetsTask != null) {
+            if (generateResourcesTask != null) {
+                generateResourcesTask.dependsOn generateImageAssetsTask
+            }
+            if (mapSourceSetPathsTask != null) {
+                mapSourceSetPathsTask.dependsOn generateImageAssetsTask
+            }
+            if (extractDeepLinksTask != null) {
+                extractDeepLinksTask.dependsOn generateImageAssetsTask
+            }
+            if (mergeResourcesTask != null) {
+                mergeResourcesTask.dependsOn generateImageAssetsTask
+            }
+        }
+    }
 }

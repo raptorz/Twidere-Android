@@ -46,7 +46,6 @@ import nl.komponents.kovenant.ui.successUi
 import org.mariotaku.chameleon.Chameleon
 import org.mariotaku.ktextension.*
 import org.mariotaku.mediaviewer.library.*
-import org.mariotaku.mediaviewer.library.subsampleimageview.SubsampleImageViewerFragment.EXTRA_MEDIA_URI
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.*
 import org.mariotaku.twidere.activity.iface.IControlBarActivity.ControlBarShowHideHelper
@@ -214,8 +213,8 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
         super.onPrepareOptionsMenu(menu)
         val obj = currentFragment ?: return false
         if (obj.isDetached || obj.host == null) return false
-        val running = obj.isMediaLoading
-        val downloaded = obj.isMediaLoaded
+        val running = obj.isMediaLoading()
+        val downloaded = obj.isMediaLoaded()
         val supportedSaveTo = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
         menu.setItemAvailability(R.id.refresh, !running && !downloaded)
         menu.setItemAvailability(R.id.share, !running && downloaded)
@@ -320,6 +319,20 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
         setBarVisibility(!isBarShowing)
     }
 
+    override val isBarShowing: Boolean
+        get() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                return FLAG_SYSTEM_UI_HIDE_BARS !in window.decorView.systemUiVisibility
+            }
+            return controlBarOffset >= 1
+        }
+
+    override val downloader: MediaDownloader
+        get() = mediaDownloader
+
+    override val fileCache: FileCache
+        get() = mediaFileCache
+
     override fun getInitialPosition(): Int {
         return media.indexOf(initialMedia)
     }
@@ -330,13 +343,6 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
 
     override fun findViewPager(): ViewPager {
         return binding.viewPager
-    }
-
-    override fun isBarShowing(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return FLAG_SYSTEM_UI_HIDE_BARS !in window.decorView.systemUiVisibility
-        }
-        return controlBarOffset >= 1
     }
 
     override fun setBarVisibility(visible: Boolean) {
@@ -352,14 +358,6 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
         }
     }
 
-    override fun getDownloader(): MediaDownloader {
-        return mediaDownloader
-    }
-
-    override fun getFileCache(): FileCache {
-        return mediaFileCache
-    }
-
     @SuppressLint("SwitchIntDef")
     override fun instantiateMediaFragment(position: Int): MediaViewerFragment {
         val media = media[position]
@@ -371,7 +369,6 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
         when (media.type) {
             ParcelableMedia.Type.IMAGE -> {
                 val mediaUrl = media.media_url ?: return Fragment.instantiate(this, ExternalBrowserPageFragment::class.java.name, args) as MediaViewerFragment
-                args.putParcelable(EXTRA_MEDIA_URI, Uri.parse(mediaUrl))
                 return if (mediaUrl.endsWith(".gif")) {
                     Fragment.instantiate(this, GifPageFragment::class.java.name, args) as MediaViewerFragment
                 } else {

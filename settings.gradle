@@ -1,4 +1,7 @@
 include ':twidere'
 include ':twidere.component.common'
 include ':twidere.component.nyan'
+include ':MediaViewerLibrary'
+include ':MediaViewerLibrary:base'
+include ':MediaViewerLibrary:subsample-image-view'
 include ':imgenie-plugin'

@@ -43,3 +43,4 @@ twidere/fdroid
 *.backup
 .vscode
 imgenie-plugin
+*.bak

@@ -300,7 +300,7 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
         }
     }
 
-    override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup?, savedInstanceState: Bundle?): View {
+    protected override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.layout_media_viewer_exo_player_view, parent, false)
     }
 
@@ -338,6 +338,11 @@ class ExoPlayerPageFragment : MediaViewerFragment(), IBaseFragment<ExoPlayerPage
 
     override fun isMediaLoading(): Boolean {
         return false
+    }
+
+    override fun isBarShowing(): Boolean {
+        val activity = activity as? org.mariotaku.mediaviewer.library.IMediaViewerActivity
+        return activity?.isBarShowing ?: false
     }
 
     private fun releasePlayer() {

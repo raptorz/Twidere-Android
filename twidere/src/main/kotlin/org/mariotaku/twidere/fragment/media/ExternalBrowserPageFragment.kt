@@ -34,41 +34,41 @@ import org.mariotaku.twidere.databinding.LayoutMediaViewerBrowserFragmentBinding
 class ExternalBrowserPageFragment : MediaViewerFragment() {
 
     private var _binding: LayoutMediaViewerBrowserFragmentBinding? = null
-    private val binding get() = _binding!!
+    private val browserBinding get() = _binding!!
 
     override fun onCreateMediaView(inflater: LayoutInflater, parent: ViewGroup,
             savedInstanceState: Bundle?): View {
         _binding = LayoutMediaViewerBrowserFragmentBinding.inflate(inflater, parent, false)
-        return binding.root
+        return browserBinding.root
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val webSettings = binding.webView.settings
+        val webSettings = browserBinding.webView.settings
         webSettings.javaScriptEnabled = true
         webSettings.loadsImagesAutomatically = true
         val media = arguments?.getParcelable<ParcelableMedia>(EXTRA_MEDIA) ?: throw NullPointerException()
         val target = if (TextUtils.isEmpty(media.media_url)) media.url else media.media_url
         target?.let {
-            binding.webView.loadUrl(it)
+            browserBinding.webView.loadUrl(it)
         }
-        binding.webViewContainer.setAspectRatioSource(VideoPageFragment.MediaAspectRatioSource(media, this))
+        browserBinding.webViewContainer.setAspectRatioSource(VideoPageFragment.MediaAspectRatioSource(media, this))
     }
 
     override fun onResume() {
         super.onResume()
-        binding.webView.onResume()
+        browserBinding.webView.onResume()
     }
 
 
     override fun onPause() {
-        binding.webView.onPause()
+        browserBinding.webView.onPause()
         super.onPause()
     }
 
     override fun onDestroy() {
-        binding.webView.destroy()
+        browserBinding.webView.destroy()
         super.onDestroy()
     }
 
@@ -82,6 +82,10 @@ class ExternalBrowserPageFragment : MediaViewerFragment() {
     }
 
     override fun isMediaLoading(): Boolean {
+        return false
+    }
+
+    override fun isBarShowing(): Boolean {
         return false
     }
 
