@@ -7,7 +7,6 @@ import android.widget.FrameLayout;
 
 public class ExtendedTouchView extends FrameLayout {
     private final AppCompatImageButton imageButton;
-    
     public ExtendedTouchView(Context context) {
         this(context, null);
     }
