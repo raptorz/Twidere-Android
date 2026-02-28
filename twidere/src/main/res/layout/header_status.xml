@@ -72,7 +72,7 @@
             app:sivBorderWidth="1dp"
             tools:src="@drawable/ic_profile_image_twidere"/>
 
-        <ImageView
+        <org.mariotaku.twidere.view.BoundsImageView
             android:id="@+id/profileType"
             android:layout_width="@dimen/icon_size_profile_type_detail"
             android:layout_height="@dimen/icon_size_profile_type_detail"
@@ -304,13 +304,12 @@
         android:layout_below="@+id/linkPreview"
         android:visibility="gone"/>
 
-    <org.mariotaku.twidere.view.ColorLabelLinearLayout
+    <org.mariotaku.twidere.view.ColorLabelRelativeLayout
         android:id="@+id/quotedView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/twitterCard"
         android:background="?selectableItemBackground"
-        android:orientation="vertical"
         android:padding="@dimen/element_spacing_normal"
         app:ignorePadding="false">
 
@@ -383,7 +382,7 @@
 
         </org.mariotaku.twidere.view.CardMediaContainer>
 
-    </org.mariotaku.twidere.view.ColorLabelLinearLayout>
+    </org.mariotaku.twidere.view.ColorLabelRelativeLayout>
 
     <org.mariotaku.twidere.view.ActionIconThemedTextView
         android:id="@+id/locationView"
