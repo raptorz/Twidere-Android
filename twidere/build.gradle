@@ -234,7 +234,7 @@ dependencies {
     implementation 'com.commonsware.cwac:layouts:0.4.5'
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
     implementation 'com.pnikosis:materialish-progress:1.7'
-    implementation 'com.github.uucky:ColorPicker-Android:0.9.7@aar'
+    implementation 'com.github.uucky:ColorPicker-Android:master-SNAPSHOT@aar'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
     implementation 'com.sprylab.android.texturevideoview:texturevideoview:1.2.1'
     implementation 'com.squareup:pollexor:2.0.4'
