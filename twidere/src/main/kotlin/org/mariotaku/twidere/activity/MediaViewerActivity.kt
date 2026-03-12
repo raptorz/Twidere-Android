@@ -161,12 +161,11 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         }
         super.onCreate(savedInstanceState)
-        binding = ActivityMediaViewerBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        GeneralComponent.get(this).inject(this)
         mediaViewerHelper = IMediaViewerActivity.Helper(this)
         controlBarShowHideHelper = ControlBarShowHideHelper(this)
         mediaViewerHelper.onCreate(savedInstanceState)
+        binding = ActivityMediaViewerBinding.bind(findViewById(R.id.activityLayout))
+        GeneralComponent.get(this).inject(this)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.elevation = 0f
         binding.swipeContainer.listener = this
@@ -200,7 +199,9 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
 
     override fun onContentChanged() {
         super.onContentChanged()
-        mediaViewerHelper.onContentChanged()
+        if (::mediaViewerHelper.isInitialized) {
+            mediaViewerHelper.onContentChanged()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -342,7 +343,11 @@ class MediaViewerActivity : BaseActivity(), IMediaViewerActivity, MediaSwipeClos
     }
 
     override fun findViewPager(): ViewPager {
-        return binding.viewPager
+        return if (::binding.isInitialized) {
+            binding.viewPager
+        } else {
+            findViewById(R.id.viewPager)
+        }
     }
 
     override fun setBarVisibility(visible: Boolean) {
