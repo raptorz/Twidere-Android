@@ -158,7 +158,7 @@ abstract class AbsContentListViewFragment<A : ListAdapter> : BaseFragment(),
         binding.listView.clipToPadding = false
         overrideDivider?.let { binding.listView.divider = it }
         scrollHandler = ListViewScrollHandler(this, ListViewScrollHandler.ListViewCallback(binding.listView)).apply {
-            this.touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+            this.touchSlop = ViewConfiguration.get(context!!).scaledTouchSlop
             this.onScrollListener = this@AbsContentListViewFragment
         }
     }

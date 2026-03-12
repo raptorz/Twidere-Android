@@ -224,8 +224,8 @@ object MenuUtils {
             shareItem.hasSubMenu() -> {
                 val shareSubMenu = shareItem.subMenu
                 val shareIntent = Utils.createStatusShareIntent(context, status)
-                shareSubMenu.removeGroup(MENU_GROUP_STATUS_SHARE)
-                addIntentToMenu(context, shareSubMenu, shareIntent, MENU_GROUP_STATUS_SHARE)
+                shareSubMenu?.removeGroup(MENU_GROUP_STATUS_SHARE)
+                shareSubMenu?.let { addIntentToMenu(context, it, shareIntent, MENU_GROUP_STATUS_SHARE) }
             }
             else -> {
                 val shareIntent = Utils.createStatusShareIntent(context, status)

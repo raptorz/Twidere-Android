@@ -332,10 +332,12 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         val mediaMenuItem = menu.findItem(R.id.status_attachment)
         if (mediaMenuItem != null && mediaMenuItem.hasSubMenu()) {
             val subMenu = mediaMenuItem.subMenu
-            MenuUtils.addIntentToMenu(this, subMenu, composeExtensionsIntent,
-                    MENU_GROUP_COMPOSE_EXTENSION)
-            MenuUtils.addIntentToMenu(this, subMenu, imageExtensionsIntent,
-                    MENU_GROUP_IMAGE_EXTENSION)
+            subMenu?.let {
+                MenuUtils.addIntentToMenu(this, it, composeExtensionsIntent,
+                        MENU_GROUP_COMPOSE_EXTENSION)
+                MenuUtils.addIntentToMenu(this, it, imageExtensionsIntent,
+                        MENU_GROUP_IMAGE_EXTENSION)
+            }
         }
         updateViewStyle()
         bottomMenuAnimator.showView(binding.composeMenu, false)

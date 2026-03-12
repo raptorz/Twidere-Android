@@ -447,12 +447,18 @@ object Utils {
     }
 
 
+    @Deprecated("NFC Beam is deprecated in API 29 and removed in API 35")
     fun setNdefPushMessageCallback(activity: Activity, callback: CreateNdefMessageCallback): Boolean {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return false
+        }
         try {
             val adapter = NfcAdapter.getDefaultAdapter(activity) ?: return false
-            adapter.setNdefPushMessageCallback(callback, activity)
+            val method = NfcAdapter::class.java.getMethod("setNdefPushMessageCallback",
+                    CreateNdefMessageCallback::class.java, Activity::class.java)
+            method.invoke(adapter, callback, activity)
             return true
-        } catch (e: SecurityException) {
+        } catch (e: Exception) {
             Log.w(LOGTAG, e)
         }
 

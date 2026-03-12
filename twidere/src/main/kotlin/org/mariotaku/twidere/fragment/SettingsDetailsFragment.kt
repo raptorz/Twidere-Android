@@ -80,7 +80,8 @@ class SettingsDetailsFragment : BasePreferenceFragment(), OnSharedPreferenceChan
         super.onStop()
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
+        if (key == null) return
         val preference = findPreference<Preference>(key) ?: return
         val currentActivity = activity ?: return
         val extras = preference.extras

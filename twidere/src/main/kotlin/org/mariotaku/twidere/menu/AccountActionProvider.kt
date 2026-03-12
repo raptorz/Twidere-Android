@@ -38,7 +38,7 @@ class AccountActionProvider(
             for (i in 0 until subMenu.size()) {
                 val item = subMenu.getItem(i)
                 val intent = item.intent
-                intent.getParcelableExtra<AccountDetails>(EXTRA_ACCOUNT)?.let { account ->
+                intent?.getParcelableExtra<AccountDetails>(EXTRA_ACCOUNT)?.let { account ->
                     if (it.contains(account.key)) {
                         item.isChecked = true
                     }

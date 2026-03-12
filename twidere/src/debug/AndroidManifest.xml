@@ -25,21 +25,21 @@
         <activity
             android:name="com.squareup.leakcanary.internal.DisplayLeakActivity"
             android:enabled="false"
+            android:exported="true"
             android:icon="@drawable/leak_canary_icon"
             android:label="@string/leak_canary_display_activity_label"
             android:taskAffinity="com.squareup.leakcanary.${applicationId}"
             android:theme="@style/leak_canary_LeakCanary.Base">
             <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category
-                    android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="org.mariotaku.twidere.HIDDEN_SETTINGS_ENTRY"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+
     </application>
 </manifest>

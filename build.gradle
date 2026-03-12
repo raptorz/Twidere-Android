@@ -20,11 +20,11 @@ allprojects {
         projectVersionCode = 519
         projectVersionName = '4.1.12'
 
-        globalCompileSdkVersion = 30
-        globalBuildToolsVersion = "30.0.3"
+        globalCompileSdkVersion = 35
+        globalBuildToolsVersion = '35.0.1'
 
-        globalMinSdkVersion = 16
-        globalTargetSdkVersion = 30
+        globalMinSdkVersion = 21
+        globalTargetSdkVersion = 35
     }
 
     repositories {

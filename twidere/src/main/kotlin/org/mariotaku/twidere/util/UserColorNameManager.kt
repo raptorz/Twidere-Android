@@ -182,7 +182,8 @@ class UserColorNameManager(context: Context) {
 
     private class OnColorPreferenceChangeListener internal constructor(private val mListener: UserColorChangedListener?) : OnSharedPreferenceChangeListener {
 
-        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
+            if (key == null) return
             val userKey = UserKey.valueOf(key)
             mListener?.onUserColorChanged(userKey, preferences.getInt(key, 0))
         }
@@ -191,7 +192,8 @@ class UserColorNameManager(context: Context) {
 
     private class OnNickPreferenceChangeListener internal constructor(private val mListener: UserNicknameChangedListener?) : OnSharedPreferenceChangeListener {
 
-        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
+            if (key == null) return
             val userKey = UserKey.valueOf(key)
             mListener?.onUserNicknameChanged(userKey, preferences.getString(key, null))
         }

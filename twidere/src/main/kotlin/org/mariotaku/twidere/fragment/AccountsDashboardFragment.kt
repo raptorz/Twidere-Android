@@ -276,7 +276,7 @@ class AccountsDashboardFragment : BaseFragment(), LoaderCallbacks<AccountsInfo>,
     override fun onLoaderReset(loader: Loader<AccountsInfo>) {
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
         if (KEY_DEFAULT_ACCOUNT_KEY == key) {
             updateDefaultAccountState()
         }

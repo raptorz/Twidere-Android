@@ -144,20 +144,20 @@ class CustomTabsFragment : BaseFragment(), LoaderCallbacks<Cursor?>, MultiChoice
         val theme = Chameleon.getOverrideTheme(requireContext(), context)
         if (itemAdd != null && itemAdd.hasSubMenu()) {
             val subMenu = itemAdd.subMenu
-            subMenu.clear()
+            subMenu?.clear()
             for ((type, conf) in TabConfiguration.all()) {
                 val accountRequired = TabAccountFlags.FLAG_ACCOUNT_REQUIRED in conf.accountFlags
-                val subItem = subMenu.add(0, 0, conf.sortPosition, conf.name.createString(context))
+                val subItem = subMenu?.add(0, 0, conf.sortPosition, conf.name.createString(context))
                 val disabledByNoAccount = accountRequired && accounts.none(conf::checkAccountAvailability)
                 val disabledByDuplicateTab = conf.isSingleTab && CustomTabUtils.isTabAdded(context, type)
                 val shouldDisable = disabledByDuplicateTab || disabledByNoAccount
-                subItem.isVisible = !shouldDisable
-                subItem.isEnabled = !shouldDisable
+                subItem?.isVisible = !shouldDisable
+                subItem?.isEnabled = !shouldDisable
                 val icon = conf.icon.createDrawable(context)
                 icon.mutate().setColorFilter(theme.textColorPrimary, Mode.SRC_ATOP)
-                subItem.icon = icon
+                subItem?.icon = icon
                 val weakFragment = WeakReference(this)
-                subItem.setOnMenuItemClickListener {
+                subItem?.setOnMenuItemClickListener {
                     val fragment = weakFragment.get()?.takeUnless(Fragment::isDetached) ?:
                             return@setOnMenuItemClickListener false
                     val adapter = fragment.adapter

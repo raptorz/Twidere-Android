@@ -316,7 +316,7 @@ dependencies {
     debugImplementation "com.facebook.stetho:stetho:${libVersions['Stetho']}"
     debugImplementation "com.facebook.stetho:stetho-okhttp3:${libVersions['Stetho']}"
     debugImplementation 'com.github.mariotaku:StethoBeanShellREPL:0.5'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
     debugImplementation('com.jayway.jsonpath:json-path:2.4.0') {
         exclude group: 'net.minidev', module: 'json-smart'
     }

@@ -157,6 +157,7 @@
 
         <activity
             android:name=".activity.MainActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:launchMode="singleTop"
@@ -177,6 +178,7 @@
         <activity
             android:name=".activity.MainHondaJOJOActivity"
             android:enabled="false"
+            android:exported="true"
             android:icon="@mipmap/ic_launcher_hondajojo"
             android:label="@string/app_name"
             android:launchMode="singleTop"
@@ -196,6 +198,7 @@
         </activity>
         <activity
             android:name=".activity.HomeActivity"
+            android:exported="false"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Twidere.NoActionBar"
@@ -220,6 +223,7 @@
         </activity>
         <activity
             android:name=".activity.ComposeActivity"
+            android:exported="true"
             android:excludeFromRecents="true"
             android:label="@string/title_compose"
             android:launchMode="singleTop"
@@ -262,6 +266,7 @@
         </activity>
         <activity
             android:name=".activity.QuickSearchBarActivity"
+            android:exported="false"
             android:label="@string/title_search"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Twidere.QuickSearchBar"
@@ -274,6 +279,7 @@
         </activity>
         <activity
             android:name=".activity.SignInActivity"
+            android:exported="false"
             android:label="@string/action_sign_in"
             android:theme="@style/Theme.Twidere"
             android:windowSoftInputMode="adjustResize">
@@ -285,20 +291,21 @@
         </activity>
         <activity
             android:name=".activity.BrowserSignInActivity"
+            android:exported="true"
             android:label="@string/title_browser_sign_in"
             android:theme="@style/Theme.Twidere"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="org.mariotaku.twidere.TWITTER_BROWSER_LOGIN"/>
-                
+
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                
+
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                
+
                 <data
                     android:scheme="https"
                     android:host="org.mariotaku.twidere"
@@ -306,10 +313,10 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                
+
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                
+
                 <data
                     android:scheme="https"
                     android:host="org.mariotaku.twidere"
@@ -318,6 +325,7 @@
         </activity>
         <activity
             android:name=".activity.SettingsActivity"
+            android:exported="false"
             android:label="@string/action_settings"
             android:parentActivityName=".activity.HomeActivity"
             android:theme="@style/Theme.Twidere"
@@ -342,6 +350,7 @@
         </activity>
         <activity
             android:name=".activity.AccountSelectorActivity"
+            android:exported="false"
             android:label="@string/select_account"
             android:theme="@style/Theme.Twidere.Dialog">
             <intent-filter>
@@ -356,6 +365,7 @@
             android:theme="@style/Theme.Twidere.NoDisplay"/>
         <activity
             android:name=".activity.LinkHandlerActivity"
+            android:exported="true"
             android:parentActivityName=".activity.HomeActivity"
             android:theme="@style/Theme.Twidere.Content"
             android:windowSoftInputMode="adjustResize">
@@ -374,6 +384,7 @@
         </activity>
         <activity
             android:name=".activity.MediaViewerActivity"
+            android:exported="true"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/media"
             android:theme="@style/Theme.Twidere.Viewer"
@@ -421,6 +432,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.ComposeShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_compose"
             android:label="@string/title_compose"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -432,6 +444,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.UserFavoritesShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_favorite"
             android:label="@string/title_favorites"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -443,6 +456,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.UserTimelineShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_quote"
             android:label="@string/title_statuses"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -454,6 +468,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.UserMediaTimelineTimelineShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_gallery"
             android:label="@string/title_media_timeline"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -465,6 +480,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.UserShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_user"
             android:label="@string/title_user"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -476,6 +492,7 @@
         </activity>
         <activity
             android:name=".activity.shortcut.UserListTimelineShortcutCreatorActivity"
+            android:exported="true"
             android:icon="@mipmap/ic_shortcut_list"
             android:label="@string/title_user_list"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -487,6 +504,7 @@
         </activity>
         <activity
             android:name=".activity.RequestPermissionsActivity"
+            android:exported="false"
             android:label="@string/permissions_request"
             android:theme="@style/Theme.Twidere.Dialog">
             <intent-filter>
@@ -497,6 +515,7 @@
         </activity>
         <activity
             android:name=".activity.UserSelectorActivity"
+            android:exported="false"
             android:label="@string/select_user"
             android:theme="@style/Theme.Twidere.Dialog"
             android:windowSoftInputMode="adjustResize">
@@ -508,6 +527,7 @@
         </activity>
         <activity
             android:name=".activity.UserListSelectorActivity"
+            android:exported="false"
             android:label="@string/select_user_list"
             android:theme="@style/Theme.Twidere.Dialog"
             android:windowSoftInputMode="adjustResize">
@@ -531,6 +551,7 @@
             android:theme="@style/Theme.Twidere.NoDisplay"/>
         <activity
             android:name=".activity.WebLinkHandlerActivity"
+            android:exported="true"
             android:excludeFromRecents="true"
             android:taskAffinity=":twidere_twitter_link_handler"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -568,6 +589,7 @@
         <activity
             android:name=".activity.AssistLauncherActivity"
             android:enabled="false"
+            android:exported="true"
             android:excludeFromRecents="true"
             android:taskAffinity=":twidere_assist_launcher"
             android:theme="@style/Theme.Twidere.NoDisplay">
@@ -631,6 +653,7 @@
             android:theme="@style/Theme.Twidere.NoDisplay"/>
         <activity
             android:name=".activity.presentation.ToggleRefreshActivity"
+            android:exported="true"
             android:label="@string/action_refresh_launch_presentations"
             android:theme="@style/Theme.Twidere.NoDisplay">
             <intent-filter>
@@ -746,6 +769,7 @@
         </receiver>
         <receiver
             android:name=".receiver.SecretCodeBroadcastReceiver"
+            android:exported="true"
             android:label="@string/twidere_test">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SECRET_CODE"/>

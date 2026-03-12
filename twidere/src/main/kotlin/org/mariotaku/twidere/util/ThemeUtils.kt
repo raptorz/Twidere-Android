@@ -190,7 +190,7 @@ object ThemeUtils {
             val item = menu.getItem(i)
             wrapMenuItemIcon(item, itemColor, *excludeGroups)
             if (item.hasSubMenu()) {
-                wrapMenuIcon(item.subMenu, subItemColor, subItemColor, *excludeGroups)
+                item.subMenu?.let { wrapMenuIcon(it, subItemColor, subItemColor, *excludeGroups) }
             }
         }
     }
@@ -210,7 +210,7 @@ object ThemeUtils {
             val item = menu.getItem(i)
             wrapMenuItemIcon(item, itemColor, *excludeGroups)
             if (item.hasSubMenu()) {
-                wrapMenuIcon(item.subMenu, popupItemColor, popupItemColor, *excludeGroups)
+                item.subMenu?.let { wrapMenuIcon(it, popupItemColor, popupItemColor, *excludeGroups) }
             }
             if (item.isVisible) {
                 k++
@@ -226,7 +226,7 @@ object ThemeUtils {
             val item = menu.getItem(i)
             wrapMenuItemIcon(item, itemColor, *excludeGroups)
             if (item.hasSubMenu()) {
-                wrapMenuIcon(item.subMenu, popupItemColor, popupItemColor, *excludeGroups)
+                item.subMenu?.let { wrapMenuIcon(it, popupItemColor, popupItemColor, *excludeGroups) }
             }
             if (item.isVisible) {
                 k++
@@ -354,7 +354,7 @@ object ThemeUtils {
         val listener = View.OnLongClickListener { v ->
             if ((v as ActionMenuItemView).hasText()) return@OnLongClickListener false
             val menuItem = v.itemData
-            Utils.showMenuItemToast(v, menuItem.title, true)
+            Utils.showMenuItemToast(v, menuItem.title ?: "", true)
             return@OnLongClickListener true
         }
         (0 until menuView.childCount).forEach { i ->
@@ -427,7 +427,7 @@ object ThemeUtils {
             }
             if (item.hasSubMenu()) {
                 // SubMenu item is always in popup
-                applyColorFilterToMenuIcon(item.subMenu, popupColor, popupColor, highlightColor, mode, *excludedGroups)
+                item.subMenu?.let { applyColorFilterToMenuIcon(it, popupColor, popupColor, highlightColor, mode, *excludedGroups) }
             }
             i++
         }

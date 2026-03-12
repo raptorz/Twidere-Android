@@ -45,7 +45,7 @@ class NyanActivity : BaseActivity(), OnLongClickListener, OnSharedPreferenceChan
         return true
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
         if (KEY_LIVE_WALLPAPER_SCALE == key) {
             updateSurface()
         }

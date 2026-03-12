@@ -229,7 +229,7 @@ abstract class AbsContentRecyclerViewFragment<A : LoadMoreSupportAdapter<Recycle
         setupRecyclerView(requireContext(), binding.recyclerView)
         binding.recyclerView.adapter = adapter
 
-        scrollListener.touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        scrollListener.touchSlop = ViewConfiguration.get(context!!).scaledTouchSlop
 
     }
 

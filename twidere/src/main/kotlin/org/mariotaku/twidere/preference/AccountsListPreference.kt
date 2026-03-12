@@ -98,7 +98,7 @@ abstract class AccountsListPreference(context: Context, attrs: AttributeSet? = n
             widgetLayoutResource = R.layout.layout_preference_switch_indicator
         }
 
-        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+        override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
             notifyChanged()
         }
 

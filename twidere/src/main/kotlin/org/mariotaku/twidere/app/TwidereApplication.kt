@@ -191,7 +191,7 @@ class TwidereApplication : Application(), OnSharedPreferenceChangeListener {
         super.onLowMemory()
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
         when (key) {
             KEY_REFRESH_INTERVAL -> {
                 autoRefreshController.rescheduleAll()

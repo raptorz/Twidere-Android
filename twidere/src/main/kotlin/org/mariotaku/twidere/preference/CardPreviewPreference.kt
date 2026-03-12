@@ -49,7 +49,7 @@ class CardPreviewPreference(
         preferences.registerOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
         adapter.updateOptions()
         holder = null
         notifyChanged()

@@ -133,7 +133,7 @@ class HostMappingsListFragment : AbsContentListViewFragment<HostMappingsListFrag
         updateTitle(mode)
     }
 
-    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences, key: String?) {
         reloadHostMappings()
     }
 
