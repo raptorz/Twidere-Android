@@ -293,7 +293,7 @@ open class BaseActivity : ChameleonActivity(), IBaseActivity<BaseActivity>, IThe
             val handlerFilter = IntentUtils.getWebLinkIntentFilter(this)
             if (handlerFilter != null) {
                 val linkIntent = Intent(this, WebLinkHandlerActivity::class.java)
-                val intent = PendingIntent.getActivity(this, 0, linkIntent, 0)
+                val intent = PendingIntent.getActivity(this, 0, linkIntent, PendingIntent.FLAG_IMMUTABLE)
                 val intentFilter = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
                 for (i in 0 until handlerFilter.countDataSchemes()) {
                     intentFilter.addDataScheme(handlerFilter.getDataScheme(i))

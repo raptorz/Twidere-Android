@@ -928,7 +928,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         }
 
         val intent = Intent(this, PremiumDashboardActivity::class.java)
-        val contentIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        val contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         val builder = NotificationChannelSpec.appNotices.notificationBuilder(this)
         builder.setAutoCancel(true)
         builder.setSmallIcon(R.drawable.ic_stat_gift)
@@ -939,16 +939,16 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
         builder.setStyle(NotificationCompat.BigTextStyle(builder)
                 .setBigContentTitle(getString(R.string.title_promotions_reward))
                 .bigText(getString(R.string.message_promotions_reward)))
-        builder.addAction(R.drawable.ic_action_confirm, getString(R.string.action_enable),
+         builder.addAction(R.drawable.ic_action_confirm, getString(R.string.action_enable),
                 PendingIntent.getBroadcast(this, 0, Intent(this,
                         NotificationReceiver::class.java).setAction(BROADCAST_PROMOTIONS_ACCEPTED)
                         .putExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID_PROMOTIONS_OFFER),
-                        PendingIntent.FLAG_ONE_SHOT))
-        builder.addAction(R.drawable.ic_action_cancel, getString(R.string.action_no_thanks),
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE))
+         builder.addAction(R.drawable.ic_action_cancel, getString(R.string.action_no_thanks),
                 PendingIntent.getBroadcast(this, 0, Intent(this,
                         NotificationReceiver::class.java).setAction(BROADCAST_PROMOTIONS_DENIED)
                         .putExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID_PROMOTIONS_OFFER),
-                        PendingIntent.FLAG_ONE_SHOT))
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE))
         notificationManager.notify(NOTIFICATION_ID_PROMOTIONS_OFFER, builder.build())
     }
 

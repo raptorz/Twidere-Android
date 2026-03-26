@@ -26,7 +26,7 @@ class LegacySyncController(context: Context) : SyncController(context) {
         TaskServiceRunner.ACTIONS_SYNC.forEach { action ->
             val intent = Intent(context, LegacyTaskService::class.java)
             intent.action = action
-            pendingIntents[action] = PendingIntent.getService(context, 0, intent, 0)
+            pendingIntents[action] = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 

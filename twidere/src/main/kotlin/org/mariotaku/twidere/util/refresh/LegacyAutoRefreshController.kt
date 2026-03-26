@@ -3,6 +3,7 @@ package org.mariotaku.twidere.util.refresh
 import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.app.AlarmManager.*
 import android.app.job.JobScheduler
 import android.content.Context
 import android.content.Intent
@@ -31,7 +32,7 @@ class LegacyAutoRefreshController(
             val action = LegacyTaskService.getRefreshAction(type) ?: return@forEach
             val intent = Intent(context, LegacyTaskService::class.java)
             intent.action = action
-            pendingIntents[type] = PendingIntent.getService(context, 0, intent, 0)
+            pendingIntents[type] = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
@@ -63,12 +64,12 @@ class LegacyAutoRefreshController(
     }
 
     private fun rescheduleFiltersSubscriptionsRefresh() {
-        val interval = TimeUnit.HOURS.toMillis(4)
-        val triggerAt = SystemClock.elapsedRealtime() + interval
-        val intent = Intent(context, LegacyTaskService::class.java)
-        intent.action = ACTION_REFRESH_FILTERS_SUBSCRIPTIONS
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, interval,
-                PendingIntent.getService(context, 0, intent, 0))
+         val interval = TimeUnit.HOURS.toMillis(4)
+         val triggerAt = SystemClock.elapsedRealtime() + interval
+         val intent = Intent(context, LegacyTaskService::class.java)
+         intent.action = ACTION_REFRESH_FILTERS_SUBSCRIPTIONS
+         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, interval,
+                 PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE))
     }
 
     private fun rescheduleLaunchPresentationsRefresh() {

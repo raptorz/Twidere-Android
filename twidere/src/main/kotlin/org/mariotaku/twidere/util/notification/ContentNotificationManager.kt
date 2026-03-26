@@ -364,7 +364,7 @@ class ContentNotificationManager(
         }
         builder.setContentIntent(PendingIntent.getActivity(context, 0, Intent(Intent.ACTION_VIEW, statusUri).apply {
             setClass(context, LinkHandlerActivity::class.java)
-        }, PendingIntent.FLAG_UPDATE_CURRENT))
+        }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         val tag = "$accountKey:$userKey:${status.id}"
         notificationManager.notify(tag, NOTIFICATION_ID_USER_NOTIFICATION, builder.build())
@@ -394,15 +394,15 @@ class ContentNotificationManager(
         discardIntent.action = INTENT_ACTION_DISCARD_DRAFT
         discardIntent.data = draftUri
         nb.addAction(R.drawable.ic_action_delete, context.getString(R.string.discard),
-                PendingIntent.getService(context, 0, discardIntent, PendingIntent.FLAG_ONE_SHOT))
-
+                PendingIntent.getService(context, 0, discardIntent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE))
+ 
         val sendIntent = Intent(context, LengthyOperationsService::class.java)
         sendIntent.action = INTENT_ACTION_SEND_DRAFT
         sendIntent.data = draftUri
         nb.addAction(R.drawable.ic_action_send, context.getString(R.string.action_send),
-                PendingIntent.getService(context, 0, sendIntent, PendingIntent.FLAG_ONE_SHOT))
+                PendingIntent.getService(context, 0, sendIntent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE))
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-        nb.setContentIntent(PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT))
+         nb.setContentIntent(PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE))
         notificationManager.notify(draftUri.toString(), NOTIFICATION_ID_DRAFTS, nb.build())
         return draftId
     }
@@ -455,7 +455,7 @@ class ContentNotificationManager(
         }
         homeIntent.data = homeLinkBuilder.build()
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        return PendingIntent.getActivity(context, 0, homeIntent, 0)
+        return PendingIntent.getActivity(context, 0, homeIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun getMarkReadDeleteIntent(context: Context, @NotificationType type: String,
@@ -480,6 +480,6 @@ class ContentNotificationManager(
         linkBuilder.appendQueryParameter(QUERY_PARAM_NOTIFICATION_TYPE, type)
 
         intent.data = linkBuilder.build()
-        return PendingIntent.getBroadcast(context, 0, intent, 0)
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 }
