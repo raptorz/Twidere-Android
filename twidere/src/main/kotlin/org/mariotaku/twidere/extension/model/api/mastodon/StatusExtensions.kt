@@ -111,6 +111,34 @@ fun Status.applyTo(accountKey: UserKey, result: ParcelableStatus) {
     extras.visibility = status.visibility
     extras.external_url = status.url
 
+    // Handle Mastodon quote posts (v4.3+)
+    val quote = status.quote
+    if (quote != null && quote.quotedStatus != null) {
+        val quotedStatus = quote.quotedStatus
+        result.is_quote = true
+        result.quoted_id = quotedStatus.id
+
+        val quotedAccount = quotedStatus.account
+        val quotedHtml = HtmlSpanBuilder.fromHtml(quotedStatus.content, quotedStatus.content, MastodonSpanProcessor)
+        result.quoted_text_unescaped = quotedHtml?.toString()
+        result.quoted_text_plain = result.quoted_text_unescaped
+        result.quoted_spans = quotedHtml?.spanItems
+        result.quoted_media = quotedStatus.mediaAttachments?.mapToArray { it.toParcelable() }
+        result.quoted_source = quotedStatus.application?.sourceHtml
+
+        result.quoted_timestamp = quotedStatus.createdAt?.time ?: 0
+        result.quoted_user_key = quotedAccount?.getKey(accountKey.host)
+        result.quoted_user_name = quotedAccount?.name
+        result.quoted_user_screen_name = quotedAccount?.username
+        result.quoted_user_profile_image = quotedAccount?.avatar
+        result.quoted_user_is_protected = quotedAccount?.isLocked ?: false
+        result.quoted_user_is_verified = false
+
+        if (quotedStatus.isSensitive) {
+            result.addFilterFlag(ParcelableStatus.FilterFlags.POSSIBLY_SENSITIVE)
+        }
+    }
+
     // Try to complete mastodon `in_reply_to` info
     val inReplyToMention = result.mentions?.firstOrNull {
         it.key.id == result.in_reply_to_user_key?.id

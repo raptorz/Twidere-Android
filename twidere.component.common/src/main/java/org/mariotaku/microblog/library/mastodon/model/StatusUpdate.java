@@ -72,5 +72,23 @@ public class StatusUpdate extends SimpleValueMap {
         return this;
     }
 
+    public StatusUpdate quotedStatusId(String id) {
+        if (id != null) {
+            put("quoted_status_id", id);
+        } else {
+            remove("quoted_status_id");
+        }
+        return this;
+    }
+
+    public StatusUpdate quoteApprovalPolicy(String policy) {
+        if (policy != null) {
+            put("quote_approval_policy", policy);
+        } else {
+            remove("quote_approval_policy");
+        }
+        return this;
+    }
+
 
 }

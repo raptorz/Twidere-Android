@@ -579,6 +579,15 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
     }
 
     fun notifyAccountsChanged() {
+        // Check if all accounts have been deleted
+        if (!DataStoreUtils.hasAccount(this)) {
+            // All accounts deleted, redirect to sign-in page
+            val signInIntent = Intent(INTENT_ACTION_TWITTER_LOGIN)
+            signInIntent.setClass(this, SignInActivity::class.java)
+            signInIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(signInIntent)
+            finish()
+        }
     }
 
     @Subscribe

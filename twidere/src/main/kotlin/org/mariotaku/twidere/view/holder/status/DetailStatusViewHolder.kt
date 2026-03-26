@@ -146,7 +146,7 @@ class DetailStatusViewHolder(
 
         if (status.retweet_id != null) {
             val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key ?: status.user_key,
-                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_acct ?: "", nameFirst)
+                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_screen_name ?: "", nameFirst)
             retweetedByView.spannable = context.getString(R.string.name_retweeted, retweetedBy)
             retweetedByView.visibility = View.VISIBLE
         } else {
@@ -228,7 +228,7 @@ class DetailStatusViewHolder(
         }
 
         nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name ?: "")
-        nameView.screenName = "@${status.user_acct}"
+        nameView.screenName = "@${status.user_screen_name ?: ""}"
         nameView.updateText(formatter)
 
         adapter.requestManager.loadProfileImage(context, status, adapter.profileImageStyle,

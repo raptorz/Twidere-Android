@@ -46,6 +46,7 @@ import org.mariotaku.twidere.util.DataStoreUtils
 import org.mariotaku.twidere.util.IntentUtils
 import org.mariotaku.twidere.util.deleteAccountData
 import org.mariotaku.twidere.util.support.removeAccountSupport
+import org.mariotaku.twidere.activity.SignInActivity
 
 /**
  * Sort and toggle account availability
@@ -224,6 +225,16 @@ class AccountsManagerFragment : BaseFragment(), LoaderManager.LoaderCallbacks<Li
                                 .clear().apply()
                     }
                     am.removeAccountSupport(account)
+
+                    // Check if all accounts have been deleted
+                    if (!DataStoreUtils.hasAccount(context!!)) {
+                        // Redirect to sign-in page
+                        val signInIntent = Intent(INTENT_ACTION_TWITTER_LOGIN)
+                        signInIntent.setClass(context!!, SignInActivity::class.java)
+                        signInIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        context!!.startActivity(signInIntent)
+                        activity?.finish()
+                    }
                 }
             }
         }

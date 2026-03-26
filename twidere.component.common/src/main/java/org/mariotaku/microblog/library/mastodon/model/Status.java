@@ -21,6 +21,10 @@ package org.mariotaku.microblog.library.mastodon.model;
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import com.hannesdorfmann.parcelableplease.annotation.ParcelableNoThanks;
+import com.hannesdorfmann.parcelableplease.annotation.ParcelablePlease;
 import org.mariotaku.microblog.library.mastodon.annotation.StatusVisibility;
 
 import java.util.Arrays;
@@ -141,6 +145,24 @@ public class Status {
     @JsonField(name = "application")
     Application application;
 
+    /**
+     * The number of quotes for the status (Mastodon v4.5.0)
+     */
+    @JsonField(name = "quotes_count")
+    long quotesCount;
+
+    /**
+     * The raw text source of the status (Mastodon v4.3.0)
+     */
+    @JsonField(name = "text_source")
+    String textSource;
+
+    /**
+     * Quote information (Mastodon v4.4.0)
+     */
+    @JsonField(name = "quote")
+    Quote quote;
+
     private long sortId = -1;
 
     public String getId() {
@@ -228,6 +250,18 @@ public class Status {
         return application;
     }
 
+    public Quote getQuote() {
+        return quote;
+    }
+
+    public long getQuotesCount() {
+        return quotesCount;
+    }
+
+    public String getTextSource() {
+        return textSource;
+    }
+
     public long getSortId() {
         if (sortId != -1) return sortId;
         // Try use long id
@@ -267,6 +301,61 @@ public class Status {
                 ", mentions=" + Arrays.toString(mentions) +
                 ", tags=" + Arrays.toString(tags) +
                 ", application=" + application +
+                ", quotesCount=" + quotesCount +
+                ", textSource='" + textSource + '\'' +
+                ", quote=" + quote +
                 '}';
+    }
+
+    /**
+     * Quote information object (Mastodon v4.4.0)
+     */
+    @ParcelablePlease
+    @JsonObject
+    public static class Quote implements Parcelable {
+        /**
+         * State of the quote
+         */
+        @JsonField(name = "state")
+        String state;
+
+        /**
+         * The quoted status object
+         */
+        @ParcelableNoThanks
+        @JsonField(name = "quoted_status")
+        Status quotedStatus;
+
+        public String getState() {
+            return state;
+        }
+
+        public Status getQuotedStatus() {
+            return quotedStatus;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            Status$QuoteParcelablePlease.writeToParcel(this, dest, flags);
+        }
+
+        public static final Creator<Quote> CREATOR = new Creator<Quote>() {
+            @Override
+            public Quote createFromParcel(Parcel source) {
+                Quote target = new Quote();
+                Status$QuoteParcelablePlease.readFromParcel(target, source);
+                return target;
+            }
+
+            @Override
+            public Quote[] newArray(int size) {
+                return new Quote[size];
+            }
+        };
     }
 }

@@ -26,7 +26,6 @@ import org.mariotaku.twidere.adapter.iface.IStatusesAdapter
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.applyTo
-import org.mariotaku.twidere.extension.model.quoted_user_acct
 import org.mariotaku.twidere.extension.model.retweeted_by_user_acct
 import org.mariotaku.twidere.extension.model.user_acct
 import org.mariotaku.twidere.extension.setVisible
@@ -183,7 +182,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
             statusContentUpperSpace.visibility = View.GONE
         } else if (status.retweet_id != null) {
             val retweetedBy = colorNameManager.getDisplayName(status.retweeted_by_user_key ?: status.user_key,
-                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_acct ?: "", nameFirst)
+                    status.retweeted_by_user_name ?: "", status.retweeted_by_user_screen_name ?: "", nameFirst)
             statusInfoLabel.spannable = context.getString(R.string.name_retweeted, formatter.unicodeWrap(retweetedBy))
             statusInfoIcon.setImageResource(R.drawable.ic_activity_action_retweet)
             statusInfoLabel.visibility = View.VISIBLE
@@ -224,7 +223,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
                 val quotedUserKey = status.quoted_user_key ?: status.user_key
                 quotedNameView.name = colorNameManager.getUserNickname(quotedUserKey,
                         status.quoted_user_name ?: "")
-                quotedNameView.screenName = "@${status.quoted_user_acct ?: ""}"
+                quotedNameView.screenName = "@${status.quoted_user_screen_name ?: ""}"
 
                 val quotedDisplayEnd = status.extras?.quoted_display_text_range?.getOrNull(1) ?: -1
                 val quotedText: CharSequence
@@ -305,7 +304,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         }
 
         nameView.name = colorNameManager.getUserNickname(status.user_key, status.user_name ?: "")
-        nameView.screenName = "@${status.user_acct}"
+        nameView.screenName = "@${status.user_screen_name ?: ""}"
 
         if (adapter.profileImageEnabled) {
             profileImageView.visibility = View.VISIBLE

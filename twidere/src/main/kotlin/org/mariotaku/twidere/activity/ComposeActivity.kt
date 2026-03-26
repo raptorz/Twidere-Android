@@ -1005,7 +1005,7 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
             status.retweeted_by_user_acct?.addTo(mentions)
         }
         if (status.is_quote && !TextUtils.isEmpty(status.quoted_user_screen_name)) {
-            status.quoted_user_acct?.addTo(mentions)
+            status.quoted_user_screen_name?.addTo(mentions)
         }
         when (statusAccount.type) {
             AccountType.FANFOU -> {
