@@ -216,6 +216,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
 
             val quoteContentAvailable = status.quoted_text_plain != null && status.quoted_text_unescaped != null
             val isFanfouStatus = status.account_key.host == USER_TYPE_FANFOU_COM
+            android.util.Log.d("QuoteDisplay", "Status ${status.id}: is_quote=${status.is_quote}, quoteContentAvailable=$quoteContentAvailable, quoted_user_name=${status.quoted_user_name}, quoted_text=${status.quoted_text_plain?.take(20)}")
             if (quoteContentAvailable && !isFanfouStatus) {
                 quotedNameView.visibility = View.VISIBLE
                 quotedTextView.visibility = View.VISIBLE
