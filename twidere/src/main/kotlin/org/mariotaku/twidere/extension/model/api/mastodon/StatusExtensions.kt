@@ -133,9 +133,24 @@ fun Status.applyTo(accountKey: UserKey, result: ParcelableStatus) {
         result.quoted_user_profile_image = quotedAccount?.avatar
         result.quoted_user_is_protected = quotedAccount?.isLocked ?: false
         result.quoted_user_is_verified = false
+        extras.quoted_external_url = quotedStatus.url
 
         if (quotedStatus.isSensitive) {
             result.addFilterFlag(ParcelableStatus.FilterFlags.POSSIBLY_SENSITIVE)
+        }
+
+        // Remove RE link from main text if quote content is available
+        if (!result.quoted_text_unescaped.isNullOrEmpty()) {
+            val rePattern = Regex("""^RE:\s*https?://\S+""")
+            val cleanedText = result.text_unescaped?.replace(rePattern, "")?.trim()
+            if (cleanedText != result.text_unescaped && !cleanedText.isNullOrEmpty()) {
+                result.text_unescaped = cleanedText
+                result.text_plain = cleanedText
+                // Clear spans since we removed content from the beginning
+                result.spans = null
+                // Recalculate display_text_range
+                extras.display_text_range = calculateDisplayTextRange(cleanedText, null, result.media)
+            }
         }
     }
 

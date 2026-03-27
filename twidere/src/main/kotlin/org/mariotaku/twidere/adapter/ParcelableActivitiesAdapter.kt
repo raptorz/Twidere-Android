@@ -249,10 +249,11 @@ class ParcelableActivitiesAdapter(
                     return ITEM_VIEW_TYPE_GAP
                 }
                 when (getAction(position)) {
-                    Activity.Action.MENTION, Activity.Action.QUOTE, Activity.Action.REPLY -> {
+                    Activity.Action.MENTION, Activity.Action.REPLY -> {
                         return ITEM_VIEW_TYPE_STATUS
                     }
                     Activity.Action.FOLLOW, Activity.Action.FAVORITE, Activity.Action.RETWEET,
+                    Activity.Action.QUOTE,
                     Activity.Action.FAVORITED_RETWEET, Activity.Action.RETWEETED_RETWEET,
                     Activity.Action.RETWEETED_MENTION, Activity.Action.FAVORITED_MENTION,
                     Activity.Action.LIST_CREATED, Activity.Action.LIST_MEMBER_ADDED,

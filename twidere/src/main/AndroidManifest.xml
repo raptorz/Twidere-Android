@@ -58,6 +58,7 @@
     <uses-permission android:name="android.permission.NFC"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <!-- Used for account management -->
     <uses-permission
@@ -675,6 +676,7 @@
             android:permission="android.permission.BIND_JOB_SERVICE"/>
         <service
             android:name=".service.LengthyOperationsService"
+            android:foregroundServiceType="dataSync"
             android:label="@string/label_background_operation_service"/>
         <service
             android:name=".service.AccountAuthenticatorService"

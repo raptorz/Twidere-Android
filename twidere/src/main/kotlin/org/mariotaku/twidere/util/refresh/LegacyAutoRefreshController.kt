@@ -78,7 +78,7 @@ class LegacyAutoRefreshController(
         val intent = Intent(context, LegacyTaskService::class.java)
         intent.action = ACTION_REFRESH_LAUNCH_PRESENTATIONS
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, interval,
-                PendingIntent.getService(context, 0, intent, 0))
+                PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE))
     }
 
     companion object {

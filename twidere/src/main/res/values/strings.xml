@@ -185,6 +185,8 @@
     <string name="activity_about_me_retweeted_mention_multi"><xliff:g id="user">%1$s</xliff:g> and <xliff:g id="other">%2$s</xliff:g> retweeted a tweet you were mentioned in</string>
     <string name="activity_about_me_retweeted_retweet"><xliff:g id="user">%s</xliff:g> retweeted your retweet</string>
     <string name="activity_about_me_retweeted_retweet_multi"><xliff:g id="user">%1$s</xliff:g> and <xliff:g id="other">%2$s</xliff:g> retweeted your retweet</string>
+    <string name="activity_about_me_quote"><xliff:g id="user">%s</xliff:g> quoted</string>
+    <string name="activity_about_me_quote_multi"><xliff:g id="user">%1$s</xliff:g> and <xliff:g id="other">%2$s</xliff:g> quoted</string>
     <string name="activity_joined_twitter"><xliff:g id="user">%s</xliff:g> joined Twitter</string>
     <string name="activity_joined_twitter_multi"><xliff:g id="user">%1$s</xliff:g> and <xliff:g id="other">%2$s</xliff:g> joined Twitter</string>
 

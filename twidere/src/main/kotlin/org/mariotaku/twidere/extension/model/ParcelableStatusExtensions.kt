@@ -115,7 +115,10 @@ fun ParcelableStatus.toSummaryLine(): ParcelableActivity.SummaryLine {
     result.key = user_key
     result.name = user_name
     result.screen_name = user_screen_name
-    result.content = text_unescaped
+    result.content = text_unescaped?.takeIf { it.isNotEmpty() }
+        ?: text_plain?.takeIf { it.isNotEmpty() }
+        ?: ""
+    result.quoted_permalink = extras?.quoted_external_url
     return result
 }
 

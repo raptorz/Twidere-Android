@@ -24,6 +24,8 @@ import android.app.Notification
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -78,6 +80,14 @@ import kotlin.math.min
 class LengthyOperationsService : BaseIntentService("lengthy_operations") {
 
     private val handler: Handler by lazy { Handler(Looper.getMainLooper()) }
+
+    private fun startForegroundCompat(id: Int, notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(id, notification)
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -186,7 +196,7 @@ class LengthyOperationsService : BaseIntentService("lengthy_operations") {
         builder.setCategory(NotificationCompat.CATEGORY_PROGRESS)
         builder.setOngoing(true)
         val notification = builder.build()
-        startForeground(NOTIFICATION_ID_SEND_DIRECT_MESSAGE, notification)
+        startForegroundCompat(NOTIFICATION_ID_SEND_DIRECT_MESSAGE, notification)
         val task = SendMessageTask(this)
         task.params = message
         invokeBeforeExecute(task)
@@ -232,34 +242,34 @@ class LengthyOperationsService : BaseIntentService("lengthy_operations") {
     private fun updateStatuses(statuses: Array<ParcelableStatusUpdate>, scheduleInfo: ScheduleInfo? = null) {
         val context = this
         val builder = NotificationChannelSpec.backgroundProgresses.notificationBuilder(context)
-        startForeground(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
+        startForegroundCompat(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
                 builder, 0, null))
         for (item in statuses) {
             val task = UpdateStatusTask(context, object : UpdateStatusTask.StateCallback {
 
                 @WorkerThread
                 override fun onStartUploadingMedia() {
-                    startForeground(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
-                            builder, 0, item))
+                    startForegroundCompat(NOTIFICATION_ID_UPDATE_STATUS,
+                            updateUpdateStatusNotification(context, builder, 0, item))
                 }
 
                 @WorkerThread
                 override fun onUploadingProgressChanged(index: Int, current: Long, total: Long) {
                     val progress = (current * 100 / total).toInt()
-                    startForeground(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
-                            builder, progress, item))
+                    startForegroundCompat(NOTIFICATION_ID_UPDATE_STATUS,
+                            updateUpdateStatusNotification(context, builder, progress, item))
                 }
 
                 @WorkerThread
                 override fun onShorteningStatus() {
-                    startForeground(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
-                            builder, 0, item))
+                    startForegroundCompat(NOTIFICATION_ID_UPDATE_STATUS,
+                            updateUpdateStatusNotification(context, builder, 0, item))
                 }
 
                 @WorkerThread
                 override fun onUpdatingStatus() {
-                    startForeground(NOTIFICATION_ID_UPDATE_STATUS, updateUpdateStatusNotification(context,
-                            builder, 0, item))
+                    startForegroundCompat(NOTIFICATION_ID_UPDATE_STATUS,
+                            updateUpdateStatusNotification(context, builder, 0, item))
                 }
 
                 @UiThread

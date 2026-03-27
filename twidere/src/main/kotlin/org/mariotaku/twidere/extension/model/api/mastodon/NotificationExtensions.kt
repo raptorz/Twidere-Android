@@ -72,6 +72,16 @@ fun Notification.toParcelable(accountKey: UserKey, relationships: Map<String, Re
             result.target_objects = ParcelableActivity.RelatedObject.statuses(parcelableStatus)
             result.summary_line = arrayOf(parcelableStatus.toSummaryLine())
         }
+        Notification.Type.QUOTE -> {
+            if (status == null) {
+                result.action = Activity.Action.INVALID
+                return result
+            }
+            result.action = Activity.Action.QUOTE
+            val parcelableStatus = status.toParcelable(accountKey)
+            result.targets = ParcelableActivity.RelatedObject.statuses(parcelableStatus)
+            result.summary_line = arrayOf(parcelableStatus.toSummaryLine())
+        }
         Notification.Type.FAVOURITE -> {
             if (status == null) {
                 result.action = Activity.Action.INVALID

@@ -24,6 +24,7 @@
     <color name="action_icon_light">#CCFFFFFF</color>
     <color name="action_icon_light_disabled">#4DFFFFFF</color>
     <color name="highlight_retweet">@color/material_light_green</color>
+    <color name="highlight_quote">@color/material_light_green</color>
     <color name="highlight_favorite">@color/material_amber</color>
     <color name="highlight_like">@color/material_pink</color>
     <color name="highlight_reply">@color/material_light_blue</color>

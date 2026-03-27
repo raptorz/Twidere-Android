@@ -207,8 +207,6 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
                 kPreferences[defaultAutoRefreshAskedKey] = false
             }
             return
-        } else {
-            notifyAccountsChanged()
         }
         supportRequestWindowFeature(AppCompatDelegate.FEATURE_ACTION_MODE_OVERLAY)
         binding = ActivityHomeBinding.inflate(layoutInflater)
@@ -313,6 +311,7 @@ class HomeActivity : BaseActivity(), OnClickListener, OnPageChangeListener, Supp
 
     override fun onResume() {
         super.onResume()
+        notifyAccountsChanged()
         invalidateOptionsMenu()
         updateActionsButton()
     }

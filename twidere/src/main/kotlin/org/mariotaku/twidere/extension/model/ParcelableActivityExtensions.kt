@@ -26,7 +26,7 @@ import java.util.*
 
 val ParcelableActivity.activityStatus: ParcelableActivity?
     get() = when (action) {
-        Activity.Action.MENTION, Activity.Action.REPLY, Activity.Action.QUOTE -> this
+        Activity.Action.MENTION, Activity.Action.REPLY -> this
         else -> null
     }
 

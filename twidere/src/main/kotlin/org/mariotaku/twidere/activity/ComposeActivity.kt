@@ -996,8 +996,8 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
                 false) ?: return false
         val accountUser = statusAccount.user
         val mentions = ArrayList<String>()
-        val userAcct = status.user_acct
-        if (accountUser.key != status.user_key) {
+        val userAcct = status.user_acct ?: ""
+        if (accountUser.key != status.user_key && userAcct.isNotEmpty()) {
             binding.editText.append("@$userAcct ")
         }
         var selectionStart = binding.editText.length()

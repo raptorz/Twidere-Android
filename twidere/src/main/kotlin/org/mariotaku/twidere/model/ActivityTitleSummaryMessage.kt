@@ -12,6 +12,7 @@ import org.mariotaku.microblog.library.twitter.model.Activity
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.extension.model.activityStatus
 import org.mariotaku.twidere.text.style.NonBreakEllipseSpan
+import org.mariotaku.twidere.util.ThemeUtils
 import org.mariotaku.twidere.util.UserColorNameManager
 import org.oshkimaadziig.george.androidutils.SpanFormatter
 
@@ -58,6 +59,14 @@ class ActivityTitleSummaryMessage private constructor(val icon: Int, val color: 
                     val title = getTitleStringAboutMe(resources, manager, R.string.activity_about_me_retweet,
                             R.string.activity_about_me_retweet_multi, sources, nameFirst)
                     val summary = generateTextOnlySummary(activity.summary_line)
+                    return ActivityTitleSummaryMessage(typeIcon, color, title, summary)
+                }
+                Activity.Action.QUOTE -> {
+                    val typeIcon = R.drawable.ic_action_quote
+                    val color = ContextCompat.getColor(context, R.color.highlight_quote)
+                    val title = getTitleStringAboutMe(resources, manager, R.string.activity_about_me_quote,
+                            R.string.activity_about_me_quote_multi, sources, nameFirst)
+                    val summary = generateQuoteSummary(context, manager, activity)
                     return ActivityTitleSummaryMessage(typeIcon, color, title, summary)
                 }
                 Activity.Action.FAVORITED_RETWEET -> {
@@ -133,7 +142,7 @@ class ActivityTitleSummaryMessage private constructor(val icon: Int, val color: 
                     }
                     return ActivityTitleSummaryMessage(icon, defaultColor, title, null)
                 }
-                Activity.Action.MENTION, Activity.Action.REPLY, Activity.Action.QUOTE -> {
+                Activity.Action.MENTION, Activity.Action.REPLY -> {
                     val status = activity.activityStatus ?: return null
                     val title = SpannableString(manager.getDisplayName(status,
                             nameFirst))
@@ -219,6 +228,27 @@ class ActivityTitleSummaryMessage private constructor(val icon: Int, val color: 
                 } else {
                     return@joinTo status.content
                 }
+            }
+        }
+
+
+
+        private fun generateQuoteSummary(context: Context, manager: UserColorNameManager,
+                activity: ParcelableActivity): CharSequence? {
+            val lines = activity.summary_line ?: return null
+            return lines.joinTo(SpannableStringBuilder(), separator = "\n") { status ->
+                val sb = SpannableStringBuilder()
+                if (status.content.isNotEmpty()) {
+                    sb.append(status.content.replace('\n', ' '))
+                }
+                if (!status.quoted_permalink.isNullOrEmpty()) {
+                    if (sb.isNotEmpty()) {
+                        sb.append("\n")
+                    }
+                    sb.append("RE: ")
+                    sb.append(status.quoted_permalink)
+                }
+                return@joinTo sb
             }
         }
 

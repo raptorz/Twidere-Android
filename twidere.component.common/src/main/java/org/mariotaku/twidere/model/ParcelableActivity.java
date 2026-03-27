@@ -237,6 +237,8 @@ public class ParcelableActivity extends ParcelableStatus implements Parcelable {
         public String screen_name;
         @JsonField(name = "content")
         public String content;
+        @JsonField(name = "quoted_permalink")
+        public String quoted_permalink;
 
         @Override
         public int describeContents() {

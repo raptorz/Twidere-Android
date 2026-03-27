@@ -95,9 +95,9 @@ public class Notification {
                 '}';
     }
 
-    @StringDef({Type.MENTION, Type.REBLOG, Type.FAVOURITE, Type.FOLLOW})
+    @StringDef({Type.MENTION, Type.REBLOG, Type.FAVOURITE, Type.FOLLOW, Type.QUOTE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
-        String MENTION = "mention", REBLOG = "reblog", FAVOURITE = "favourite", FOLLOW = "follow";
+        String MENTION = "mention", REBLOG = "reblog", FAVOURITE = "favourite", FOLLOW = "follow", QUOTE = "quote";
     }
 }
