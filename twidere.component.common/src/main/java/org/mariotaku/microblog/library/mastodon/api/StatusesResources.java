@@ -75,4 +75,10 @@ public interface StatusesResources {
 
     @POST("/v1/statuses/{id}/unpin")
     Status unpinStatus(@Path("id") String id) throws MicroBlogException;
+
+    @POST("/v1/statuses/{id}/bookmark")
+    Status bookmarkStatus(@Path("id") String id) throws MicroBlogException;
+
+    @POST("/v1/statuses/{id}/unbookmark")
+    Status unbookmarkStatus(@Path("id") String id) throws MicroBlogException;
 }

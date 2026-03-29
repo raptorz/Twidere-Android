@@ -66,6 +66,9 @@ public class ParcelableStatusUpdate implements Parcelable {
     @JsonField(name = "repost_status_id")
     @ParcelableThisPlease
     public String repost_status_id;
+    @JsonField(name = "quoted_status_id")
+    @ParcelableThisPlease
+    public String quoted_status_id;
     @JsonField(name = "attachment_url")
     @ParcelableThisPlease
     public String attachment_url;
@@ -114,6 +117,7 @@ public class ParcelableStatusUpdate implements Parcelable {
                 ", extended_reply_mode=" + extended_reply_mode +
                 ", summary='" + summary + '\'' +
                 ", visibility='" + visibility + '\'' +
+                ", quoted_status_id='" + quoted_status_id + '\'' +
                 ", draft_unique_id='" + draft_unique_id + '\'' +
                 ", draft_action='" + draft_action + '\'' +
                 ", draft_extras=" + draft_extras +

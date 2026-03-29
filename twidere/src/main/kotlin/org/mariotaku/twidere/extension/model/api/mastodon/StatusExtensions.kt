@@ -102,6 +102,7 @@ fun Status.applyTo(accountKey: UserKey, result: ParcelableStatus) {
     result.media = status.mediaAttachments?.mapToArray { it.toParcelable() }
     result.source = status.application?.sourceHtml
     result.is_favorite = status.isFavourited
+    result.is_bookmark = status.isBookmarked
     result.is_possibly_sensitive = status.isSensitive
     result.mentions = status.mentions?.mapToArray { it.toParcelable(accountKey) }
 
@@ -110,6 +111,7 @@ fun Status.applyTo(accountKey: UserKey, result: ParcelableStatus) {
     extras.summary_text = status.spoilerText?.let(EmojioneTranslator::translate)
     extras.visibility = status.visibility
     extras.external_url = status.url
+    extras.quote_approval_current_user = status.quoteApproval?.currentUser
 
     // Handle Mastodon quote posts (v4.3+)
     val quote = status.quote

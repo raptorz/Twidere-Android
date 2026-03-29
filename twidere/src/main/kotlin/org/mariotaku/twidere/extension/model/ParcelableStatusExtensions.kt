@@ -84,6 +84,17 @@ inline val ParcelableStatus.can_retweet: Boolean
         }
     }
 
+inline val ParcelableStatus.can_quote: Boolean
+    get() {
+        val currentUser = extras?.quote_approval_current_user
+        return when (currentUser) {
+            "automatic", "manual" -> true
+            "denied", "unknown" -> false
+            null -> can_retweet  // 如果没有 quote_approval 字段，使用 can_retweet 兜底
+            else -> false
+        }
+    }
+
 val ParcelableStatus.quoted: ParcelableStatus?
     get() {
         val obj = ParcelableStatus()

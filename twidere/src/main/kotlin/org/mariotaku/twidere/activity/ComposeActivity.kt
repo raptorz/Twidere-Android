@@ -982,7 +982,15 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
 
     private fun handleQuoteIntent(status: ParcelableStatus?): Boolean {
         if (status == null) return false
-        binding.editText.setText(Utils.getQuoteStatus(this, status))
+        val am = AccountManager.get(this)
+        val statusAccount = AccountUtils.getAccountDetails(am, status.account_key, false)
+        
+        // Mastodon 使用原生引用 API，不需要预填充 RT 格式文本
+        if (statusAccount?.type == AccountType.MASTODON) {
+            binding.editText.setText("")
+        } else {
+            binding.editText.setText(Utils.getQuoteStatus(this, status))
+        }
         binding.editText.setSelection(0)
         accountsAdapter.selectedAccountKeys = arrayOf(status.account_key)
         showQuoteLabelAndHint(status)
@@ -1638,6 +1646,9 @@ class ComposeActivity : BaseActivity(), OnMenuItemClickListener, OnClickListener
         update.in_reply_to_status = inReplyTo
         update.is_possibly_sensitive = possiblySensitive
         update.visibility = statusVisibility ?: StatusVisibility.PUBLIC
+        if (isQuote && inReplyTo != null) {
+            update.quoted_status_id = inReplyTo.originalId
+        }
         update.draft_extras = update.updateStatusActionExtras().also {
             it.editingText = text
         }

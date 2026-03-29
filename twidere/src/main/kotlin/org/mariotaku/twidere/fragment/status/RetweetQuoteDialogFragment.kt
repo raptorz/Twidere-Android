@@ -40,6 +40,7 @@ import org.mariotaku.twidere.annotation.AccountType
 import org.mariotaku.twidere.constant.IntentConstants.*
 import org.mariotaku.twidere.constant.quickSendKey
 import org.mariotaku.twidere.extension.applyTheme
+import org.mariotaku.twidere.extension.model.can_quote
 import org.mariotaku.twidere.extension.model.can_retweet
 import org.mariotaku.twidere.extension.model.is_my_retweet
 import org.mariotaku.twidere.extension.model.textLimit
@@ -135,6 +136,13 @@ class RetweetQuoteDialogFragment : AbsStatusDialogFragment() {
             startActivity(intent)
             dismiss()
         }
+
+        // Mastodon 引用权限检查
+        val canQuote = when (account.type) {
+            AccountType.MASTODON -> status.can_quote
+            else -> true
+        }
+        getButton(DialogInterface.BUTTON_NEUTRAL).isEnabled = canQuote
 
         if (savedInstanceState == null) {
             editComment.setText(text)
@@ -260,7 +268,7 @@ class RetweetQuoteDialogFragment : AbsStatusDialogFragment() {
 
     private fun canQuoteRetweet(account: AccountDetails): Boolean {
         return when (account.type) {
-            AccountType.FANFOU, AccountType.TWITTER -> true
+            AccountType.FANFOU, AccountType.TWITTER, AccountType.MASTODON -> true
             else -> false
         }
     }
@@ -269,6 +277,7 @@ class RetweetQuoteDialogFragment : AbsStatusDialogFragment() {
         return when (account.type) {
             AccountType.FANFOU -> true
             AccountType.TWITTER -> !editComment.empty
+            AccountType.MASTODON -> true
             else -> false
         }
     }

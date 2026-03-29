@@ -163,6 +163,11 @@ public class ParcelableStatus implements Parcelable, Comparable<ParcelableStatus
     @CursorField(Statuses.IS_FAVORITE)
     public boolean is_favorite;
 
+    @JsonField(name = "is_bookmark")
+    public boolean is_bookmark;
+
+
+
     @JsonField(name = "is_possibly_sensitive")
     @CursorField(Statuses.IS_POSSIBLY_SENSITIVE)
     public boolean is_possibly_sensitive;
@@ -559,6 +564,10 @@ public class ParcelableStatus implements Parcelable, Comparable<ParcelableStatus
         @JsonField(name = "visibility")
         @Nullable
         public String visibility;
+
+        @JsonField(name = "quote_approval_current_user")
+        @Nullable
+        public String quote_approval_current_user;
 
         @Override
         public int describeContents() {

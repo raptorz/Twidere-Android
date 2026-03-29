@@ -50,6 +50,7 @@ import org.mariotaku.twidere.annotation.ReadPositionTag
 import org.mariotaku.twidere.constant.*
 import org.mariotaku.twidere.constant.IntentConstants.*
 import org.mariotaku.twidere.constant.KeyboardShortcutConstants.*
+import org.mariotaku.twidere.extension.model.can_retweet
 import org.mariotaku.twidere.extension.model.getAccountType
 import org.mariotaku.twidere.fragment.status.FavoriteConfirmDialogFragment
 import org.mariotaku.twidere.fragment.status.RetweetQuoteDialogFragment
@@ -624,6 +625,14 @@ abstract class AbsStatusesFragment : AbsContentListRecyclerViewFragment<Parcelab
                     fragment.executeAfterFragmentResumed { fragment ->
                         RetweetQuoteDialogFragment.show(fragment.childFragmentManager,
                                 status.account_key, status.id, status)
+                    }
+                }
+                R.id.bookmark -> {
+                    val context = fragment.context ?: return
+                    if (status.is_bookmark) {
+                        fragment.twitterWrapper.destroyBookmarkAsync(context, status.account_key, status)
+                    } else {
+                        fragment.twitterWrapper.createBookmarkAsync(context, status.account_key, status)
                     }
                 }
                 R.id.favorite -> {

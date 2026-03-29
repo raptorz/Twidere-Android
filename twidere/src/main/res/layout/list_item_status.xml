@@ -413,7 +413,6 @@
                 android:minHeight="@dimen/button_size_content_card_action"
                 android:textAppearance="?android:textAppearanceSmall"
                 tools:text="255"/>
-
         </LinearLayout>
 
         <LinearLayout
@@ -452,6 +451,31 @@
                 android:minHeight="@dimen/button_size_content_card_action"
                 android:textAppearance="?android:textAppearanceSmall"
                 tools:text="255"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bookmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/element_spacing_small"
+            android:layout_marginStart="@dimen/element_spacing_small"
+            android:background="?selectableItemBackgroundBorderless"
+            android:focusable="false">
+
+            <org.mariotaku.twidere.view.IconActionView
+                android:id="@+id/bookmarkIcon"
+                android:layout_width="@dimen/button_size_content_card_action"
+                android:layout_height="@dimen/button_size_content_card_action"
+                android:contentDescription="@string/action_bookmark"
+                android:focusable="false"
+                android:gravity="center"
+                android:padding="@dimen/element_spacing_small"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_action_bookmark"
+                app:iabActivatedColor="@color/highlight_bookmark"
+                app:iabColor="?android:textColorSecondary"
+                tools:tint="?android:textColorSecondary"/>
+
         </LinearLayout>
     </LinearLayout>
 

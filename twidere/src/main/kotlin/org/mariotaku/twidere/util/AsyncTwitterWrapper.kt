@@ -196,6 +196,16 @@ class AsyncTwitterWrapper(
         TaskStarter.execute(task)
     }
 
+    fun createBookmarkAsync(context: Context, accountKey: UserKey, status: ParcelableStatus) {
+        val task = CreateBookmarkTask(context, accountKey, status)
+        TaskStarter.execute(task)
+    }
+
+    fun destroyBookmarkAsync(context: Context, accountKey: UserKey, status: ParcelableStatus) {
+        val task = DestroyBookmarkTask(context, accountKey, status)
+        TaskStarter.execute(task)
+    }
+
     fun destroyFriendshipAsync(accountKey: UserKey, userKey: UserKey) {
         val task = DestroyFriendshipTask(context)
         task.setup(accountKey, userKey)

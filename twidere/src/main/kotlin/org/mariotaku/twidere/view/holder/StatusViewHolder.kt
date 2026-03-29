@@ -26,6 +26,7 @@ import org.mariotaku.twidere.adapter.iface.IStatusesAdapter
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.applyTo
+import org.mariotaku.twidere.extension.model.can_retweet
 import org.mariotaku.twidere.extension.model.retweeted_by_user_acct
 import org.mariotaku.twidere.extension.model.user_acct
 import org.mariotaku.twidere.extension.setVisible
@@ -88,17 +89,18 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
     private val quotedMediaLabel = itemView.findViewById<TextView>(R.id.quotedMediaLabel)
     private val statusContentLowerSpace = itemView.findViewById<View>(R.id.statusContentLowerSpace)
     private val quotedMediaPreview = itemView.findViewById<CardMediaContainer>(R.id.quotedMediaPreview)
-    private val favoriteIcon = itemView.findViewById<IconActionView>(R.id.favoriteIcon)
-    private val retweetIcon = itemView.findViewById<ImageView>(R.id.retweetIcon)
-    private val favoriteCountView = itemView.findViewById<TextView>(R.id.favoriteCount)
     private val replyButton = itemView.findViewById<View>(R.id.reply)
     private val retweetButton = itemView.findViewById<View>(R.id.retweet)
     private val favoriteButton = itemView.findViewById<View>(R.id.favorite)
+    private val bookmarkButton = itemView.findViewById<View>(R.id.bookmark)
 
+    private val favoriteIcon = itemView.findViewById<IconActionView>(R.id.favoriteIcon)
+    private val bookmarkIcon = itemView.findViewById<IconActionView>(R.id.bookmarkIcon)
+    private val retweetIcon = itemView.findViewById<IconActionView>(R.id.retweetIcon)
+    private val favoriteCountView = itemView.findViewById<TextView>(R.id.favoriteCount)
     private val eventListener: EventListener
 
     private var statusClickListener: IStatusViewHolder.StatusClickListener? = null
-
 
     init {
         this.eventListener = EventListener(this)
@@ -147,6 +149,9 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         statusContentLowerSpace.visibility = if (showCardActions) View.GONE else View.VISIBLE
         quotedMediaPreview.visibility = View.GONE
         quotedMediaLabel.visibility = View.GONE
+        mediaPreview.displayMedia(R.drawable.featured_graphics)
+        linkPreview.isVisible = isLinkPreviewShown
+        linkPreview.displayData(TWIDERE_PREVIEW_LINK_URI, LinkPreviewData(title = TWIDERE_PREVIEW_NAME, imgRes = R.drawable.featured_graphics), adapter.requestManager)
         mediaPreview.displayMedia(R.drawable.featured_graphics)
         linkPreview.isVisible = isLinkPreviewShown
         linkPreview.displayData(TWIDERE_PREVIEW_LINK_URI, LinkPreviewData(title = TWIDERE_PREVIEW_NAME, imgRes = R.drawable.featured_graphics), adapter.requestManager)
@@ -461,6 +466,13 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         }
         favoriteCountView.hideIfEmpty()
 
+        // 书签按钮状态
+        bookmarkIcon.isActivated = status.is_bookmark
+
+        // 饭否隐藏书签按钮
+        val isFanfou = status.user_key?.host == USER_TYPE_FANFOU_COM
+        bookmarkButton.visibility = if (isFanfou) View.GONE else View.VISIBLE
+
         nameView.updateText(formatter)
         quotedNameView.updateText(formatter)
 
@@ -523,6 +535,7 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         profileImageView.setOnClickListener(eventListener)
         replyButton.setOnClickListener(eventListener)
         retweetButton.setOnClickListener(eventListener)
+        bookmarkButton.setOnClickListener(eventListener)
         favoriteButton.setOnClickListener(eventListener)
         retweetButton.setOnLongClickListener(eventListener)
         favoriteButton.setOnLongClickListener(eventListener)
@@ -722,6 +735,9 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
                 }
                 holder.retweetButton -> {
                     listener.onItemActionClick(holder, R.id.retweet, position)
+                }
+                holder.bookmarkButton -> {
+                    listener.onItemActionClick(holder, R.id.bookmark, position)
                 }
                 holder.favoriteButton -> {
                     listener.onItemActionClick(holder, R.id.favorite, position)

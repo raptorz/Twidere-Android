@@ -5,7 +5,6 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +12,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+* limitations under the License.
  */
 
 package org.mariotaku.microblog.library.mastodon.model;
@@ -113,6 +112,16 @@ public class Status {
     @JsonField(name = "pinned")
     boolean pinned;
     /**
+     * Whether the authenticated user has bookmarked the status
+     */
+    @JsonField(name = "bookmarked")
+    boolean bookmarked;
+    /**
+     * Quote approval information for the current user
+     */
+    @JsonField(name = "quote_approval")
+    QuoteApproval quoteApproval;
+    /**
      * If not empty, warning text that should be displayed before the actual content
      */
     @JsonField(name = "spoiler_text")
@@ -172,57 +181,52 @@ public class Status {
     public String getUri() {
         return uri;
     }
-
     public String getUrl() {
         return url;
     }
-
     public Account getAccount() {
         return account;
     }
-
     public String getInReplyToId() {
         return inReplyToId;
     }
-
     public String getInReplyToAccountId() {
         return inReplyToAccountId;
     }
-
     public Status getReblog() {
         return reblog;
     }
-
     public String getContent() {
         return content;
     }
-
     public Date getCreatedAt() {
         return createdAt;
     }
-
     public long getReblogsCount() {
         return reblogsCount;
     }
-
     public long getFavouritesCount() {
         return favouritesCount;
     }
-
     public boolean isReblogged() {
         return reblogged;
     }
-
     public boolean isFavourited() {
         return favourited;
     }
-
     public boolean isSensitive() {
         return sensitive;
     }
-
     public boolean isPinned() {
         return pinned;
+    }
+
+    public boolean isBookmarked() {
+        return bookmarked;
+    }
+
+    public QuoteApproval getQuoteApproval() {
+        return quoteApproval;
     }
 
     public String getSpoilerText() {
@@ -237,15 +241,12 @@ public class Status {
     public Attachment[] getMediaAttachments() {
         return mediaAttachments;
     }
-
     public Mention[] getMentions() {
         return mentions;
     }
-
     public Tag[] getTags() {
         return tags;
     }
-
     public Application getApplication() {
         return application;
     }
@@ -304,6 +305,8 @@ public class Status {
                 ", quotesCount=" + quotesCount +
                 ", textSource='" + textSource + '\'' +
                 ", quote=" + quote +
+                ", bookmarked=" + bookmarked +
+                ", quoteApproval=" + quoteApproval +
                 '}';
     }
 
@@ -355,6 +358,47 @@ public class Status {
             @Override
             public Quote[] newArray(int size) {
                 return new Quote[size];
+            }
+        };
+    }
+
+    /**
+     * Quote approval information (Mastodon v4.5.0)
+     */
+    @ParcelablePlease
+    @JsonObject
+    public static class QuoteApproval implements Parcelable {
+        /**
+         * Describes how this status' quote policy applies to the current user.
+         * One of: "automatic", "manual", "denied", "unknown"
+         */
+        @JsonField(name = "current_user")
+        String currentUser;
+
+        public String getCurrentUser() {
+            return currentUser;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            Status$QuoteApprovalParcelablePlease.writeToParcel(this, dest, flags);
+        }
+
+        public static final Creator<QuoteApproval> CREATOR = new Creator<QuoteApproval>() {
+            @Override
+            public QuoteApproval createFromParcel(Parcel source) {
+                QuoteApproval target = new QuoteApproval();
+                Status$QuoteApprovalParcelablePlease.readFromParcel(target, source);
+                return target;
+            }
+
+            @Override
+            public QuoteApproval[] newArray(int size) {
+                return new QuoteApproval[size];
             }
         };
     }

@@ -462,6 +462,9 @@ class UpdateStatusTask(
         if (statusUpdate.visibility != null) {
             status.visibility(statusUpdate.visibility)
         }
+        if (statusUpdate.quoted_status_id != null) {
+            status.quotedStatusId(statusUpdate.quoted_status_id)
+        }
         return mastodon.postStatus(status).toParcelable(details)
     }
 
