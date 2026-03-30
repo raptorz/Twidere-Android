@@ -62,6 +62,7 @@ import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.*
 import org.mariotaku.twidere.fragment.AbsStatusesFragment
 import org.mariotaku.twidere.fragment.status.StatusFragment
+import org.mariotaku.twidere.menu.BookmarkItemProvider
 import org.mariotaku.twidere.menu.FavoriteItemProvider
 import org.mariotaku.twidere.menu.RetweetItemProvider
 import org.mariotaku.twidere.model.*
@@ -519,6 +520,15 @@ class DetailStatusViewHolder(
                 AbsStatusesFragment.handleActionLongClick(fragment, status, itemId, R.id.retweet)
             }
             retweetProvider.init(menuBar, retweetItem)
+        }
+
+        val bookmarkItem = menu.findItem(R.id.bookmark)
+        val bookmarkProvider = bookmarkItem?.supportActionProvider
+        if (bookmarkProvider is BookmarkItemProvider) {
+            val defaultColor = ThemeUtils.getActionIconColor(activity)
+            bookmarkProvider.defaultColor = defaultColor
+            bookmarkProvider.activatedColor = ContextCompat.getColor(activity, R.color.highlight_bookmark)
+            bookmarkProvider.init(menuBar, bookmarkItem)
         }
 
         ThemeUtils.wrapMenuIcon(menuBar, excludeGroups = *intArrayOf(Constants.MENU_GROUP_STATUS_SHARE))

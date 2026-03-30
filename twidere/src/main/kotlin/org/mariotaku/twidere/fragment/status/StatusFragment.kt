@@ -91,6 +91,7 @@ import org.mariotaku.twidere.loader.statuses.ConversationLoader
 import org.mariotaku.twidere.model.*
 import org.mariotaku.twidere.model.analyzer.Share
 import org.mariotaku.twidere.model.analyzer.StatusView
+import org.mariotaku.twidere.model.event.BookmarkTaskEvent
 import org.mariotaku.twidere.model.event.FavoriteTaskEvent
 import org.mariotaku.twidere.model.event.StatusListChangedEvent
 import org.mariotaku.twidere.model.pagination.Pagination
@@ -641,6 +642,23 @@ class StatusFragment : BaseFragment(), LoaderCallbacks<SingleResponse<Parcelable
                     status.is_favorite = false
                 }
             }
+        }
+    }
+
+    @Subscribe
+    fun notifyBookmarkTask(event: BookmarkTaskEvent) {
+        if (!event.isSucceeded) return
+        val status = adapter.findStatusById(event.accountKey, event.statusId)
+        if (status != null) {
+            when (event.action) {
+                BookmarkTaskEvent.Action.CREATE -> {
+                    status.is_bookmark = true
+                }
+                BookmarkTaskEvent.Action.DESTROY -> {
+                    status.is_bookmark = false
+                }
+            }
+            adapter.notifyDataSetChanged()
         }
     }
 

@@ -22,6 +22,12 @@
         app:actionProviderClass="org.mariotaku.twidere.menu.FavoriteItemProvider"
         app:showAsAction="always"/>
     <item
+        android:id="@id/bookmark"
+        android:icon="@drawable/ic_action_bookmark"
+        android:title="@string/action_bookmark"
+        app:actionProviderClass="org.mariotaku.twidere.menu.BookmarkItemProvider"
+        app:showAsAction="always"/>
+    <item
         android:id="@id/share"
         android:icon="@drawable/ic_action_share"
         android:title="@string/action_share"

@@ -1,0 +1,48 @@
+/*
+ *             Twidere - Twitter client for Android
+ *
+ *  Copyright (C) 2012-2017 Mariotaku Lee <mariotaku.lee@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.mariotaku.twidere.menu
+
+import android.content.Context
+import android.graphics.PorterDuff
+import androidx.core.view.ActionProvider
+import androidx.core.view.MenuItemCompat
+import androidx.appcompat.widget.ActionMenuView
+import android.view.MenuItem
+import org.mariotaku.twidere.BuildConfig
+import org.mariotaku.twidere.extension.view.findItemView
+
+class BookmarkItemProvider(context: Context) : ActionProvider(context) {
+    var defaultColor: Int = 0
+    var activatedColor: Int = 0
+
+    override fun onCreateActionView() = null
+
+    fun init(menuBar: ActionMenuView, item: MenuItem) {
+        if (BuildConfig.DEBUG && MenuItemCompat.getActionProvider(item) !== this) { error("Assertion failed") }
+        val menuView = menuBar.findItemView(item)
+    }
+
+    fun setIsBookmarked(item: MenuItem, isBookmarked: Boolean) {
+        if (MenuItemCompat.getActionProvider(item) !== this) throw IllegalArgumentException()
+        val icon = item.icon
+        icon?.mutate()
+        icon?.setColorFilter(if (isBookmarked) activatedColor else defaultColor, PorterDuff.Mode.SRC_ATOP)
+    }
+}

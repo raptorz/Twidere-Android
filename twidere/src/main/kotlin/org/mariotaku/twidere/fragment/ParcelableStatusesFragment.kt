@@ -39,6 +39,7 @@ import org.mariotaku.twidere.model.BaseRefreshTaskParam
 import org.mariotaku.twidere.model.ParcelableStatus
 import org.mariotaku.twidere.model.RefreshTaskParam
 import org.mariotaku.twidere.model.UserKey
+import org.mariotaku.twidere.model.event.BookmarkTaskEvent
 import org.mariotaku.twidere.model.event.FavoriteTaskEvent
 import org.mariotaku.twidere.model.event.StatusDestroyedEvent
 import org.mariotaku.twidere.model.event.StatusListChangedEvent
@@ -232,6 +233,20 @@ abstract class ParcelableStatusesFragment : AbsStatusesFragment() {
         replaceStatusStates(status)
     }
 
+    private fun updateBookmarkedStatus(status: ParcelableStatus) {
+        val data = adapterData ?: return
+        val lm = layoutManager
+        val rangeStart = max(adapter.statusStartIndex, lm.findFirstVisibleItemPosition())
+        val rangeEnd = min(lm.findLastVisibleItemPosition(), adapter.statusStartIndex + adapter.getStatusCount(false) - 1)
+        for (i in rangeStart..rangeEnd) {
+            val item = adapter.getStatus(i, false)
+            if (status.id == item.id && status.account_key == item.account_key) {
+                item.is_bookmark = status.is_bookmark
+            }
+        }
+        adapter.notifyItemRangeChanged(rangeStart, rangeEnd)
+    }
+
     private fun updateRetweetedStatuses(status: ParcelableStatus?) {
         val data = adapterData
         if (status?.retweet_id == null || data == null) return
@@ -247,6 +262,12 @@ abstract class ParcelableStatusesFragment : AbsStatusesFragment() {
     protected open fun notifyFavoriteTask(event: FavoriteTaskEvent) {
         if (event.isSucceeded) {
             updateFavoritedStatus(event.status!!)
+        }
+    }
+
+    protected open fun notifyBookmarkTask(event: BookmarkTaskEvent) {
+        if (event.isSucceeded) {
+            updateBookmarkedStatus(event.status!!)
         }
     }
 
@@ -267,6 +288,11 @@ abstract class ParcelableStatusesFragment : AbsStatusesFragment() {
         @Subscribe
         fun onFavoriteTaskEvent(event: FavoriteTaskEvent) {
             notifyFavoriteTask(event)
+        }
+
+        @Subscribe
+        fun onBookmarkTaskEvent(event: BookmarkTaskEvent) {
+            notifyBookmarkTask(event)
         }
 
         @Subscribe

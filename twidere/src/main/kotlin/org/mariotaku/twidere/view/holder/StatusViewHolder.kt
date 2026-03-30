@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.RequestManager
 import org.mariotaku.abstask.library.TaskStarter
 import org.mariotaku.ktextension.*
-import org.mariotaku.microblog.library.mastodon.annotation.StatusVisibility
 import org.mariotaku.twidere.Constants.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.TwidereConstants.USER_TYPE_FANFOU_COM
@@ -26,6 +25,7 @@ import org.mariotaku.twidere.adapter.iface.IStatusesAdapter
 import org.mariotaku.twidere.constant.SharedPreferenceConstants.VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE
 import org.mariotaku.twidere.extension.loadProfileImage
 import org.mariotaku.twidere.extension.model.applyTo
+import org.mariotaku.twidere.extension.model.can_quote
 import org.mariotaku.twidere.extension.model.can_retweet
 import org.mariotaku.twidere.extension.model.retweeted_by_user_acct
 import org.mariotaku.twidere.extension.model.user_acct
@@ -424,16 +424,10 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         }
         replyCountView.hideIfEmpty()
 
-        when (status.extras?.visibility) {
-            StatusVisibility.PRIVATE -> {
-                retweetIcon.setImageResource(R.drawable.ic_action_lock)
-            }
-            StatusVisibility.DIRECT -> {
-                retweetIcon.setImageResource(R.drawable.ic_action_message)
-            }
-            else -> {
-                retweetIcon.setImageResource(R.drawable.ic_action_retweet)
-            }
+        if (!status.can_retweet || !status.can_quote) {
+            retweetIcon.setImageResource(R.drawable.ic_action_lock)
+        } else {
+            retweetIcon.setImageResource(R.drawable.ic_action_retweet)
         }
 
         if (twitter.isDestroyingStatus(status.account_key, status.my_retweet_id)) {

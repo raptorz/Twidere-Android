@@ -159,12 +159,13 @@ public class ParcelableStatus implements Parcelable, Comparable<ParcelableStatus
     @CursorField(Statuses.RETWEETED)
     public boolean retweeted;
 
-    @JsonField(name = "is_favorite")
-    @CursorField(Statuses.IS_FAVORITE)
-    public boolean is_favorite;
+        @JsonField(name = "is_favorite")
+        @CursorField(Statuses.IS_FAVORITE)
+        public boolean is_favorite;
 
-    @JsonField(name = "is_bookmark")
-    public boolean is_bookmark;
+        @JsonField(name = "is_bookmark")
+        @CursorField(Statuses.IS_BOOKMARK)
+        public boolean is_bookmark;
 
 
 

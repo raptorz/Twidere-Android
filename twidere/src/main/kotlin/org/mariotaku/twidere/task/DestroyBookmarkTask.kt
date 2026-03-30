@@ -14,6 +14,7 @@ import org.mariotaku.twidere.model.Draft
 import org.mariotaku.twidere.model.ParcelableStatus
 import org.mariotaku.twidere.model.UserKey
 import org.mariotaku.twidere.model.draft.StatusObjectActionExtras
+import org.mariotaku.twidere.model.event.BookmarkTaskEvent
 import org.mariotaku.twidere.model.event.StatusListChangedEvent
 import org.mariotaku.twidere.task.twitter.UpdateStatusTask
 import org.mariotaku.twidere.util.DataStoreUtils
@@ -50,11 +51,17 @@ class DestroyBookmarkTask(context: Context, accountKey: UserKey, private val sta
     }
 
     override fun afterExecute(callback: Any?, result: ParcelableStatus?, exception: MicroBlogException?) {
+        val taskEvent = BookmarkTaskEvent(BookmarkTaskEvent.Action.DESTROY, accountKey, statusId)
+        taskEvent.isFinished = true
         if (result != null) {
+            taskEvent.status = result
+            taskEvent.isSucceeded = true
             Toast.makeText(context, R.string.message_toast_status_unbookmarked, Toast.LENGTH_SHORT).show()
         } else {
+            taskEvent.isSucceeded = false
             Toast.makeText(context, exception?.getErrorMessage(context), Toast.LENGTH_SHORT).show()
         }
+        bus.post(taskEvent)
         bus.post(StatusListChangedEvent())
     }
 

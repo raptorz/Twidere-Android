@@ -44,7 +44,6 @@ import org.mariotaku.ktextension.Bundle
 import org.mariotaku.ktextension.set
 import org.mariotaku.ktextension.setActionIcon
 import org.mariotaku.ktextension.setItemAvailability
-import org.mariotaku.microblog.library.mastodon.annotation.StatusVisibility
 import org.mariotaku.twidere.Constants.*
 import org.mariotaku.twidere.R
 import org.mariotaku.twidere.activity.AccountSelectorActivity
@@ -54,6 +53,8 @@ import org.mariotaku.twidere.app.TwidereApplication
 import org.mariotaku.twidere.constant.favoriteConfirmationKey
 import org.mariotaku.twidere.constant.iWantMyStarsBackKey
 import org.mariotaku.twidere.constant.nameFirstKey
+import org.mariotaku.twidere.extension.model.can_quote
+import org.mariotaku.twidere.extension.model.can_retweet
 import org.mariotaku.twidere.extension.model.isOfficial
 import org.mariotaku.twidere.fragment.AbsStatusesFragment
 import org.mariotaku.twidere.fragment.AddStatusFilterDialogFragment
@@ -62,6 +63,7 @@ import org.mariotaku.twidere.fragment.SetUserNicknameDialogFragment
 import org.mariotaku.twidere.fragment.status.*
 import org.mariotaku.twidere.graphic.ActionIconDrawable
 import org.mariotaku.twidere.graphic.PaddingDrawable
+import org.mariotaku.twidere.menu.BookmarkItemProvider
 import org.mariotaku.twidere.menu.FavoriteItemProvider
 import org.mariotaku.twidere.menu.SupportStatusShareProvider
 import org.mariotaku.twidere.model.AccountDetails
@@ -149,17 +151,10 @@ object MenuUtils {
         val retweet = menu.findItem(R.id.retweet)
         if (retweet != null) {
 
-            when (status.extras?.visibility) {
-                StatusVisibility.PRIVATE -> {
-                    retweet.setActionIcon(context, R.drawable.ic_action_lock)
-                }
-                StatusVisibility.DIRECT -> {
-                    retweet.setActionIcon(context, R.drawable.ic_action_message)
-                    retweet.setIcon(R.drawable.ic_action_message)
-                }
-                else -> {
-                    retweet.setActionIcon(context, R.drawable.ic_action_retweet)
-                }
+            if (!status.can_retweet || !status.can_quote) {
+                retweet.setActionIcon(context, R.drawable.ic_action_lock)
+            } else {
+                retweet.setActionIcon(context, R.drawable.ic_action_retweet)
             }
 
             retweet.setTitle(if (isMyRetweet) R.string.action_cancel_retweet else R.string.action_retweet)
@@ -197,6 +192,15 @@ object MenuUtils {
             } else {
                 favorite.setTitle(if (isFavorite) R.string.action_undo_like else R.string.action_like)
             }
+        }
+        val bookmark = menu.findItem(R.id.bookmark)
+        if (bookmark != null) {
+            val isBookmarked: Boolean = status.is_bookmark
+            val provider = MenuItemCompat.getActionProvider(bookmark)
+            if (provider is BookmarkItemProvider) {
+                provider.setIsBookmarked(bookmark, isBookmarked)
+            }
+            bookmark.setTitle(if (isBookmarked) R.string.action_remove_bookmark else R.string.action_bookmark)
         }
         val translate = menu.findItem(R.id.translate)
         if (translate != null) {
@@ -305,6 +309,13 @@ object MenuUtils {
                     } else {
                         twitter.createFavoriteAsync(status.account_key, status)
                     }
+                }
+            }
+            R.id.bookmark -> {
+                if (status.is_bookmark) {
+                    twitter.destroyBookmarkAsync(context, status.account_key, status)
+                } else {
+                    twitter.createBookmarkAsync(context, status.account_key, status)
                 }
             }
             R.id.delete -> {

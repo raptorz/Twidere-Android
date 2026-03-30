@@ -647,6 +647,12 @@ public interface TwidereDataStore {
          */
         String IS_FAVORITE = "is_favorite";
 
+        /**
+         * Set to 1 if the status is bookmarked.<br>
+         * Type: INTEGER (boolean)
+         */
+        String IS_BOOKMARK = "is_bookmark";
+
         String IS_POSSIBLY_SENSITIVE = "is_possibly_sensitive";
 
         /**

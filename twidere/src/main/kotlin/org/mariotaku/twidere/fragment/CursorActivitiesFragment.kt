@@ -255,6 +255,7 @@ abstract class CursorActivitiesFragment : AbsActivitiesFragment() {
                 if (result.id == activity.id || result.id == activity.retweet_id
                         || result.id == activity.my_retweet_id) {
                     activity.is_favorite = result.is_favorite
+                    activity.is_bookmark = result.is_bookmark
                     activity.reply_count = result.reply_count
                     activity.retweet_count = result.retweet_count
                     activity.favorite_count = result.favorite_count
@@ -283,6 +284,11 @@ abstract class CursorActivitiesFragment : AbsActivitiesFragment() {
     }
 
     private fun updateFavoritedStatus(status: ParcelableStatus) {
+        activity ?: return
+        replaceStatusStates(status)
+    }
+
+    private fun updateBookmarkedStatus(status: ParcelableStatus) {
         activity ?: return
         replaceStatusStates(status)
     }
@@ -318,6 +324,13 @@ abstract class CursorActivitiesFragment : AbsActivitiesFragment() {
         fun notifyFavoriteTask(event: FavoriteTaskEvent) {
             if (event.isSucceeded) {
                 updateFavoritedStatus(event.status!!)
+            }
+        }
+
+        @Subscribe
+        fun notifyBookmarkTask(event: BookmarkTaskEvent) {
+            if (event.isSucceeded) {
+                updateBookmarkedStatus(event.status!!)
             }
         }
 

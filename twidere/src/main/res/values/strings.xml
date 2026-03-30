@@ -79,6 +79,7 @@
     <!-- [verb] e.g. An action label on a tweet to like this tweet. Formerly Twitter favorite. -->
     <string name="action_like">Like</string>
     <string name="action_bookmark">Bookmark</string>
+    <string name="action_remove_bookmark">Remove bookmark</string>
     <string name="action_list_creator">List creator</string>
     <string name="action_location">Location</string>
     <string name="action_manage_in_buffer">Manage in Buffer</string>
