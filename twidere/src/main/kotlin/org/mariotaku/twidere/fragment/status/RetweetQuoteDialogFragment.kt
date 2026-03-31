@@ -277,7 +277,7 @@ class RetweetQuoteDialogFragment : AbsStatusDialogFragment() {
         return when (account.type) {
             AccountType.FANFOU -> true
             AccountType.TWITTER -> !editComment.empty
-            AccountType.MASTODON -> true
+            AccountType.MASTODON -> !editComment.empty
             else -> false
         }
     }

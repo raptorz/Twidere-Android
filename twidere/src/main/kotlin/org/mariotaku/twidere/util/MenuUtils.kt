@@ -150,11 +150,16 @@ object MenuUtils {
         }
         val retweet = menu.findItem(R.id.retweet)
         if (retweet != null) {
-
-            if (!status.can_retweet || !status.can_quote) {
-                retweet.setActionIcon(context, R.drawable.ic_action_lock)
-            } else {
-                retweet.setActionIcon(context, R.drawable.ic_action_retweet)
+            when {
+                !status.can_retweet && !status.can_quote -> {
+                    retweet.setActionIcon(context, R.drawable.ic_action_lock)
+                }
+                status.can_retweet -> {
+                    retweet.setActionIcon(context, R.drawable.ic_action_retweet)
+                }
+                else -> {
+                    retweet.setActionIcon(context, R.drawable.ic_action_quote)
+                }
             }
 
             retweet.setTitle(if (isMyRetweet) R.string.action_cancel_retweet else R.string.action_retweet)

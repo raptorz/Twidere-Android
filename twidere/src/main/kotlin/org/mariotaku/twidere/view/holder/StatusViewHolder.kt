@@ -424,10 +424,16 @@ class StatusViewHolder(private val adapter: IStatusesAdapter<*>, itemView: View)
         }
         replyCountView.hideIfEmpty()
 
-        if (!status.can_retweet || !status.can_quote) {
-            retweetIcon.setImageResource(R.drawable.ic_action_lock)
-        } else {
-            retweetIcon.setImageResource(R.drawable.ic_action_retweet)
+        when {
+            !status.can_retweet && !status.can_quote -> {
+                retweetIcon.setImageResource(R.drawable.ic_action_lock)
+            }
+            status.can_retweet -> {
+                retweetIcon.setImageResource(R.drawable.ic_action_retweet)
+            }
+            else -> {
+                retweetIcon.setImageResource(R.drawable.ic_action_quote)
+            }
         }
 
         if (twitter.isDestroyingStatus(status.account_key, status.my_retweet_id)) {
